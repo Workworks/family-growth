@@ -2,7 +2,7 @@ plugins { id("com.android.application"); id("org.jetbrains.kotlin.android"); id(
 
 val githubRepository = providers.gradleProperty("GITHUB_REPOSITORY")
     .orElse(providers.environmentVariable("GITHUB_REPOSITORY"))
-    .orElse("")
+    .orElse("Workworks/family-growth")
     .get()
 
 fun String.asBuildConfigString(): String =

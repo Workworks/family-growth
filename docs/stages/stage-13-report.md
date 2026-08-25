@@ -83,7 +83,7 @@
 - Android 新增 `core/AppModels.kt`、`LocalFamilyEngine.kt`、`LocalFamilyStore.kt` 与 `FamilyAppViewModel.kt`，初始为空数据，由用户真实操作生成本机状态。
 - 前端采用翡翠主色、琥珀奖励色、Slate 中性色、描边低阴影卡片和三个非闭合成长环；宽屏与窄屏使用不同导航结构。
 - 零钱回收改为孩子提交待审申请，家长 PIN 进入管理视角后确认；确认前 Money 不变，确认后一次性写入含 2% 手续费和预计到账的流水。
-- 交付 `dist/family-growth-0.2.0-debug.apk`，applicationId `com.familygrowth.android`，versionCode 3；它仍是内部 debug 包，未配置未知的 GitHub 仓库。
+- 交付 `dist/family-growth-0.2.0-debug.apk`，applicationId `com.familygrowth.android`，versionCode 3；Stage 14 重建包默认绑定 `Workworks/family-growth`，但仍是内部 debug 签名。
 
 ## 验证结论
 

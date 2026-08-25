@@ -44,11 +44,25 @@
 
 已完成：GitHub latest release client、SemVer、固定资产、HTTPS/大小/SHA-256 校验、FileProvider、系统安装引导、tag 发布 workflow、0.1.1 debug APK。
 
-缺少：真实公开 GitHub `owner/repo`、稳定 release 签名 secrets、两版 Release 资产和可用 Android 设备上的同签名覆盖升级/数据保留证据。
+已解除：公开仓库 `Workworks/family-growth` 已创建并推送 `main`。
 
-解除条件：提供目标公开仓库并连接 Android 真机/平板；使用同一 release 证书发布低/高两个 versionCode，回放检查、下载、系统确认、覆盖升级和数据保留。
+缺少：稳定 release 签名 secrets、两版 Release 资产和可用 Android 设备上的同签名覆盖升级/数据保留证据。
 
-推进方：用户提供仓库和设备；Agent 配置、发布和验收。签名私钥不得进入聊天或 Git。
+解除条件：用户确认现有 release keystore，或授权生成新证书并指定长期备份位置；随后连接 Android 真机/平板，使用同一证书发布低/高两个 versionCode，回放检查、下载、系统确认、覆盖升级和数据保留。
+
+推进方：用户确认签名备份并提供设备；Agent 配置、发布和验收。签名私钥不得进入聊天或 Git。
+
+### Stage 14：公开仓库与真实 Release 更新链
+
+状态：`BLOCKED`　文档：[Stage 14](stages/stage-14-report.md)
+
+已完成：PUBLIC 仓库 `Workworks/family-growth`、五个分 Stage commits、origin/main 推送、Android 默认更新源绑定和重新构建的 0.2.0 debug 基线。
+
+缺少：稳定 Android release keystore 与长期备份决定；GitHub 当前无四项签名 Secrets，也无 Release。另需 Android 设备验收覆盖升级。
+
+解除条件：用户提供现有 keystore 的本机路径和 alias（密码不得发在聊天，可由本机安全输入），或明确授权 Agent 生成新证书并指定长期备份目录；然后由 Agent 配置 GitHub Secrets、发布递增版本并回放。
+
+推进方：用户确认签名方案/备份和设备；Agent 完成 CI Release 与验收。
 
 ## 2. 工程未完成
 

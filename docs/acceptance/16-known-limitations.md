@@ -7,7 +7,7 @@
 | LIM-001 | 基础 API 尚无生产认证/PIN | 不可对家庭网络开放为正式产品 | 后续认证 Stage 完成并有权限反向测试 |
 | LIM-002 | Android Emulator 无法建立可用 ADB | 无安装、启动、旋转证据 | 使用真机/平板或经授权重装共享 system image |
 | LIM-003 | 当前 APK 为 Android Debug 签名 | 不可作为生产升级链证书 | 配置并离线保管稳定 release keystore |
-| LIM-004 | 当前 APK 未配置 GitHub `owner/repo` | 更新 UI 只显示未配置 | 提供公开仓库后重新构建正式包 |
+| LIM-004 | 当前 APK 已绑定 `Workworks/family-growth`，但尚无稳定签名 Release | 可检查公开仓库，但不能完成正式同签名更新 | 配置稳定 release keystore/secrets，发布递增版本并真机覆盖升级 |
 | LIM-005 | Stage 3–10 生产服务端深度闭环未建设 | 0.2.0 仅能作为单设备本机基础体验，不能多端协作或生产部署 | 按 Stage 顺序实现服务端领域、认证、同步并验收 |
 | LIM-006 | AGP 8.7.3 仅声明测试到 compileSdk 35，工程使用 36 | 构建有兼容警告 | 后续升级 AGP 或对齐 SDK/依赖基线 |
 | LIM-007 | 防沉迷仅设计 App 内控制 | 不提供系统级跨 App 管控 | V1 保持产品边界并准确提示 |

@@ -2,7 +2,7 @@
 
 ## 1. 更新契约
 
-- 仓库：公开 GitHub 仓库，构建参数 `GITHUB_REPOSITORY=owner/repo`。
+- 仓库：默认公开仓库 `Workworks/family-growth`；构建参数 `GITHUB_REPOSITORY=owner/repo` 仍可覆盖。
 - Release tag：`vMAJOR.MINOR.PATCH`，例如 `v0.1.2`。
 - APK asset：`family-growth-MAJOR.MINOR.PATCH.apk`，例如 `family-growth-0.1.2.apk`。
 - 客户端只接受配置仓库的 GitHub HTTPS 下载地址，并要求 GitHub API 返回 `sha256:<64 hex>` digest。
@@ -35,10 +35,10 @@ git push origin v0.1.2
 
 ```powershell
 cd family-growth-android
-.\gradlew.bat clean assembleDebug -PGITHUB_REPOSITORY=owner/repo
+.\gradlew.bat clean assembleDebug
 ```
 
-未传入仓库时，家长端明确显示“GitHub 更新源未配置”且不发起网络请求。不要把 GitHub Token 写入 APK；V1 仅支持公开仓库。
+当前默认绑定 `Workworks/family-growth`。若显式传入空值或非法仓库，家长端 fail-closed 且不请求占位 URL。不要把 GitHub Token 写入 APK；V1 仅支持公开仓库。
 
 ## 5. 验收步骤
 

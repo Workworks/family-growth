@@ -49,3 +49,8 @@
 | 41 | 13 | 生成并核验 0.2.0 APK | 生成 versionCode 3 debug APK，aapt 包信息正确，v2 签名通过，SHA-256 已登记；未冒充 release 正式包 | `dist/family-growth-0.2.0-debug.apk`、Stage 13 证据 |
 | 42 | 13 | 收敛运行态状态 | 可离线工程工作完成；因无可用 Android 设备，安装交互、计时和重启持久化未执行，Stage 13 标记 `BLOCKED` | Stage 13、BLOCKERS、TODO/current |
 | 43 | 14 | 用户将热更新提升为最高优先级并授权公开仓库 | 登记 REQ-018/P0；GitHub CLI 已认证 `Workworks`，`Workworks/family-growth` 名称可用；创建 Stage 14，先审计再分 Stage commit 和公开推送 | Stage 14 Spec |
+| 44 | 14 | 审计公开范围并建立分 Stage Git 历史 | 141 个候选文件无大文件/凭据；APK、local.properties、keystore 和本地缓存均忽略；创建 Stage 2/11/13/12/14 五个 Conventional Commits | Stage 14 evidence 待汇总 |
+| 45 | 14 | 使用 GitHub CLI 创建公开仓库 | `gh repo create Workworks/family-growth --public --source=. --remote=origin --push` 成功；PUBLIC 仓库 main 已推送 | `https://github.com/Workworks/family-growth` |
+| 46 | 14 | 绑定 Android 默认更新源 | Gradle 默认 `GITHUB_REPOSITORY` 改为 `Workworks/family-growth`，仍允许构建参数/环境变量覆盖；不把 Token 写入 APK | Stage 14、发布手册 |
+| 47 | 14 | 重建绑定仓库的 0.2.0 debug 基线 | 10 项 JVM 测试、lint、assemble、aapt、v2 debug 签名通过；BuildConfig 确认为 `Workworks/family-growth`，新哈希已登记 | Stage 14 evidence |
+| 48 | 14 | 检查真实 Release 前置 | 仓库无四项 Android 签名 Secrets，latest Release API 返回 404；不发布 debug 包冒充正式更新，Stage 14 收敛为稳定签名/备份和设备阻塞 | Stage 14、BLOCKERS |

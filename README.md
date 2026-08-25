@@ -4,6 +4,7 @@
 
 快速入口：
 
+- [GitHub 公共仓库](https://github.com/Workworks/family-growth)
 - [文档索引](docs/README.md)
 - [当前阶段](docs/stage-current.md)
 - [待办账本](docs/TODO.md)

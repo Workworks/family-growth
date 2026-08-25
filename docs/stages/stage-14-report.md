@@ -1,6 +1,6 @@
 # Stage 14：公开 GitHub 仓库、分阶段提交与 Release 更新链
 
-状态：`IN_PROGRESS`
+状态：`BLOCKED`
 
 日期：2026-08-25
 
@@ -26,12 +26,12 @@
 
 | ID | 状态 | 内容 |
 | --- | --- | --- |
-| WP14-1 | 进行中 | 登记 P0 需求、创建发布 Spec、确认 gh 登录与仓库名可用 |
-| WP14-2 | 未开始 | 审计 `.gitignore`、敏感信息、大文件与公开范围 |
-| WP14-3 | 未开始 | 按 Stage 组织本地 Conventional Commits |
-| WP14-4 | 未开始 | `gh repo create --public`、配置 `origin` 并推送 `main` |
-| WP14-5 | 未开始 | 配置稳定签名 secrets、构建并创建真实 GitHub Release |
-| WP14-6 | 未开始 | 验证远端可见性、Release asset/digest、更新 API 与文档证据 |
+| WP14-1 | 完成 | 登记 P0 需求、创建发布 Spec、确认 gh 登录与仓库名可用 |
+| WP14-2 | 完成 | 审计 `.gitignore`、敏感信息、大文件与公开范围 |
+| WP14-3 | 完成 | 按 Stage 组织本地 Conventional Commits |
+| WP14-4 | 完成 | `gh repo create --public`、配置 `origin` 并推送 `main` |
+| WP14-5 | `BLOCKED` | 配置稳定签名 secrets、构建并创建真实 GitHub Release；缺签名身份与长期备份决定 |
+| WP14-6 | 部分完成 | 远端可见性和更新源绑定已验证；Release asset/digest 与真机更新待签名/设备 |
 
 ## Git 提交分组
 
@@ -55,12 +55,27 @@
 
 ## 完成标准
 
-- [ ] AC14-01 热更新已提升为 P0，REQ/Stage/TODO/current 对齐。
-- [ ] AC14-02 公开前 secret、大文件、忽略规则和待跟踪文件审计通过，APK 不进入 Git history。
-- [ ] AC14-03 当前项目已按 Stage 归属形成 Conventional Commits，commit 清单进入证据。
-- [ ] AC14-04 `Workworks/family-growth` 已由 GitHub CLI 创建为 PUBLIC，main 推送成功。
+- [x] AC14-01 `PASS`：热更新已提升为 P0，REQ/Stage/TODO/current 对齐。
+- [x] AC14-02 `PASS`：公开前 141 个候选文件通过 secret/大文件/忽略规则审计，APK 未进入 Git history。
+- [x] AC14-03 `PASS`：当前项目形成 Stage 2/11/13/12/14 五个 Conventional Commits，清单见证据。
+- [x] AC14-04 `PASS`：`Workworks/family-growth` 已由 GitHub CLI 创建为 PUBLIC，main 推送成功。
 - [ ] AC14-05 Android 构建配置指向该仓库，稳定签名 Release APK 与 digest 可由公开 Release API 读取。
 - [ ] AC14-06 真机完成同签名覆盖升级和数据保留；缺设备时必须 `BLOCKED`。
+
+## 当前实施结果
+
+- GitHub 仓库：[Workworks/family-growth](https://github.com/Workworks/family-growth)，可见性 `PUBLIC`，默认分支 `main`。
+- 初始提交为 `26a37f5`（Stage 2）、`99fdb02`（Stage 11）、`3f99f8b`（Stage 13）、`818a603`（Stage 12）、`a84b578`（Stage 14）；后续 Stage 14 配置/证据另有收口提交。
+- Android 默认更新源已绑定 `Workworks/family-growth`，仍允许 `GITHUB_REPOSITORY` 构建参数或环境变量覆盖。
+- 绑定仓库后的 0.2.0 debug APK 已重新执行 10 项单测、lint、assemble、aapt 和 apksigner；它用于内部验证，不作为正式 Release。
+- `gh secret list` 未发现发布签名 Secrets；`releases/latest` 返回 404，符合尚未发布的事实。
+
+## 当前阻塞
+
+1. 需要现有稳定 Android release keystore，或授权 Agent 新建一份并指定长期备份目录。所需 GitHub Secrets 为 `ANDROID_KEYSTORE_BASE64`、`ANDROID_STORE_PASSWORD`、`ANDROID_KEY_ALIAS`、`ANDROID_KEY_PASSWORD`。
+2. 需要 Android 真机/平板完成同签名低版→高版覆盖升级和数据保留验收。
+
+公开仓库和分阶段提交已经完成；Stage 14 现在只因稳定签名身份与设备条件保持 `BLOCKED`。不得用 debug Release 绕过这一边界。
 
 ## 安全检查、已知限制与交接
 

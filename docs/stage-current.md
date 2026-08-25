@@ -8,20 +8,20 @@
 | ---: | ---: | --- | --- | --- |
 | 1 | 0 | 项目立项与总体设计 | `COMPLETED` | 已进入工程迭代 |
 | 2 | 1 | 工程骨架与 Family / Growth 基础 | `BLOCKED` | Emulator 同版本官方重装无效；需授权重装共享 API 34 system image，或连接 Android 真机/平板 |
-| 11 | 计划外 | GitHub Release APK 热更新与当前版本交付 | `BLOCKED` | 客户端和发布流已交付并保留在当前 0.2.0 包；需真实 GitHub remote/Release 与 Android 设备回放覆盖升级 |
+| 11 | 计划外 | GitHub Release APK 热更新与当前版本交付 | `BLOCKED` | 公开仓库已建立，客户端和发布流已交付；需稳定签名 Release 与 Android 设备回放覆盖升级 |
 | 12 | 计划外 | 参考仓库文档治理与 Agent 启动协议对齐 | `COMPLETED` | 后续每次对话持续执行 AGENTS Step 1–6 和需求永久登记 |
 | 13 | 计划外 | Stage 2–11 基础体验宽度与 Android 前端完善 | `BLOCKED` | 代码、自动化和 0.2.0 APK 已交付；需 Android 真机/平板回放交互、计时与重启持久化 |
-| 14 | 计划外 | 公开 GitHub 仓库、分阶段提交与 Release 更新链 | `IN_PROGRESS` | 当前 P0：公开前审计、按 Stage commit、创建 `Workworks/family-growth` 并推送；随后配置稳定签名 Release |
+| 14 | 计划外 | 公开 GitHub 仓库、分阶段提交与 Release 更新链 | `BLOCKED` | PUBLIC 仓库、Stage commits、main 推送和更新源绑定已完成；需稳定签名密钥/备份确认和 Android 设备 |
 
 Stage 2 的代码、PostgreSQL 和自动化门禁已交付，debug APK 已生成；Android 安装启动因本机 Emulator 37.1.11 在 ADB 可用前退出而阻塞。未完成运行态验收前不得把 APK 描述为已安装可用。
 
-Stage 11 的实现、自动化门禁和本地 APK 已交付；当前包因未知目标仓库而使用“未配置更新源”安全状态。真实 Release 下载与覆盖安装仍缺 GitHub 仓库和 Android 设备，不能标记完成。
+Stage 11 的实现、自动化门禁和本地 APK 已交付；Stage 14 已创建公开仓库并将当前构建默认更新源绑定为 `Workworks/family-growth`。真实 Release 下载与覆盖安装仍缺稳定签名和 Android 设备，不能标记完成。
 
 Stage 12 已将 docs 根入口、一级分类、BLOCKERS/TODO/Stage 职责、OpenAPI、文档门禁和每次对话六步协议与参考仓库对齐。该长期标准由 AGENTS 和 REQ-014 持续约束后续任务。
 
 Stage 13 的可离线工程工作已收口：Android 本地基础体验覆盖任务、奖励、钱包、成长、防沉迷、报告和更新，五区响应式前端与 0.2.0 APK 构建通过。当前只缺真机/平板运行态和重启持久化回放，因此保持 `BLOCKED`；服务端生产闭环仍由 Stage 3–10 后续深化。
 
-Stage 14 按用户最新指令把 GitHub Release 热更新提升为当前 P0。GitHub CLI 已认证为 `Workworks`，目标公开仓库名 `family-growth` 可用；首次未提交工作树将在公开前审计后按 Stage 归属提交。
+Stage 14 按用户最新指令把 GitHub Release 热更新提升为当前 P0。公开仓库、分阶段提交、main 推送和 Android 更新源绑定均已完成；当前 GitHub Secrets/Release 为空，只缺稳定签名身份与长期备份确认，以及真机覆盖升级。
 
 ## 关键决策快照
 

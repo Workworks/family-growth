@@ -1,0 +1,73 @@
+{
+  "capturedAt": "2026-08-25T17:30:00+08:00",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+  "shellType": "PowerShell",
+  "passed": false,
+  "summary": "The public GitHub repository, stage-oriented Git history, origin/main push and Android repository binding are complete. Stable-signed Release creation and physical-device overlay update remain blocked on signing-key backup approval and a device.",
+  "repository": {
+    "nameWithOwner": "Workworks/family-growth",
+    "url": "https://github.com/Workworks/family-growth",
+    "visibility": "PUBLIC",
+    "defaultBranch": "main"
+  },
+  "commits": [
+    { "sha": "26a37f5", "subject": "feat(stage-2): add backend foundation" },
+    { "sha": "99fdb02", "subject": "feat(stage-11): add GitHub Release updater" },
+    { "sha": "3f99f8b", "subject": "feat(stage-13): add local family experience and responsive UI" },
+    { "sha": "818a603", "subject": "docs(stage-12): align repository governance" },
+    { "sha": "a84b578", "subject": "chore(stage-14): prioritize public release delivery" }
+  ],
+  "commands": [
+    {
+      "command": "gh auth status; gh repo view Workworks/family-growth",
+      "exitCode": 0,
+      "passed": true,
+      "result": "GitHub CLI authenticated as Workworks; target repository name was available before creation."
+    },
+    {
+      "command": "tracked-candidate size, ignore and secret-pattern audit",
+      "exitCode": 0,
+      "passed": true,
+      "result": "141 publish candidates; no candidate above 5 MiB; APKs, local.properties, keystores and local build caches ignored; no token, private key or non-placeholder password found."
+    },
+    {
+      "command": "gh repo create Workworks/family-growth --public --source=. --remote=origin --push",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Public repository created; main pushed and configured to track origin/main."
+    },
+    {
+      "command": ".\\gradlew.bat testDebugUnitTest lintDebug assembleDebug",
+      "workingDirectory": "family-growth-android",
+      "exitCode": 0,
+      "passed": true,
+      "result": "53-task gate succeeded; 10 JVM tests, lintDebug and assembleDebug passed with repository binding enabled."
+    },
+    {
+      "command": "aapt dump badging; apksigner verify; generated BuildConfig inspection",
+      "exitCode": 0,
+      "passed": true,
+      "result": "0.2.0/versionCode 3 APK verified with debug v2 signature; BuildConfig.GITHUB_REPOSITORY is Workworks/family-growth."
+    },
+    {
+      "command": "gh secret list; gh api repos/Workworks/family-growth/releases/latest",
+      "exitCode": 1,
+      "passed": false,
+      "result": "No release-signing secrets are configured and the latest Release endpoint returns 404; stable Release is BLOCKED, not treated as a failed implementation."
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dist/family-growth-0.2.0-debug.apk",
+      "versionName": "0.2.0",
+      "versionCode": 3,
+      "sizeBytes": 17181880,
+      "sha256": "348C5E0BF08926E079D659520BC7B0CC45259D5BDC947BF63473F93162A19C83",
+      "signing": "Android Debug; APK Signature Scheme v2; not uploaded to Git history or represented as production"
+    }
+  ],
+  "blockers": [
+    "A stable Android release keystore and long-term backup location must be supplied or explicitly authorized for generation before GitHub signing secrets and a production Release can be created.",
+    "A physical Android device or working emulator is required for same-signature overlay update and data-retention acceptance."
+  ]
+}

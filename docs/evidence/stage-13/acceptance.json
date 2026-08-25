@@ -37,8 +37,8 @@
       "applicationId": "com.familygrowth.android",
       "versionName": "0.2.0",
       "versionCode": 3,
-      "sizeBytes": 17159486,
-      "sha256": "A0234C4233FAB6D2A264C5F258955E953AC1104CC6EDED2AB8A5E4C8CE6C853B",
+      "sizeBytes": 17181880,
+      "sha256": "348C5E0BF08926E079D659520BC7B0CC45259D5BDC947BF63473F93162A19C83",
       "signing": "Android Debug; APK Signature Scheme v2"
     },
     {
@@ -49,7 +49,7 @@
   "limitations": [
     "No working physical Android device or emulator is available, so installation, launch, responsive rendering, PIN interaction, one-minute usage timer and restart persistence are NOT_RUN.",
     "The baseline stores state in app-private SharedPreferences and uses a local BCrypt PIN. It does not claim production server authentication, multi-device synchronization or encrypted business data storage.",
-    "The APK is debug-signed and has no configured GITHUB_REPOSITORY because the local Git repository has no remote.",
+    "The Stage 14 rebuild is debug-signed and binds GITHUB_REPOSITORY to the public Workworks/family-growth repository; no stable-signed GitHub Release exists yet.",
     "AGP 8.7.3 emits an existing compatibility warning for compileSdk 36 because it was tested through 35."
   ]
 }
