@@ -1,6 +1,6 @@
 # Stage 7：VirtualFund、NAV、订单、持仓与费用闭环
 
-状态：`NOT_STARTED`
+状态：`IN_PROGRESS`
 
 产品 Phase：6　需求：REQ-008、REQ-009、REQ-020
 

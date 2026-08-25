@@ -80,3 +80,5 @@
 | 72 | 8–10 | 补齐后续 Stage 可执行 Spec | 新增 Android 生产接入、跨域报告、部署/发布/总验收的边界、不变量和编号完成标准 | Stage 8–10 报告 |
 | 73 | 5 | 完成 GiftMoney 与双向兑换闭环 | 新增 Flyway V4、版本化规则、十分钟费用预览、教育声明、钱包锁、Money/Coin 同组双分录、幂等与权限 API | Stage 5 代码/OpenAPI |
 | 74 | 5/6 | PostgreSQL 收口并启动 Stage 6 | H2 全量回归及 PostgreSQL 16.15 V1–V4/API/权限/规则漂移/余额回滚门禁通过；隔离容器已移除 | `evidence/stage-5/acceptance.json` |
+| 75 | 6 | 完成 RewardShop、Saving 与 Wish | 新增 Flyway V5、家长审批后扣 Coin/库存、拒绝/取消零扣款、Wallet↔Saving 守恒转移、显式愿望分配与服务端权限 | Stage 6 代码/OpenAPI |
+| 76 | 6/7 | PostgreSQL 收口并启动 Stage 7 | H2/PostgreSQL 16.15 全量门禁通过；并发双审核仅一笔成功，测试容器已移除 | `evidence/stage-6/acceptance.json` |

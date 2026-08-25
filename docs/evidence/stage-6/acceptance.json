@@ -1,0 +1,20 @@
+{
+  "capturedAt": "2026-08-25T23:25:00+08:00",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+  "shellType": "PowerShell",
+  "passed": true,
+  "summary": "Stage 6 reward order, internal saving and evidence-based wish progress loops passed H2 and PostgreSQL 16.15 gates.",
+  "environment": { "java": "17.0.8", "postgres": "16.15", "postgresImage": "postgres:16-alpine", "containerLifecycle": "isolated localhost-only container removed after gate" },
+  "commands": [
+    { "command": "mvn -q -pl family-growth-boot -am test", "exitCode": 0, "passed": true, "result": "H2 full regression passed with Flyway V1-V5." },
+    { "command": "start isolated PostgreSQL 16 container; set datasource environment; mvn -q -pl family-growth-boot -am test", "exitCode": 0, "passed": true, "result": "PostgreSQL 16.15 full API, schema and concurrent order review suite passed." }
+  ],
+  "acceptance": {
+    "AC6-01": "PASS - approve debits Coin exactly once; reject and cancel do not debit.",
+    "AC6-02": "PASS - disabled inventory and conflicting reviews are rejected; parent-only decisions enforced.",
+    "AC6-03": "PASS - deposit and withdrawal conserve wallet plus saving Money and append immutable wallet ledger entries.",
+    "AC6-04": "PASS - wish progress derives from explicit allocation bounded by saving balance.",
+    "AC6-05": "PASS - H2 and PostgreSQL migration/API/concurrency gates passed."
+  },
+  "security": { "realCommerce": false, "realBankAccount": false, "childApprovalDenied": true, "secretsInEvidence": false }
+}

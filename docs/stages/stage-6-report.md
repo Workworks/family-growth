@@ -1,6 +1,6 @@
 # Stage 6：RewardShop、Saving 与 Wish 闭环
 
-状态：`IN_PROGRESS`
+状态：`COMPLETED`
 
 产品 Phase：5　需求：REQ-001、REQ-005、REQ-020
 
@@ -20,19 +20,21 @@
 
 | ID | 状态 | 内容 |
 | --- | --- | --- |
-| WP6-1 | 待开始 | 奖励商品与订单状态机 |
-| WP6-2 | 待开始 | 批准扣 Coin、库存/启用校验与幂等 |
-| WP6-3 | 待开始 | 储蓄账户转移、愿望目标和进度 |
-| WP6-4 | 待开始 | 权限、并发、守恒和 PostgreSQL 测试 |
+| WP6-1 | 已完成 | 奖励商品与订单状态机 |
+| WP6-2 | 已完成 | 批准扣 Coin、库存/启用校验与幂等 |
+| WP6-3 | 已完成 | 储蓄账户转移、愿望目标和进度 |
+| WP6-4 | 已完成 | 权限、并发、守恒和 PostgreSQL 测试 |
 
 ## 完成标准
 
-- [ ] AC6-01 奖励订单批准只扣一次 Coin，拒绝/取消不扣款。
-- [ ] AC6-02 禁用商品、余额不足、重复审核和跨家庭请求无副作用。
-- [ ] AC6-03 储蓄转入/转出前后家庭 Money 总资产守恒且流水可追踪。
-- [ ] AC6-04 愿望进度来源于明确目标与储蓄分配，不伪造余额。
-- [ ] AC6-05 PostgreSQL 迁移、约束、API 和并发门禁通过。
+- [x] AC6-01 PASS：批准只追加一次 Coin Ledger；拒绝和取消不扣 Coin。
+- [x] AC6-02 PASS：禁用商品、余额不足、不同幂等键重复审核返回 409；家庭/孩子对象权限复用服务端会话门禁。
+- [x] AC6-03 PASS：储蓄转入/转出同时更新 Wallet 与 Saving，数据库和领域双重校验总 Money 守恒并保留交易/流水。
+- [x] AC6-04 PASS：愿望进度仅由 target 与显式 allocatedAmount 计算，总分配不得超过真实 Saving balance。
+- [x] AC6-05 PASS：Flyway V1–V5、H2/PostgreSQL 16.15 全量回归和并发双审核门禁通过。
 
 ## 安全检查、已知限制与交接
 
 RewardShop 是家庭约定奖励，不代表真实电商；Saving 只属于内部教育账本，不计真实利息。
+
+实现入口：`Stage6Models`、`Stage6Service`、`JdbcStage6Store`、`Stage6Controller` 和 Flyway `V5__stage6_reward_saving_wish.sql`。证据：[Stage 6 acceptance](../evidence/stage-6/acceptance.json)。

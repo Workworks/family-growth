@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: Family Growth API
-  version: 0.5.0
-  description: Stage 3–5 生产认证、成长任务、Wallet/Ledger、压岁钱与双向兑换 API。
+  version: 0.6.0
+  description: Stage 3–6 生产认证、成长任务、账本兑换、奖励商店、储蓄与愿望 API。
 servers:
   - url: /api/v1
 security:
@@ -395,6 +395,74 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/Conflict' }
+  /families/{familyId}/reward-products:
+    get:
+      operationId: listRewardProducts
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - { name: activeOnly, in: query, schema: { type: boolean, default: true } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      operationId: createRewardProduct
+      parameters: [ { $ref: '#/components/parameters/FamilyId' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RewardProductRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /families/{familyId}/children/{childId}/reward-orders:
+    post:
+      operationId: createRewardOrder
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RewardOrderRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/reward-orders/{orderId}/review:
+    post:
+      operationId: reviewRewardOrder
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - { name: orderId, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [approved], properties: { approved: { type: boolean } } } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/reward-orders/{orderId}/cancel:
+    post:
+      operationId: cancelRewardOrder
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - { name: orderId, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/saving:
+    get:
+      operationId: getSavingAccount
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/children/{childId}/saving/transfers:
+    post:
+      operationId: transferSaving
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SavingTransferRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '403': { $ref: '#/components/responses/Forbidden' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/wishes:
+    get:
+      operationId: listWishes
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } }
+    post:
+      operationId: createWish
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/WishRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /families/{familyId}/wishes/{wishId}/allocation:
+    post:
+      operationId: allocateWish
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - { name: wishId, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [amount], properties: { amount: { type: number, minimum: 0, multipleOf: 0.01 } } } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
 components:
   securitySchemes:
     bearerAuth:
@@ -616,6 +684,30 @@ components:
       properties:
         direction: { type: string, enum: [MONEY_TO_COIN, COIN_TO_MONEY] }
         sourceAmount: { type: number, minimum: 0.01, multipleOf: 0.01 }
+    RewardProductRequest:
+      type: object
+      required: [title, coinCost, stockCount, active]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 120 }
+        coinCost: { type: integer, format: int64, minimum: 1 }
+        stockCount: { type: integer, minimum: 0, maximum: 1000000 }
+        active: { type: boolean }
+    RewardOrderRequest:
+      type: object
+      required: [productId]
+      properties: { productId: { type: string, format: uuid } }
+    SavingTransferRequest:
+      type: object
+      required: [direction, amount]
+      properties:
+        direction: { type: string, enum: [DEPOSIT, WITHDRAW] }
+        amount: { type: number, minimum: 0.01, multipleOf: 0.01 }
+    WishRequest:
+      type: object
+      required: [title, targetAmount]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 120 }
+        targetAmount: { type: number, minimum: 0.01, multipleOf: 0.01 }
     ApiError:
       type: object
       required: [code, message]

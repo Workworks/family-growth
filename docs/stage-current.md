@@ -11,8 +11,8 @@
 | 3 | 2 | 生产认证、TaskCompletion、审核与奖励 | `COMPLETED` | PostgreSQL 16.15 完整 API 与权限门禁通过 |
 | 4 | 3 | Wallet/Ledger 生产闭环 | `COMPLETED` | 调账、幂等、非负、对账和 PostgreSQL 并发门禁通过 |
 | 5 | 4 | GiftMoney、兑换规则与 Coin | `COMPLETED` | H2/PostgreSQL 双向兑换、透明费用和账本门禁通过 |
-| 6 | 5 | RewardShop、Saving 与 Wish | `IN_PROGRESS` | 建设订单审批扣 Coin、储蓄守恒和愿望进度 |
-| 7 | 6 | 纯模拟基金 | `NOT_STARTED` | Stage 6 通过后推进 |
+| 6 | 5 | RewardShop、Saving 与 Wish | `COMPLETED` | H2/PostgreSQL 订单、储蓄守恒、愿望和并发门禁通过 |
+| 7 | 6 | 纯模拟基金 | `IN_PROGRESS` | 建设 NAV、费用预览、买卖订单、持仓与盈亏 |
 | 11 | 计划外 | GitHub Release APK 热更新与当前版本交付 | `BLOCKED` | v0.2.0/0.2.1/0.2.2 同签名 Release 已完成；只需 Android 设备回放 App 内覆盖升级 |
 | 12 | 计划外 | 参考仓库文档治理与 Agent 启动协议对齐 | `COMPLETED` | 后续每次对话持续执行 AGENTS Step 1–6 和需求永久登记 |
 | 13 | 计划外 | Stage 2–11 基础体验宽度与 Android 前端完善 | `BLOCKED` | 代码、自动化和 0.2.0 APK 已交付；需 Android 真机/平板回放交互、计时与重启持久化 |
@@ -29,9 +29,9 @@ Stage 13 的可离线工程工作已收口：Android 本地基础体验覆盖任
 
 Stage 14 已完成公开仓库、分阶段提交、main 推送、稳定签名备份/Secrets 和 Android 更新源绑定；Stage 15 又发布 v0.2.2。latest API、digest、版本和三版同证书下载复验均通过。只缺 Android 真机/平板覆盖升级与数据保留，因此保持 `BLOCKED`。
 
-REQ-020/REQ-022 已恢复 Stage 3–10 生产闭环。Stage 3–5 已完成认证、任务奖励、Wallet/Ledger、GiftMoney 与双向兑换；Stage 6 正在推进，后续不跨越交易门禁提前标记完成。
+REQ-020/REQ-022 已恢复 Stage 3–10 生产闭环。Stage 3–6 已完成认证、任务奖励、Wallet/Ledger、兑换、商店、储蓄与愿望；Stage 7 正在推进，后续不跨越交易门禁提前标记完成。
 
-REQ-021 将“儿童最佳利益、3 岁起、极简低刺激、无操纵设计”提升为最高产品行为准则。Stage 15 可离线代码、13 项 JVM 测试、lint、debug/release 构建和稳定签名 0.2.2 APK 已通过；真实平板验收阻塞。Stage 6 现在是 Agent 主线。
+REQ-021 将“儿童最佳利益、3 岁起、极简低刺激、无操纵设计”提升为最高产品行为准则。Stage 15 可离线代码、13 项 JVM 测试、lint、debug/release 构建和稳定签名 0.2.2 APK 已通过；真实平板验收阻塞。Stage 7 现在是 Agent 主线。
 
 ## 关键决策快照
 
