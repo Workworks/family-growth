@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.familygrowth.android.core.*
+import com.familygrowth.android.remote.ConnectionState
 import com.familygrowth.android.update.UpdateUiState
 import com.familygrowth.android.update.UpdateViewModel
 import java.math.BigDecimal
@@ -293,12 +294,14 @@ private fun FundCard(viewModel: FamilyAppViewModel, onBuy: () -> Unit, onNav: ()
 fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel) {
     if (viewModel.mode != AppMode.PARENT) return
     var showUsage by remember { mutableStateOf(false) }
+    var showConnection by remember { mutableStateOf(false) }
     val state = viewModel.state
     val approved = state.tasks.count { it.status == TaskStatus.APPROVED }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
-            SectionTitle("本机家长中心", "PIN 只保护当前设备；生产服务端授权将在后续深化")
+            SectionTitle("家庭家长中心", "可连接自有服务端；Token 仅保留在本次 App 进程内")
         }
+        item { ServiceConnectionCard(viewModel) { showConnection = true } }
         item {
             BoxWithConstraints {
                 val wide = maxWidth >= 720.dp
@@ -314,13 +317,49 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
         item { UpdatePanel(updateViewModel) }
         item {
             GrowthCard {
-                SectionTitle("基础版边界", "先完成宽度，深度定制后移")
-                Text("已覆盖：任务、审核奖励、钱包流水、压岁钱、兑换、商店、储蓄、愿望、模拟基金、本 App 用时和更新入口。")
-                Text("待深化：服务端登录/RBAC、多端同步、图片凭证、复杂规则、通知、系统级跨 App 管控和正式发布。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                SectionTitle("生产接入边界", "服务端授权是最终边界")
+                Text("连接后同步任务、钱包和今日审核数据；孩子提交与家长确认写入真实服务端账本。")
+                Text("离线本机数据仍可使用，但明确标为本机状态；不把断线操作伪装成已同步。", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
     if (showUsage) UsageDialog(state.usage, { showUsage = false }) { daily, session -> viewModel.updateUsage(daily, session); showUsage = false }
+    if (showConnection) ServiceConnectionDialog(viewModel) { showConnection = false }
+}
+
+@Composable
+private fun ServiceConnectionCard(viewModel: FamilyAppViewModel, configure: () -> Unit) {
+    GrowthCard {
+        SectionTitle("家庭服务", "HTTPS；开发版可连接 loopback/私网 HTTP")
+        when (val connection = viewModel.connectionState) {
+            ConnectionState.Disconnected -> { Text("未连接，当前页面显示本机状态。", color = MaterialTheme.colorScheme.onSurfaceVariant); Button(onClick = configure) { Text("连接服务") } }
+            ConnectionState.Connecting -> { LinearProgressIndicator(Modifier.fillMaxWidth()); Text("正在安全登录并同步…") }
+            ConnectionState.Expired -> { Text("会话已过期，Token 已从内存清除。", color = MaterialTheme.colorScheme.error); Button(onClick = configure) { Text("重新登录") } }
+            is ConnectionState.Error -> { Text(connection.message, color = MaterialTheme.colorScheme.error); Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = configure) { Text("检查连接") }; TextButton(onClick = viewModel::disconnectService) { Text("清除") } } }
+            is ConnectionState.Connected -> {
+                val snapshot = connection.snapshot
+                StatusDot("已同步 · ${snapshot.childName}", GrowthColors.Emerald)
+                Text("服务端任务 ${snapshot.tasks.size} · 待审核 ${snapshot.pendingReviews} · 今日完成 ${snapshot.approvedToday}")
+                Text("Money ¥${snapshot.money} · Coin ${snapshot.coin}", fontFamily = FontFamily.Monospace)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = viewModel::refreshService) { Text("同步") }; TextButton(onClick = viewModel::disconnectService) { Text("断开并清除 Token") } }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ServiceConnectionDialog(viewModel: FamilyAppViewModel, dismiss: () -> Unit) {
+    var base by remember { mutableStateOf("") }; var family by remember { mutableStateOf("") }; var parent by remember { mutableStateOf("") }; var child by remember { mutableStateOf("") }; var pin by remember { mutableStateOf("") }
+    AlertDialog(onDismissRequest = dismiss, title = { Text("连接家庭服务") }, text = {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("这些标识只用于本次连接；PIN 与 Token 不写入本地文件或日志。", style = MaterialTheme.typography.bodySmall)
+            LabeledField(base,{base=it},"服务地址（例如 https://family.example）")
+            LabeledField(family,{family=it.trim()},"Family ID")
+            LabeledField(parent,{parent=it.trim()},"Parent ID")
+            LabeledField(child,{child=it.trim()},"Child ID")
+            LabeledField(pin,{pin=it.filter(Char::isDigit).take(6)},"6 位服务端 PIN")
+        }
+    }, confirmButton = { Button(onClick = { viewModel.connectService(base,family,parent,child,pin);dismiss() }, enabled = base.isNotBlank()&&family.isNotBlank()&&parent.isNotBlank()&&child.isNotBlank()&&pin.length==6) { Text("登录并同步") } }, dismissButton = { TextButton(onClick = dismiss) { Text("取消") } })
 }
 
 @Composable

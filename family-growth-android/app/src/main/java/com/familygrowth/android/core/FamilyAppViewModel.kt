@@ -6,11 +6,17 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.familygrowth.android.BuildConfig
+import com.familygrowth.android.remote.*
+import kotlinx.coroutines.launch
 import org.mindrot.jbcrypt.BCrypt
 import java.math.BigDecimal
 
 class FamilyAppViewModel(application: Application) : AndroidViewModel(application) {
     private val store = LocalFamilyStore(application)
+    private val remote = RemoteFamilyRepository(HttpFamilyApiTransport(), MemorySessionStore(), BuildConfig.DEBUG)
+    private var remoteCompletionByTask: Map<String, String> = emptyMap()
 
     var state by mutableStateOf(FamilyLocalState())
         private set
@@ -23,6 +29,8 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     var hasParentPin by mutableStateOf(store.hasPin())
         private set
     var sessionUsedMinutes by mutableIntStateOf(0)
+        private set
+    var connectionState by mutableStateOf<ConnectionState>(ConnectionState.Disconnected)
         private set
 
     val isChildLocked: Boolean get() = mode == AppMode.CHILD &&
@@ -67,8 +75,15 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
 
     fun addTask(title: String, minutes: Int, rewardMoney: BigDecimal, coin: Int, xp: Int) =
         mutate { LocalFamilyEngine.addTask(it, title, minutes, rewardMoney, coin, xp) }
-    fun submitTask(id: String) = mutate("任务已提交，等待家长审核") { LocalFamilyEngine.submitTask(it, id) }
-    fun approveTask(id: String) = mutate("审核通过，奖励已进入钱包流水") { LocalFamilyEngine.approveTask(it, id) }
+    fun submitTask(id: String) {
+        if (!remote.hasSession()) return mutate("任务已提交，等待家长审核") { LocalFamilyEngine.submitTask(it, id) }
+        viewModelScope.launch { handleRemote(remote.submitTask(id), "任务已提交，等待家长回应") }
+    }
+    fun approveTask(id: String) {
+        val completion = remoteCompletionByTask[id]
+        if (!remote.hasSession() || completion == null) return mutate("审核通过，奖励已进入钱包流水") { LocalFamilyEngine.approveTask(it, id) }
+        viewModelScope.launch { handleRemote(remote.approveTask(completion), "家长已确认，稳定奖励已进入服务端账本") }
+    }
     fun depositGift(amount: BigDecimal) = mutate("压岁钱已按 1:1 存入") { LocalFamilyEngine.depositGiftMoney(it, amount) }
     fun exchange(amount: BigDecimal) = mutate("兑换完成") { LocalFamilyEngine.exchangeMoneyToCoin(it, amount) }
     fun withdraw(amount: BigDecimal) = mutate("零钱回收申请已提交，家长确认后才会扣款") { LocalFamilyEngine.requestWithdrawal(it, amount) }
@@ -83,6 +98,38 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     fun updateNav(nav: BigDecimal) = mutate("教学 NAV 已更新") { LocalFamilyEngine.updateFundNav(it, nav) }
     fun updateUsage(daily: Int, session: Int) = mutate("本机防沉迷规则已更新") { LocalFamilyEngine.updateUsagePolicy(it, daily, session) }
     fun clearMessage() { message = null }
+
+    fun connectService(baseUrl: String, familyId: String, parentId: String, childId: String, pin: String) {
+        if (connectionState == ConnectionState.Connecting) return
+        connectionState = ConnectionState.Connecting
+        viewModelScope.launch { handleRemote(remote.connect(baseUrl, familyId, parentId, childId, pin), "已连接并同步家庭服务") }
+    }
+    fun refreshService() {
+        connectionState = ConnectionState.Connecting
+        viewModelScope.launch { handleRemote(remote.refresh(), "已同步最新数据") }
+    }
+    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); connectionState = ConnectionState.Disconnected; message = "已断开；服务端 Token 已从内存清除" }
+
+    private fun handleRemote(result: RemoteResult<RemoteSnapshot>, success: String) {
+        when (result) {
+            is RemoteResult.Ok -> {
+                val snapshot = result.value
+                remoteCompletionByTask = snapshot.tasks.mapNotNull { task -> task.completionId?.let { task.id to it } }.toMap()
+                state = state.copy(
+                    tasks = snapshot.tasks.map { task -> LocalGrowthTask(
+                        id = task.id, title = task.title, minutes = task.minutes,
+                        moneyReward = BigDecimal.ZERO.setScale(2), coinReward = 10, xpReward = 10,
+                        status = when (task.status) { "SUBMITTED" -> TaskStatus.SUBMITTED; "APPROVED" -> TaskStatus.APPROVED; else -> TaskStatus.TODO },
+                    ) },
+                    wallet = state.wallet.copy(money = snapshot.money, coin = snapshot.coin),
+                )
+                connectionState = ConnectionState.Connected(snapshot)
+                message = success
+            }
+            RemoteResult.Unauthorized -> { remoteCompletionByTask = emptyMap(); connectionState = ConnectionState.Expired; message = "登录已过期，请由家长重新连接" }
+            is RemoteResult.Failure -> { connectionState = ConnectionState.Error(result.message); message = result.message }
+        }
+    }
 
     private fun mutate(success: String? = null, operation: (FamilyLocalState) -> FamilyLocalState) {
         runCatching { operation(state) }

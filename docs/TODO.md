@@ -11,7 +11,8 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P0 | 8 | `IN_PROGRESS` | 完成 Android 生产 API 客户端、会话内存化、家庭/孩子核心同步与错误状态 | Agent | Stage 8 Spec/证据/commit |
+| P0 | 9 | `IN_PROGRESS` | 完成使用策略/事件、跨域家庭报告、E2E 和 PostgreSQL 门禁 | Agent | Stage 9 Spec/证据/commit |
+| P0 | 8 | `BLOCKED` | 平板回放生产登录同步、孩子提交、家长确认、旋转和无障碍；代码/JVM/lint/build 已过 | 用户提供设备；Agent 回放 | Stage 8 真机证据 |
 | P0 | 15 | `BLOCKED` | 用 Android 平板回放三入口、单任务、TalkBack、字体放大和温和限时退出 | 用户提供设备；Agent 回放 | Stage 15 真机证据 |
 | P0 | 14 | `BLOCKED` | 用 Android 真机/平板安装 0.2.1 release，通过 App 更新至 0.2.2 并验证数据保留/失败路径 | 用户提供设备；Agent 回放 | Stage 14/15 真机证据 |
 | P0 | 2 | `BLOCKED` | 连接 Android 真机/平板，或明确授权重装共享 API 34 system image | 用户提供条件；Agent 回放 | 安装、启动、旋转、截图与结构化证据 |
@@ -22,8 +23,8 @@
 
 | 顺序 | Stage | 主题 | 前置条件 |
 | ---: | ---: | --- | --- |
-| 1 | 8 | Android 生产接入 | Stage 7 已完成，当前推进 |
-| 2 | 9–10 | 报告与 V1 总验收 | 需要 Stage 8 完成；真机项依赖 Android 设备 |
+| 1 | 9 | 跨域报告 | Stage 8 可离线实现已完成，当前推进 |
+| 2 | 10 | V1 总验收 | 需要 Stage 9 完成；真机项依赖 Android 设备 |
 
 ## 3. 只能由外部条件解除
 
@@ -33,6 +34,7 @@
 | P1 | 13 | 启用 USB 调试的 Android 真机/平板；可与 Stage 2 同一次回放解除 |
 | P0 | 11/14 | 启用 USB 调试的 Android 真机/平板；仓库、签名和三版 Release 已具备 |
 | P0 | 15 | 启用 USB 调试的 Android 平板/真机，用于儿童端触控和无障碍验收 |
+| P0 | 8 | 启用 USB 调试的 Android 平板/真机，用于生产登录、同步、写入和恢复验收 |
 
 ## 4. 每次任务的维护规则
 

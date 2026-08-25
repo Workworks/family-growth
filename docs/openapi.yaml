@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: Family Growth API
-  version: 0.7.0
-  description: Stage 3–7 生产认证、成长任务、家庭账本与纯模拟基金 API。
+  version: 0.8.0
+  description: Stage 3–8 生产认证、成长任务、家庭账本、纯模拟基金与 Android 同步 API。
 servers:
   - url: /api/v1
 security:
@@ -502,6 +502,12 @@ paths:
       operationId: getFundPosition
       parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { name: fundId, in: path, required: true, schema: { type: string, format: uuid } } ]
       responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/sync:
+    get:
+      operationId: syncChildWorkspace
+      description: Returns the authorized child task states, latest completion ids, wallet and daily review summary for the Android client.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
 components:
   securitySchemes:
     bearerAuth:

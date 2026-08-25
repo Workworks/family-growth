@@ -72,6 +72,18 @@
 
 推进方：用户提供设备；Agent 完成系统安装确认与数据保留验收。
 
+### Stage 8：Android 生产 API 接入
+
+状态：`BLOCKED`　文档：[Stage 8](stages/stage-8-report.md)
+
+已完成：生产 URL 策略、内存 Token、父/子会话、任务/钱包同步、孩子提交、家长确认、401 恢复状态、后端 sync API、JVM/lint/debug/release 构建。
+
+缺少：Android 平板上的真实 HTTPS/局域网连接、触控登录同步、断网/401 恢复、旋转和无障碍回放。
+
+解除条件：连接启用 USB 调试的 Android 平板/真机，并提供可从设备访问的家庭服务地址。
+
+推进方：用户提供设备/可访问服务；Agent 回放并留证。
+
 ## 2. 工程未完成
 
 ### Stage 15：3 岁起儿童端发展适龄改造
@@ -88,11 +100,11 @@
 
 ### Stage 3–10：V1 生产服务端深度业务
 
-状态：Stage 3–7 `COMPLETED`，Stage 8 `IN_PROGRESS`，Stage 9–10 `NOT_STARTED`　文档：[Stage 路线图](stages/stage-roadmap.md)
+状态：Stage 3–7 `COMPLETED`，Stage 8 `BLOCKED`，Stage 9 `IN_PROGRESS`，Stage 10 `NOT_STARTED`　文档：[Stage 路线图](stages/stage-roadmap.md)
 
 Stage 13 已提供这些领域的 Android 本机基础体验，但尚未建设生产级服务端任务完成域、事务 Wallet/Ledger、认证/RBAC、多端同步、复杂配置、跨域报告和 V1 端到端总验收。
 
-当前推进：REQ-020/REQ-022 已启动 Stage 3–10；Stage 3–7 在 PostgreSQL 通过，Stage 8 正在实现 Android 生产接入，Stage 9–10 等待联调门禁。
+当前推进：REQ-020/REQ-022 已启动 Stage 3–10；Stage 3–7 在 PostgreSQL 通过；Stage 8 API/Android 离线门禁已过，缺平板真实登录/同步/写入回放；Stage 9 正在推进。
 
 解除方式：按 Stage 3→10 的 Spec 顺序继续工程开发；每个 Stage 仅在前序门禁通过后进入 `IN_PROGRESS`。
 

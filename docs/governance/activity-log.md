@@ -84,3 +84,5 @@
 | 76 | 6/7 | PostgreSQL 收口并启动 Stage 7 | H2/PostgreSQL 16.15 全量门禁通过；并发双审核仅一笔成功，测试容器已移除 | `evidence/stage-6/acceptance.json` |
 | 77 | 7 | 完成纯模拟基金闭环 | 新增 Flyway V6、NAV 正负变化、版本化费率、十分钟预览、买卖订单、加权成本持仓、费用和 P&L；3–5 岁 CHILD 交易服务端拒绝 | Stage 7 代码/OpenAPI |
 | 78 | 7/8 | PostgreSQL 收口并启动 Stage 8 | H2/PostgreSQL 16.15 V1–V6、并发确认、NAV/规则漂移、超卖和账本门禁通过；测试容器已移除 | `evidence/stage-7/acceptance.json` |
+| 79 | 8 | 完成 Android 生产接入可离线工作包 | 新增 HTTPS/开发私网 URL 策略、内存父/子 Token、401 清理、登录同步卡、任务提交/家长确认和后端 RBAC sync snapshot | Stage 8 Android/后端/OpenAPI |
+| 80 | 8/9 | 收口离线门禁并转 Stage 9 | JVM、MockMvc、lintDebug、debug/release build 通过；无平板故 Stage 8 保持 BLOCKED，Stage 9 可离线推进 | `evidence/stage-8/acceptance.json` |

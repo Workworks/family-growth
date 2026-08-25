@@ -1,6 +1,6 @@
 # Stage 9：跨域闭环、使用统计与家庭报告
 
-状态：`NOT_STARTED`
+状态：`IN_PROGRESS`
 
 产品 Phase：8　需求：REQ-001、REQ-002、REQ-003、REQ-006、REQ-022
 

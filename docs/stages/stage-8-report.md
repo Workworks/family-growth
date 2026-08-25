@@ -1,6 +1,6 @@
 # Stage 8：Android 生产双端核心页面
 
-状态：`IN_PROGRESS`
+状态：`BLOCKED`
 
 产品 Phase：7　需求：REQ-003、REQ-004、REQ-006、REQ-021、REQ-022
 
@@ -21,19 +21,21 @@
 
 | ID | 状态 | 内容 |
 | --- | --- | --- |
-| WP8-1 | 待开始 | 生产 API client、URL/错误/会话模型 |
-| WP8-2 | 待开始 | 家长连接登录、同步状态和认证过期恢复 |
-| WP8-3 | 待开始 | 家长/孩子核心数据映射与适龄路由 |
-| WP8-4 | 待开始 | JVM/Compose、lint、debug/release 和平板验收 |
+| WP8-1 | 已完成 | 生产 API client、URL/错误/会话模型 |
+| WP8-2 | 已完成 | 家长连接登录、同步状态和认证过期恢复 |
+| WP8-3 | 已完成 | 家长/孩子核心数据映射与适龄路由 |
+| WP8-4 | 外部阻塞 | JVM/lint/debug/release 已过；Compose 真机/平板验收缺设备 |
 
 ## 完成标准
 
-- [ ] AC8-01 合法服务地址可登录同步；无效/非受控明文地址拒绝且不发请求。
-- [ ] AC8-02 Token 只驻内存，401 清空会话；网络/服务错误显示可恢复状态。
-- [ ] AC8-03 家长核心页面读取生产任务/钱包/报告，写操作具幂等键和真实结果。
-- [ ] AC8-04 CHILD 三入口、单任务、家长协助和复杂财商隐藏门禁持续通过。
-- [ ] AC8-05 JVM/Compose/lint/debug/release 通过；平板真实触控缺设备时保持 BLOCKED。
+- [x] AC8-01 PASS（自动化）：HTTPS 与开发版 loopback/私网 HTTP 地址策略通过；生产 manifest 禁止明文，debug overlay 才显式允许。
+- [x] AC8-02 PASS（自动化）：父/子 Token 仅由 `MemorySessionStore` 持有；401 单测清空会话并进入 Expired；错误态可重连。
+- [x] AC8-03 PASS（代码/API）：受 RBAC 保护的 sync snapshot 返回任务、completion、钱包和今日摘要；孩子提交/家长确认使用随机独立幂等键并回读 snapshot。
+- [x] AC8-04 PASS（静态/JVM）：既有 CHILD 三入口与复杂财商隐藏策略未改变；服务端继续拒绝 3–5 岁 CHILD 基金交易。
+- [ ] AC8-05 BLOCKED：JVM、lintDebug、assembleDebug、assembleRelease 通过；无 Android 平板，Compose 真实触控/旋转/无障碍无法执行。
 
 ## 安全检查、已知限制与交接
 
 家庭局域网生产默认要求可信 HTTPS；仅开发构建可显式使用 loopback/私网 HTTP。证书信任错误不得降级忽略。
+
+实现入口：Android `remote/`、`FamilyAppViewModel`、家长服务连接卡；后端 `Stage8Models/Service/Store/Controller` 的 `/sync` 聚合接口。证据：[Stage 8 acceptance](../evidence/stage-8/acceptance.json)。设备到位后只需回放 AC8-05，不影响 Stage 9 可离线后端推进。

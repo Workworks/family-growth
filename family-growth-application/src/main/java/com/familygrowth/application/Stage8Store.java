@@ -1,0 +1,1 @@
+package com.familygrowth.application;import com.familygrowth.domain.Stage8Models.ChildSyncSnapshot;import java.time.Instant;import java.util.UUID;public interface Stage8Store{ChildSyncSnapshot snapshot(UUID familyId,UUID childId,Instant now);}

@@ -44,6 +44,7 @@
 | POST | `/families/{familyId}/children/{childId}/funds/{fundId}/trade-previews` | PARENT/适龄 CHILD 本人 | 预览 NAV、费用、净额和份额；3–5 岁 CHILD 会话拒绝 |
 | POST | `/families/{familyId}/fund-trade-previews/{previewId}/confirm` | PARENT/适龄 CHILD 本人 | 幂等确认，NAV/规则漂移返回 409 |
 | GET | `/families/{familyId}/children/{childId}/funds/{fundId}/position` | PARENT/CHILD 本人 | 返回份额、加权成本、市值和已实现/未实现损益 |
+| GET | `/families/{familyId}/children/{childId}/sync` | PARENT/CHILD 本人 | Android 聚合同步任务/最新 Completion、钱包和今日审核摘要 |
 
 批准审核会锁定 Completion 与 Wallet；Coin/Money 流水先追加，再在同一事务更新余额和 Completion。重复提交返回首次结果；重复/冲突审核返回 409，不能重复发奖。XP 的奖励事实保存在 Completion 快照并更新 `child_progress`。
 
