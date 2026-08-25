@@ -74,6 +74,18 @@
 
 ## 2. 工程未完成
 
+### Stage 15：3 岁起儿童端发展适龄改造
+
+状态：`BLOCKED`　文档：[Stage 15](stages/stage-15-report.md)
+
+已完成：长期准则、发展依据、CHILD 三入口/单任务/简化财商、13 项 JVM 测试、debug/release lint/构建和稳定签名 0.2.2 APK。
+
+缺少：平板横屏真实触控、TalkBack、字体放大、Reduced Motion 和温和限时退出回放。
+
+解除方式：用户提供设备后完成真实可用性验收。
+
+推进方：用户提供最终设备条件；Agent 回放并留证据。
+
 ### Stage 3–10：V1 生产服务端深度业务
 
 状态：Stage 3–4 `COMPLETED`，Stage 5 `IN_PROGRESS`，Stage 6–10 `NOT_STARTED`　文档：[Stage 路线图](stages/stage-roadmap.md)

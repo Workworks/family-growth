@@ -27,6 +27,15 @@ object GrowthColors {
     val Coral = Color(0xFFD95757)
 }
 
+object ChildColors {
+    val Paper = Color(0xFFF7F8F3)
+    val Ink = Color(0xFF24332D)
+    val Moss = Color(0xFF3D6B57)
+    val Mist = Color(0xFFDDE7DF)
+    val Sun = Color(0xFFE7B84B)
+    val Coral = Color(0xFFC96B5A)
+}
+
 private val LightColors = lightColorScheme(
     primary = GrowthColors.Emerald,
     onPrimary = Color.White,

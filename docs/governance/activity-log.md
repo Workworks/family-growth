@@ -68,3 +68,9 @@
 | 60 | 3/4 | 完成 Stage 3 并启动 Stage 4 | H2 与 PostgreSQL 16.15 全 API 门禁通过；OpenAPI 3.1/11 paths 可解析；Stage 3 收口，Stage 4 转 IN_PROGRESS | Stage 3 evidence、Stage 4 Spec |
 | 61 | 4 | 完成通用 Wallet/Ledger 闭环 | 新增家长正负调账、强制原因/幂等键、数据库唯一约束和对账 API；PostgreSQL 两笔并发 -7/10 仅一笔成功，余额 3 且对账通过 | Stage 4 evidence |
 | 62 | 4/5 | 收口 Stage 4 并启动 Stage 5 | H2/PG、权限、超扣、重放、并发与对账门禁完成；Stage 5 转 IN_PROGRESS | Stage 4/5 报告 |
+| 63 | 15 | 用户提升儿童端发展适龄原则为最高准则 | 登记 REQ-021/P0；儿童端从 3 岁起，儿童最佳利益优先于留存/时长/奖励/金融完整度，Stage 5 暂让位但保留真实状态 | AGENTS、codex-skills、Stage 15 |
+| 64 | 15 | 完成权威依据与两遍设计 Spec | 基于 AAP、WHO、Harvard 与 ICO 形成三入口、单任务、亲子回应、低刺激和无操纵门禁；现有儿童端五区/三币/基金被判定为过载 | `design/36-child-experience-behavioral-baseline.md` |
+| 65 | 15 | 完成 Compose 儿童端收敛 | CHILD 仅保留今天/小任务/我的；首页一个任务/按钮；成长页移除基金、NAV、流水和交易；新安装默认 20/10 分钟且不覆盖已有配置 | Stage 15、Android `ui/`/`core/` |
+| 66 | 15 | 首次本地 release 恢复记录解析 | PowerShell 把 `$label:` 误判为变量名，Gradle 未启动且未输出 secret；改用 `${label}:` 后 release 门禁通过 | Stage 15 evidence 执行注记 |
+| 67 | 15 | 首次 APK 工具定位 | `sdk.dir` 的转义路径解码错误，apksigner/aapt 未执行；改用已记录绝对 SDK 路径后 v2 签名、包名和版本通过 | Stage 15 evidence 执行注记 |
+| 68 | 15 | 完成 0.2.2 本地门禁与交付包 | debug 53 tasks、release 60 tasks 均成功；两侧各 13 项 JVM 测试通过，稳定证书签名 0.2.2/versionCode 5 APK 已复制到 dist | `evidence/stage-15/acceptance.json` |

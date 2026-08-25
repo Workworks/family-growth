@@ -5,7 +5,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.automirrored.rounded.DirectionsRun
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +21,10 @@ import java.math.RoundingMode
 
 @Composable
 fun TodayScreen(viewModel: FamilyAppViewModel) {
+    if (viewModel.mode == AppMode.CHILD) {
+        ChildTodayScreen(viewModel)
+        return
+    }
     val state = viewModel.state
     val approved = state.tasks.count { it.status == TaskStatus.APPROVED }
     val submitted = state.tasks.count { it.status == TaskStatus.SUBMITTED }
@@ -57,6 +62,109 @@ fun TodayScreen(viewModel: FamilyAppViewModel) {
                     LatestLedgerCard(state)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ChildTodayScreen(viewModel: FamilyAppViewModel) {
+    val nextTask = viewModel.state.tasks.firstOrNull { it.status == TaskStatus.TODO }
+    val waiting = viewModel.state.tasks.firstOrNull { it.status == TaskStatus.SUBMITTED }
+    LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(20.dp),
+    ) {
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("今天好。", style = MaterialTheme.typography.displaySmall, color = ChildColors.Ink)
+                Text("我们一次做一件小事。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        item { ChildGrowthPath(if (nextTask != null) 0 else if (waiting != null) 2 else 1) }
+        item {
+            Surface(
+                shape = MaterialTheme.shapes.extraLarge,
+                color = ChildColors.Paper,
+                border = androidx.compose.foundation.BorderStroke(2.dp, ChildColors.Mist),
+            ) {
+                Column(
+                    Modifier.fillMaxWidth().padding(horizontal = 28.dp, vertical = 30.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(18.dp),
+                ) {
+                    Icon(
+                        when { nextTask != null -> Icons.Rounded.Spa; waiting != null -> Icons.Rounded.SupervisorAccount; else -> Icons.Rounded.WbSunny },
+                        contentDescription = null,
+                        tint = ChildColors.Moss,
+                        modifier = Modifier.size(48.dp),
+                    )
+                    Text(
+                        when {
+                            nextTask != null -> "现在做这件事"
+                            waiting != null -> "已经给家长看啦"
+                            else -> "今天的小任务完成了"
+                        },
+                        style = MaterialTheme.typography.titleLarge,
+                        color = ChildColors.Moss,
+                    )
+                    Text(
+                        nextTask?.title ?: waiting?.title ?: "放下平板，去玩一会儿吧。",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = ChildColors.Ink,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    )
+                    Text(
+                        when {
+                            nextTask != null -> "先去做。做好以后，再回来点下面的按钮。"
+                            waiting != null -> "家长看过以后，会告诉你下一步。"
+                            else -> "运动、阅读，或者和家人说说话。"
+                        },
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                    )
+                    if (nextTask != null) {
+                        Button(
+                            onClick = { viewModel.submitTask(nextTask.id) },
+                            modifier = Modifier.fillMaxWidth().heightIn(min = 64.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = ChildColors.Moss),
+                        ) {
+                            Icon(Icons.Rounded.CheckCircle, null, Modifier.size(26.dp))
+                            Spacer(Modifier.width(10.dp))
+                            Text("我做好了，给家长看", style = MaterialTheme.typography.titleLarge)
+                        }
+                    }
+                }
+            }
+        }
+        item {
+            Text(
+                "完成不是比赛。需要帮助时，随时请家长一起。",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ChildGrowthPath(activeStep: Int) {
+    val labels = listOf("看看", "去做", "给家长看")
+    val icons = listOf(Icons.Rounded.Visibility, Icons.AutoMirrored.Rounded.DirectionsRun, Icons.Rounded.SupervisorAccount)
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        labels.forEachIndexed { index, label ->
+            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Surface(
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    color = if (index == activeStep) ChildColors.Sun else ChildColors.Mist,
+                    modifier = Modifier.size(48.dp),
+                ) { Box(contentAlignment = Alignment.Center) { Icon(icons[index], null, tint = ChildColors.Ink, modifier = Modifier.size(24.dp)) } }
+                Text(label, style = MaterialTheme.typography.bodyLarge, fontWeight = if (index == activeStep) FontWeight.Bold else FontWeight.Normal)
+            }
+            if (index < labels.lastIndex) androidx.compose.material3.HorizontalDivider(Modifier.weight(.4f), color = ChildColors.Mist, thickness = 2.dp)
         }
     }
 }
@@ -132,6 +240,10 @@ private fun LatestLedgerCard(state: FamilyLocalState, modifier: Modifier = Modif
 
 @Composable
 fun TasksScreen(viewModel: FamilyAppViewModel) {
+    if (viewModel.mode == AppMode.CHILD) {
+        ChildTasksScreen(viewModel)
+        return
+    }
     var showAdd by remember { mutableStateOf(false) }
     val tasks = viewModel.state.tasks
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
@@ -149,6 +261,81 @@ fun TasksScreen(viewModel: FamilyAppViewModel) {
     if (showAdd) AddTaskDialog({ showAdd = false }) { title, minutes, rewardMoney, coin, xp ->
         viewModel.addTask(title, minutes, rewardMoney, coin, xp)
         showAdd = false
+    }
+}
+
+@Composable
+private fun ChildTasksScreen(viewModel: FamilyAppViewModel) {
+    val todo = viewModel.state.tasks.filter { it.status == TaskStatus.TODO }.take(3)
+    val waitingCount = viewModel.state.tasks.count { it.status == TaskStatus.SUBMITTED }
+    val doneCount = viewModel.state.tasks.count { it.status == TaskStatus.APPROVED }
+    LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("小任务", style = MaterialTheme.typography.headlineMedium)
+                Text("先做第一件。后面的事情不着急。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        if (todo.isEmpty()) {
+            item {
+                GrowthCard {
+                    EmptyInvitation("✓", if (waitingCount > 0) "正在等家长看看" else "现在没有小任务", if (waitingCount > 0) "你已经完成这一步了。" else "去玩、去读书，或者请家长一起想一件小事。")
+                }
+            }
+        } else {
+            item { ChildTaskCard(todo.first(), primary = true) { viewModel.submitTask(todo.first().id) } }
+            if (todo.size > 1) {
+                item {
+                    GrowthCard {
+                        Text("后来再做", style = MaterialTheme.typography.titleLarge)
+                        todo.drop(1).forEach { task ->
+                            Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Rounded.RadioButtonUnchecked, null, tint = ChildColors.Moss)
+                                Text(task.title, Modifier.padding(start = 12.dp), style = MaterialTheme.typography.bodyLarge)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (waitingCount > 0 || doneCount > 0) {
+            item {
+                Surface(shape = MaterialTheme.shapes.large, color = ChildColors.Mist.copy(alpha = .6f)) {
+                    Text(
+                        when {
+                            waitingCount > 0 && doneCount > 0 -> "有小任务正等家长看，也有小任务已经做好了。"
+                            waitingCount > 0 -> "有小任务正等家长看。"
+                            else -> "有小任务已经做好了。"
+                        },
+                        Modifier.fillMaxWidth().padding(20.dp),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = ChildColors.Ink,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChildTaskCard(task: LocalGrowthTask, primary: Boolean, submit: () -> Unit) {
+    Surface(
+        shape = MaterialTheme.shapes.extraLarge,
+        color = ChildColors.Paper,
+        border = androidx.compose.foundation.BorderStroke(if (primary) 2.dp else 1.dp, if (primary) ChildColors.Sun else ChildColors.Mist),
+    ) {
+        Column(Modifier.fillMaxWidth().padding(26.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text("现在做", style = MaterialTheme.typography.titleMedium, color = ChildColors.Moss)
+            Text(task.title, style = MaterialTheme.typography.headlineMedium, color = ChildColors.Ink)
+            Text("做好后给家长看。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Button(onClick = submit, Modifier.fillMaxWidth().heightIn(min = 64.dp), colors = ButtonDefaults.buttonColors(containerColor = ChildColors.Moss)) {
+                Text("我做好了", style = MaterialTheme.typography.titleLarge)
+            }
+        }
     }
 }
 

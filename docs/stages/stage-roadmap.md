@@ -16,6 +16,7 @@
 | 12 | 计划外 | 参考仓库文档治理与 Agent 启动协议对齐 | `COMPLETED` |
 | 13 | 计划外 | Stage 2–11 基础体验宽度与 Android 前端完善 | `BLOCKED` |
 | 14 | 计划外 | 公开 GitHub 仓库、分阶段提交与 Release 更新链 | `BLOCKED` |
+| 15 | 计划外 | 3 岁起儿童端发展适龄改造 | `BLOCKED` |
 
 Stage 11 是用户直接提出的发布能力，编号不代表业务交付顺序；它不改变 Stage 2 的 Android 运行态阻塞，也不代表 Stage 3–10 已启动或完成。
 
@@ -26,3 +27,5 @@ Stage 13 按用户最新优先级已交付 Stage 2–11 的 Android 本地基础
 Stage 14 将 GitHub Release 热更新提升为 P0，负责公开仓库、分 Stage Git 历史、稳定签名 Release 和真实远端更新契约；它延续 Stage 11，但不以仓库创建替代真机覆盖升级。
 
 REQ-020 已恢复 Stage 3–7 生产后端主线。Stage 3–4 已在 PostgreSQL 通过；Stage 5 当前建设 GiftMoney、版本化兑换与透明费用，Stage 6–7 等待前序门禁。
+
+Stage 15 来自 REQ-021 的最高行为准则，优先于普通功能迭代。儿童端可离线代码/自动化已收敛，仅真实平板验收阻塞；Stage 5 因而恢复推进，儿童门禁继续约束其后所有界面和功能。

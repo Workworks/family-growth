@@ -117,6 +117,10 @@ private fun LedgerCard(entry: LocalLedgerEntry) {
 
 @Composable
 fun GrowthScreen(viewModel: FamilyAppViewModel) {
+    if (viewModel.mode == AppMode.CHILD) {
+        ChildGrowthScreen(viewModel)
+        return
+    }
     var dialog by remember { mutableStateOf<GrowthDialog?>(null) }
     var selectedSaving by remember { mutableStateOf<String?>(null) }
     val state = viewModel.state
@@ -131,7 +135,7 @@ fun GrowthScreen(viewModel: FamilyAppViewModel) {
                 else state.rewards.forEach { reward ->
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Column(Modifier.weight(1f)) { Text(reward.title, style = MaterialTheme.typography.titleMedium); Text("${reward.coinPrice} Coin", color = GrowthColors.Amber, fontFamily = FontFamily.Monospace) }
-                        if (viewModel.mode == AppMode.CHILD) Button(onClick = { viewModel.redeemReward(reward.id) }, enabled = state.wallet.coin >= reward.coinPrice) { Text("兑换") }
+                        Button(onClick = { viewModel.redeemReward(reward.id) }, enabled = state.wallet.coin >= reward.coinPrice) { Text("兑换给孩子") }
                     }
                 }
             }
@@ -159,6 +163,81 @@ fun GrowthScreen(viewModel: FamilyAppViewModel) {
         GrowthDialog.FUND_NAV -> AmountDialog("调整教学 NAV", "新 NAV", "只影响模拟持仓市值，可涨也可跌。", dismiss = { dialog = null }, scale = 4) { viewModel.updateNav(it); dialog = null }
         GrowthDialog.SAVING_DEPOSIT -> AmountDialog("存入储蓄目标", "金额", "Money 将转入目标并形成流水。", dismiss = { dialog = null }) { amount -> selectedSaving?.let { viewModel.saveToGoal(it, amount) }; dialog = null }
         null -> Unit
+    }
+}
+
+@Composable
+private fun ChildGrowthScreen(viewModel: FamilyAppViewModel) {
+    val state = viewModel.state
+    LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 20.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text("我的成长", style = MaterialTheme.typography.headlineMedium)
+                Text("看一看就好。要选择时，请家长一起。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        item {
+            GrowthCard {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(18.dp)) {
+                    Surface(shape = androidx.compose.foundation.shape.CircleShape, color = ChildColors.Sun, modifier = Modifier.size(64.dp)) {
+                        Box(contentAlignment = Alignment.Center) { Text("★", style = MaterialTheme.typography.headlineMedium, color = ChildColors.Ink) }
+                    }
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("我的小星星", style = MaterialTheme.typography.titleLarge)
+                        Text("${state.wallet.coin} 颗", style = MaterialTheme.typography.headlineMedium, color = ChildColors.Moss)
+                        Text("完成小任务后，家长会告诉你得到多少。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+        }
+        item {
+            GrowthCard {
+                SectionTitle("家长帮我存起来", "这是家庭里的成长记录")
+                Text("¥${state.wallet.money}", style = MaterialTheme.typography.headlineMedium, color = ChildColors.Moss)
+                Text("想用、想换或想了解时，先和家长说一说。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        item {
+            GrowthCard {
+                SectionTitle("可以期待的家庭奖励", "和家长一起选择")
+                if (state.rewards.isEmpty()) {
+                    EmptyInvitation("☆", "还没有家庭奖励", "家长可以先放进一个一起约定的小奖励。")
+                } else {
+                    state.rewards.take(3).forEach { reward ->
+                        Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text("☆", style = MaterialTheme.typography.headlineSmall, color = ChildColors.Sun)
+                            Text(reward.title, Modifier.padding(start = 12.dp).weight(1f), style = MaterialTheme.typography.bodyLarge)
+                            Text("${reward.coinPrice} 颗星", style = MaterialTheme.typography.bodyLarge, color = ChildColors.Moss)
+                        }
+                    }
+                }
+            }
+        }
+        if (state.wishes.isNotEmpty()) {
+            item {
+                GrowthCard {
+                    SectionTitle("我的小愿望", "慢慢来，不着急")
+                    state.wishes.take(2).forEach { wish ->
+                        Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text("♡", style = MaterialTheme.typography.headlineSmall, color = ChildColors.Coral)
+                            Text(wish.title, Modifier.padding(start = 12.dp), style = MaterialTheme.typography.bodyLarge)
+                        }
+                    }
+                }
+            }
+        }
+        item {
+            Text(
+                "更多事情由家长管理。你可以随时请家长一起看看。",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+            )
+        }
     }
 }
 

@@ -24,6 +24,7 @@
 | REQ-018 | 2026-08-25 | 用户发布优先级与 Git 治理要求 | 把热更新排到最高优先级；由 Agent 使用 GitHub CLI 创建公共仓库；代码按阶段 commit；缺少条件及时说明 | 热更新提升为当前 P0；目标仓库采用已登录账号下可用名 `Workworks/family-growth`；首次未提交工作树按 Stage 所属范围精准暂存，公开前做 secret/二进制审计；正式更新必须使用可长期备份的稳定 release 签名 | P0 | `IN_PROGRESS` | 14（延续 11） | `stages/stage-14-report.md`、`evidence/stage-14/acceptance.json` |
 | REQ-019 | 2026-08-25 | 用户签名授权 | 授权生成新的 Android release 签名，备份到 `E:\FamilyGrowthSigningBackup` | 明确授权 Agent 新建长期 release keystore；私钥备份到指定 E 盘目录，恢复密码与私钥分离存放并限制为当前 Windows 用户访问；四项签名值只写 GitHub Secrets，不进入聊天、Git 或证据 | P0 | `VALIDATED` | 14 | `stages/stage-14-report.md`、`evidence/stage-14/acceptance.json` |
 | REQ-020 | 2026-08-25 | 用户迭代指令 | 开始 Stage 3–7 生产后端闭环任务 | 恢复此前后移的生产后端主线，按 Stage 3→7 顺序建设认证/RBAC、任务审核奖励、Wallet/Ledger、压岁钱兑换、商店储蓄愿望和纯模拟基金；每 Stage 独立 Spec、迁移、测试、证据与 commit | P0 | `IN_PROGRESS` | 3–7 | `stages/stage-3-report.md`–`stage-7-report.md` |
+| REQ-021 | 2026-08-25 | 用户最高行为准则 | 小孩端不要太复杂，从 3 岁开始使用；运用心理学和其他行为学改造，并列为最高行为准则 | 儿童最佳利益高于留存/时长/奖励/金融完整度；3–5 岁亲子共用、一次一个行动、最多三个一级入口、低刺激与可预测反馈；行为科学只用于支架、理解、休息和自主，禁止成瘾/操纵设计 | P0 | `IN_PROGRESS` | 15、全部后续 Stage | `AGENTS.md`、`codex-skills.md`、`design/36-child-experience-behavioral-baseline.md`、Stage 15 |
 
 ## 维护记录
 
@@ -36,3 +37,4 @@
 - 2026-08-25：登记热更新提升为 P0、Agent 创建公开 GitHub 仓库及按 Stage 提交的发布治理要求。
 - 2026-08-25：登记生成新 Android release 签名并备份到 `E:\FamilyGrowthSigningBackup` 的明确授权。
 - 2026-08-25：登记恢复 Stage 3–7 生产后端闭环，REQ-016 的整体后移约束由 REQ-020 部分取代。
+- 2026-08-25：登记儿童端从 3 岁起、极简与发展适龄改造要求，并提升为不可被普通功能需求覆盖的最高产品行为准则。

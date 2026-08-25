@@ -29,6 +29,7 @@
 - [07 实施计划](design/07-implementation-plan.md)
 - [08 V1 验收标准](design/08-acceptance-criteria.md)
 - [35 基础体验视觉与信息架构](design/35-family-growth-ui-breadth-baseline.md)
+- [36 儿童端发展与行为设计基线](design/36-child-experience-behavioral-baseline.md)
 
 ## 接口参考 · `reference/`
 
@@ -83,6 +84,7 @@
 - [Stage 12：治理对齐](stages/stage-12-report.md)
 - [Stage 13：基础体验与 Android 前端](stages/stage-13-report.md)
 - [Stage 14：公开 GitHub 仓库与 Release 更新链](stages/stage-14-report.md)
+- [Stage 15：3 岁起儿童端发展适龄改造](stages/stage-15-report.md)
 
 ## 项目计划与 Phase · `program/` `phases/`
 
@@ -110,6 +112,7 @@
 - [Stage 12](evidence/stage-12/acceptance.json)
 - [Stage 13](evidence/stage-13/acceptance.json)
 - [Stage 14](evidence/stage-14/acceptance.json)
+- [Stage 15](evidence/stage-15/acceptance.json)
 
 ## 目录约定
 

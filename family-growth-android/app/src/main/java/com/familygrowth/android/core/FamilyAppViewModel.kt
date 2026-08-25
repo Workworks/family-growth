@@ -32,7 +32,9 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         store.load().onSuccess { state = it }.onFailure { message = "本地数据读取失败，已进入空白安全状态" }
     }
 
-    fun selectSection(value: AppSection) { section = value }
+    fun selectSection(value: AppSection) {
+        section = if (value in ChildExperiencePolicy.sectionsFor(mode)) value else AppSection.TODAY
+    }
     fun enterChild() { mode = AppMode.CHILD; section = AppSection.TODAY; sessionUsedMinutes = 0 }
 
     fun setParentPin(pin: String, confirm: String): Boolean {

@@ -81,7 +81,7 @@ class LocalFamilyStore(context: Context) {
             wishes = root.optJSONArray("wishes").mapObjects { value -> LocalWish(value.getString("id"), value.getString("title"), value.decimal("target")) },
             fund = LocalFundPosition(fund.decimal("nav", "1.0000"), fund.decimal("shares", "0.0000")),
             usage = UsagePolicy(
-                dailyLimitMinutes = usage.optInt("dailyLimitMinutes", 60), sessionLimitMinutes = usage.optInt("sessionLimitMinutes", 30),
+                dailyLimitMinutes = usage.optInt("dailyLimitMinutes", 20), sessionLimitMinutes = usage.optInt("sessionLimitMinutes", 10),
                 usedMinutes = usage.optInt("usedMinutes", 0), usageDate = usage.optString("usageDate", java.time.LocalDate.now().toString()),
             ),
         )

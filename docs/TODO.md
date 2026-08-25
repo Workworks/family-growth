@@ -12,6 +12,7 @@
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
 | P0 | 5 | `IN_PROGRESS` | 完成 GiftMoney、版本化双向兑换、透明费用、预算、重放与 PostgreSQL 门禁 | Agent | Stage 5 Spec/证据/commit |
+| P0 | 15 | `BLOCKED` | 用 Android 平板回放三入口、单任务、TalkBack、字体放大和温和限时退出 | 用户提供设备；Agent 回放 | Stage 15 真机证据 |
 | P0 | 14 | `BLOCKED` | 用 Android 真机/平板安装 0.2.0 release，通过 App 更新至 0.2.1并验证数据保留/失败路径 | 用户提供设备；Agent 回放 | Stage 14 真机证据 |
 | P0 | 2 | `BLOCKED` | 连接 Android 真机/平板，或明确授权重装共享 API 34 system image | 用户提供条件；Agent 回放 | 安装、启动、旋转、截图与结构化证据 |
 | P1 | 13 | `BLOCKED` | 连接 Android 真机/平板，安装 0.2.0 包并回放任务/钱包/PIN/限时/重启持久化 | 用户提供条件；Agent 回放 | Stage 13 真机截图与结构化证据 |
@@ -22,7 +23,8 @@
 | 顺序 | Stage | 主题 | 前置条件 |
 | ---: | ---: | --- | --- |
 | 1 | 6–7 | 商店储蓄愿望、纯模拟基金 | Stage 5 完成后按 Spec 顺序推进 |
-| 2 | 8–10 | 服务端联调、深度定制与 V1 总验收 | 需要前序后端闭环、部署环境和 Android 设备 |
+| 2 | 5 | 恢复 GiftMoney 与兑换闭环 | Stage 15 可离线门禁完成后恢复 |
+| 3 | 8–10 | 服务端联调、深度定制与 V1 总验收 | 需要前序后端闭环、部署环境和 Android 设备 |
 
 ## 3. 只能由外部条件解除
 
@@ -31,6 +33,7 @@
 | P0 | 2 | 启用 USB 调试的 Android 真机/平板，或重装共享 API 34 system image 的明确授权 |
 | P1 | 13 | 启用 USB 调试的 Android 真机/平板；可与 Stage 2 同一次回放解除 |
 | P0 | 11/14 | 启用 USB 调试的 Android 真机/平板；仓库、签名和两版 Release 已具备 |
+| P0 | 15 | 启用 USB 调试的 Android 平板/真机，用于儿童端触控和无障碍验收 |
 
 ## 4. 每次任务的维护规则
 

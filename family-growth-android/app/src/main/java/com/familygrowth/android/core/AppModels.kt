@@ -10,6 +10,17 @@ enum class AppSection { TODAY, TASKS, WALLET, GROWTH, PARENT }
 enum class TaskStatus { TODO, SUBMITTED, APPROVED }
 enum class WithdrawalStatus { PENDING, APPROVED }
 
+object ChildExperiencePolicy {
+    const val MINIMUM_AGE = 3
+    val childSections = listOf(AppSection.TODAY, AppSection.TASKS, AppSection.GROWTH)
+    val parentSections = AppSection.entries
+
+    fun sectionsFor(mode: AppMode): List<AppSection> =
+        if (mode == AppMode.CHILD) childSections else parentSections
+
+    fun allowsAdvancedFinance(mode: AppMode): Boolean = mode == AppMode.PARENT
+}
+
 data class LocalGrowthTask(
     val id: String = UUID.randomUUID().toString(),
     val title: String,
@@ -72,8 +83,8 @@ data class LocalFundPosition(
 }
 
 data class UsagePolicy(
-    val dailyLimitMinutes: Int = 60,
-    val sessionLimitMinutes: Int = 30,
+    val dailyLimitMinutes: Int = 20,
+    val sessionLimitMinutes: Int = 10,
     val usedMinutes: Int = 0,
     val usageDate: String = LocalDate.now().toString(),
 )

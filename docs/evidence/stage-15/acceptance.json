@@ -1,0 +1,75 @@
+{
+  "capturedAt": "2026-08-25T18:36:50+08:00",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+  "shellType": "PowerShell",
+  "passed": false,
+  "summary": "The age-3+ child experience policy, three-destination navigation, one-task home, simplified task/growth surfaces, short-session defaults, JVM contracts, lint, debug/release builds and stable-signature APK all pass. Physical-tablet touch, TalkBack, large-font and calm-limit-exit acceptance remains blocked by the unavailable Android device.",
+  "commands": [
+    {
+      "command": ".\\gradlew.bat testDebugUnitTest lintDebug assembleDebug",
+      "workingDirectory": "family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "53-task gate succeeded; 13 JVM tests, lintDebug and assembleDebug passed. AGP 8.7.3 retained its known compileSdk 36 compatibility warning."
+    },
+    {
+      "command": "load local recovery labels into process environment; .\\gradlew.bat testReleaseUnitTest lintRelease assembleRelease",
+      "workingDirectory": "family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "60-task signed release gate succeeded; 13 JVM tests, lintRelease and assembleRelease passed. Secret values were neither printed nor written into the project."
+    },
+    {
+      "command": "apksigner verify --verbose --print-certs; aapt dump badging; SHA-256",
+      "workingDirectory": "family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "APK Signature Scheme v2 passed; package com.familygrowth.android is versionName 0.2.2/versionCode 5 and uses the established Family Growth release certificate."
+    },
+    {
+      "command": "static child-path review for manipulative patterns and advanced-finance reachability",
+      "workingDirectory": "repository root",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "CHILD policy exposes exactly TODAY/TASKS/GROWTH; the child branches show no NAV, fee, ledger or fund operations and no streak, ranking, lottery, loot-box, autoplay, infinite-scroll or loss-pressure copy."
+    },
+    {
+      "command": "Test-DocumentationLinks.ps1; parse all JSON; parse docs/openapi.yaml; git diff --check",
+      "workingDirectory": "repository root",
+      "shellType": "PowerShell/Python",
+      "exitCode": 0,
+      "passed": true,
+      "result": "72 Markdown files/71 indexed documents passed; 210 JSON files parsed; OpenAPI 3.1.0 with 13 paths parsed; whitespace check passed."
+    },
+    {
+      "command": "physical tablet touch, landscape, TalkBack, large-font and limit-exit replay",
+      "workingDirectory": "Android device",
+      "shellType": "NOT_RUN",
+      "exitCode": null,
+      "passed": false,
+      "result": "BLOCKED - no usable Android device or emulator is connected."
+    }
+  ],
+  "executionNotes": [
+    "The first local recovery parser attempt failed before Gradle because PowerShell parsed $label: as an invalid variable reference; ${label}: fixed the command. No secret value was emitted.",
+    "The first APK verification helper mis-decoded the escaped sdk.dir value and therefore did not invoke apksigner/aapt; it was rerun with the already documented absolute SDK path and passed. These were command-construction errors, not product failures."
+  ],
+  "artifacts": [
+    {
+      "path": "dist/family-growth-0.2.2.apk",
+      "versionName": "0.2.2",
+      "versionCode": 5,
+      "sizeBytes": 11193799,
+      "sha256": "DAD7014A38BAF9E24E309BCD060D9E789AF87EB6570FF87BC939C79AB9482AF3",
+      "certificateSha256": "9179A5DA2973E8FF9115EDD1FB74E21AD70D9540C1D33203C9AF442106D2EACB",
+      "signing": "Family Growth stable release certificate; APK Signature Scheme v2; local candidate before GitHub Release rebuild"
+    }
+  ],
+  "blockers": [
+    "A physical Android tablet or working emulator is required for touch, landscape, TalkBack, large-font, reduced-motion and calm-limit-exit acceptance."
+  ]
+}

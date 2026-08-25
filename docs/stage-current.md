@@ -16,6 +16,7 @@
 | 12 | 计划外 | 参考仓库文档治理与 Agent 启动协议对齐 | `COMPLETED` | 后续每次对话持续执行 AGENTS Step 1–6 和需求永久登记 |
 | 13 | 计划外 | Stage 2–11 基础体验宽度与 Android 前端完善 | `BLOCKED` | 代码、自动化和 0.2.0 APK 已交付；需 Android 真机/平板回放交互、计时与重启持久化 |
 | 14 | 计划外 | 公开 GitHub 仓库、分阶段提交与 Release 更新链 | `BLOCKED` | v0.2.0/0.2.1 同签名 Release 与 digest 已验证；只需 Android 设备回放覆盖升级/数据保留 |
+| 15 | 计划外 | 3 岁起儿童端发展适龄改造 | `BLOCKED` | 代码/自动化/稳定签名包通过；需平板触控、TalkBack、字体放大和限时退出回放 |
 
 Stage 2 的代码、PostgreSQL 和自动化门禁已交付，debug APK 已生成；Android 安装启动因本机 Emulator 37.1.11 在 ADB 可用前退出而阻塞。未完成运行态验收前不得把 APK 描述为已安装可用。
 
@@ -29,6 +30,8 @@ Stage 14 已完成公开仓库、分阶段提交、main 推送、稳定签名备
 
 REQ-020 已恢复 Stage 3–7 生产后端闭环。Stage 3–4 已完成认证、任务奖励和 Wallet/Ledger；Stage 5 当前建设 GiftMoney 与双向兑换，Stage 6–7 不跨越交易门禁提前标记启动。
 
+REQ-021 将“儿童最佳利益、3 岁起、极简低刺激、无操纵设计”提升为最高产品行为准则。Stage 15 可离线代码、13 项 JVM 测试、lint、debug/release 构建和稳定签名 0.2.2 APK 已通过；真实平板验收阻塞。Stage 5 现在恢复为 Agent 主线。
+
 ## 关键决策快照
 
 - 一个 APK，登录后按 PARENT/CHILD 切换，家长模式受 PIN 保护。
@@ -38,3 +41,4 @@ REQ-020 已恢复 Stage 3–7 生产后端闭环。Stage 3–4 已完成认证�
 - Wallet/Ledger 是金额与 Coin 的唯一事实链；虚拟投资不接真实行情与支付。
 - 默认零钱回收比例 1:1；家长可配置透明手续费，但平台不作为真实金融中间商收款。
 - 所有用户需求与建议必须追加登记到 `docs/requirements/requirement-ledger.md`，按 P0–P3 和固定状态长期追踪，不依赖会话记忆。
+- 儿童端从 3 岁起，3–5 岁默认亲子共用；儿童最佳利益高于留存、时长、奖励和金融功能完整度，一级导航最多三个且禁止操纵性参与机制。
