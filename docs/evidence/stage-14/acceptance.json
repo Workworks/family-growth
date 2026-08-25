@@ -53,7 +53,20 @@
       "command": "gh secret list; gh api repos/Workworks/family-growth/releases/latest",
       "exitCode": 1,
       "passed": false,
-      "result": "No release-signing secrets are configured and the latest Release endpoint returns 404; stable Release is BLOCKED, not treated as a failed implementation."
+      "result": "Pre-authorization snapshot: no release-signing secrets were configured and the latest Release endpoint returned 404; this was resolved by REQ-019 signing authorization."
+    },
+    {
+      "command": "keytool generate/export; apply private ACLs; gh secret set for four Android signing values",
+      "exitCode": 0,
+      "passed": true,
+      "result": "New 4096-bit RSA JKS identity generated. Keystore and recovery directories allow only the current Windows identity FullControl. Four Android signing secret names are present in GitHub; values were not logged or committed."
+    },
+    {
+      "command": ".\\gradlew.bat testReleaseUnitTest lintRelease assembleRelease; apksigner verify --print-certs",
+      "workingDirectory": "family-growth-android",
+      "exitCode": 0,
+      "passed": true,
+      "result": "60-task release gate succeeded. APK v2 signature uses CN=Family Growth, OU=Android Release, O=Workworks, C=CN and certificate SHA-256 9179a5da2973e8ff9115edd1fb74e21ad70d9540c1d33203c9af442106d2eacb."
     }
   ],
   "artifacts": [
@@ -64,10 +77,23 @@
       "sizeBytes": 17181880,
       "sha256": "348C5E0BF08926E079D659520BC7B0CC45259D5BDC947BF63473F93162A19C83",
       "signing": "Android Debug; APK Signature Scheme v2; not uploaded to Git history or represented as production"
+    },
+    {
+      "path": "E:/FamilyGrowthSigningBackup/family-growth-release.jks",
+      "sizeBytes": 3883,
+      "sha256": "3BB8A15B4397D1988513EE218070072F678C408DF2CB7F6BFA066F26B9F9D92B",
+      "certificateSha256": "9179A5DA2973E8FF9115EDD1FB74E21AD70D9540C1D33203C9AF442106D2EACB",
+      "description": "Private release keystore outside Git; ACL restricted to the current Windows identity. Password recovery is stored separately and is intentionally absent from evidence."
+    },
+    {
+      "path": "family-growth-android/app/build/outputs/apk/release/app-release.apk",
+      "sizeBytes": 11177419,
+      "sha256": "8B3A4039F86475E3CC6B51DAFF1090EC891182DDFE74163D5F6B006384253341",
+      "signing": "Family Growth release certificate; APK Signature Scheme v2; local pre-tag verification"
     }
   ],
   "blockers": [
-    "A stable Android release keystore and long-term backup location must be supplied or explicitly authorized for generation before GitHub signing secrets and a production Release can be created.",
+    "The stable release identity is now generated and configured; GitHub tag workflows and Release API verification are still pending in this evidence snapshot.",
     "A physical Android device or working emulator is required for same-signature overlay update and data-retention acceptance."
   ]
 }

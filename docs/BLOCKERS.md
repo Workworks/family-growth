@@ -58,11 +58,15 @@
 
 已完成：PUBLIC 仓库 `Workworks/family-growth`、五个分 Stage commits、origin/main 推送、Android 默认更新源绑定和重新构建的 0.2.0 debug 基线。
 
-缺少：稳定 Android release keystore 与长期备份决定；GitHub 当前无四项签名 Secrets，也无 Release。另需 Android 设备验收覆盖升级。
+已解除：用户已授权生成新 release keystore，并指定私钥备份目录 `E:\FamilyGrowthSigningBackup`。
 
-解除条件：用户提供现有 keystore 的本机路径和 alias（密码不得发在聊天，可由本机安全输入），或明确授权 Agent 生成新证书并指定长期备份目录；然后由 Agent 配置 GitHub Secrets、发布递增版本并回放。
+已完成：新 release keystore、分离恢复记录、私有 ACL、四项 GitHub Secrets 和本地 release 门禁/指纹比对。
 
-推进方：用户确认签名方案/备份和设备；Agent 完成 CI Release 与验收。
+缺少：两版 tag workflow 与公开 Release 正在发布；完成后只剩 Android 设备验收覆盖升级。
+
+解除条件：Agent 完成签名、Secrets 和两版 Release；用户随后提供 Android 设备回放。
+
+推进方：Agent 完成 CI Release；用户后续提供设备。
 
 ## 2. 工程未完成
 

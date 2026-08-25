@@ -54,3 +54,5 @@
 | 46 | 14 | 绑定 Android 默认更新源 | Gradle 默认 `GITHUB_REPOSITORY` 改为 `Workworks/family-growth`，仍允许构建参数/环境变量覆盖；不把 Token 写入 APK | Stage 14、发布手册 |
 | 47 | 14 | 重建绑定仓库的 0.2.0 debug 基线 | 10 项 JVM 测试、lint、assemble、aapt、v2 debug 签名通过；BuildConfig 确认为 `Workworks/family-growth`，新哈希已登记 | Stage 14 evidence |
 | 48 | 14 | 检查真实 Release 前置 | 仓库无四项 Android 签名 Secrets，latest Release API 返回 404；不发布 debug 包冒充正式更新，Stage 14 收敛为稳定签名/备份和设备阻塞 | Stage 14、BLOCKERS |
+| 49 | 14 | 用户授权生成新的 Android release 签名 | 登记 REQ-019/P0；私钥备份目标为 `E:\FamilyGrowthSigningBackup`，恢复密码与私钥分离保存并限制访问；Stage 14 恢复 `IN_PROGRESS` | Stage 14、REQ-019 |
+| 50 | 14 | 生成并验证稳定 release 身份 | 生成 4096-bit RSA/JKS，E 盘私钥与 C 盘恢复记录分离，目录 ACL 仅当前身份 FullControl；配置四项 GitHub Secrets；`testReleaseUnitTest lintRelease assembleRelease` 与 v2 证书指纹通过 | Stage 14 evidence |

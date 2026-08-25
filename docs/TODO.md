@@ -11,7 +11,7 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P0 | 14 | `BLOCKED` | 用户提供现有 release keystore，或授权生成新证书并指定长期备份目录；Agent 随后配置 Secrets、发布递增版本 | 用户确认签名备份；Agent 发布 | Stage 14 报告与 `evidence/stage-14/acceptance.json` |
+| P0 | 14 | `IN_PROGRESS` | 在授权目录生成/备份 release keystore，配置 GitHub Secrets，发布同签名基线版与递增更新版 | Agent | Stage 14 报告与 `evidence/stage-14/acceptance.json` |
 | P0 | 2 | `BLOCKED` | 连接 Android 真机/平板，或明确授权重装共享 API 34 system image | 用户提供条件；Agent 回放 | 安装、启动、旋转、截图与结构化证据 |
 | P1 | 13 | `BLOCKED` | 连接 Android 真机/平板，安装 0.2.0 包并回放任务/钱包/PIN/限时/重启持久化 | 用户提供条件；Agent 回放 | Stage 13 真机截图与结构化证据 |
 | P0 | 11 | `BLOCKED` | Stage 14 创建公开仓库后，配置稳定 release 签名并发布两版，再用 Android 设备覆盖升级 | Agent；用户确认签名备份并提供设备 | 真实 Release、APK 签名、覆盖升级与数据保留证据 |
