@@ -1,0 +1,55 @@
+{
+  "capturedAt": "2026-08-25T17:19:03+08:00",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+  "shellType": "PowerShell",
+  "passed": false,
+  "summary": "Stage 2–11 local Android baseline, responsive five-section UI, automated gates and the 0.2.0 debug APK are delivered. Stage 13 remains BLOCKED only on physical-device installation, interaction, timer and restart-persistence acceptance.",
+  "commands": [
+    {
+      "command": ".\\gradlew.bat testDebugUnitTest lintDebug assembleDebug",
+      "workingDirectory": "family-growth-android",
+      "exitCode": 0,
+      "passed": true,
+      "result": "53-task gate succeeded. 10 JVM tests passed with 0 failures and 0 errors; lintDebug and assembleDebug succeeded."
+    },
+    {
+      "command": "aapt dump badging dist\\family-growth-0.2.0-debug.apk",
+      "exitCode": 0,
+      "passed": true,
+      "result": "applicationId com.familygrowth.android, versionName 0.2.0, versionCode 3, minSdk 26, targetSdk 34."
+    },
+    {
+      "command": "apksigner verify --verbose --print-certs dist\\family-growth-0.2.0-debug.apk",
+      "exitCode": 0,
+      "passed": true,
+      "result": "APK verifies with Signature Scheme v2 and one Android Debug signer; it is not represented as a production signing identity."
+    },
+    {
+      "command": "Test-DocumentationLinks.ps1; parse all JSON; parse docs/openapi.yaml; git diff --check",
+      "exitCode": 0,
+      "passed": true,
+      "result": "64 Markdown files passed local-link and index validation; 104 JSON files parsed; OpenAPI 3.1.0 with 6 paths parsed; no tracked whitespace errors. git diff is empty because the repository remains an initial untracked worktree, which git status reports explicitly."
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dist/family-growth-0.2.0-debug.apk",
+      "applicationId": "com.familygrowth.android",
+      "versionName": "0.2.0",
+      "versionCode": 3,
+      "sizeBytes": 17159486,
+      "sha256": "A0234C4233FAB6D2A264C5F258955E953AC1104CC6EDED2AB8A5E4C8CE6C853B",
+      "signing": "Android Debug; APK Signature Scheme v2"
+    },
+    {
+      "path": "family-growth-android/app/build/reports/lint-results-debug.html",
+      "description": "Android lint report from the successful Stage 13 final build gate."
+    }
+  ],
+  "limitations": [
+    "No working physical Android device or emulator is available, so installation, launch, responsive rendering, PIN interaction, one-minute usage timer and restart persistence are NOT_RUN.",
+    "The baseline stores state in app-private SharedPreferences and uses a local BCrypt PIN. It does not claim production server authentication, multi-device synchronization or encrypted business data storage.",
+    "The APK is debug-signed and has no configured GITHUB_REPOSITORY because the local Git repository has no remote.",
+    "AGP 8.7.3 emits an existing compatibility warning for compileSdk 36 because it was tested through 35."
+  ]
+}

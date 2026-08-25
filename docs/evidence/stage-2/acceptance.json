@@ -1,0 +1,71 @@
+{
+  "capturedAt": "2026-08-25T16:13:59.8117916+08:00",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+  "shellType": "PowerShell",
+  "passed": false,
+  "summary": "Backend, PostgreSQL and Android automated gates passed; Stage is BLOCKED only on Android install/start runtime acceptance because the local Emulator 37.1.11 exits before ADB becomes usable.",
+  "commands": [
+    {
+      "command": ".\\mvnw.cmd test",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Six-module reactor BUILD SUCCESS; 3 domain tests and 3 Spring/Flyway/JPA/API tests passed."
+    },
+    {
+      "command": ".\\gradlew.bat testDebugUnitTest lintDebug assembleDebug",
+      "workingDirectory": "family-growth-android",
+      "exitCode": 0,
+      "passed": true,
+      "result": "53 tasks completed; Android unit test, lint and debug APK assembly passed."
+    },
+    {
+      "command": "ADB wait/install/start on Stage118_API_34",
+      "exitCode": 2,
+      "passed": false,
+      "result": "Emulator process started but emulator-5554 remained offline after the initial 60-second timeout and a 40-second reconnect attempt; APK installation and launch were not executed. The two emulator processes started by this run were stopped."
+    },
+    {
+      "command": "Temporary postgres:16-alpine container on 127.0.0.1:55432 plus .\\mvnw.cmd test",
+      "exitCode": 0,
+      "passed": true,
+      "result": "PostgreSQL 16.15 accepted Flyway V1, Hibernate validate completed, and the test asserted one successful migration plus all six core tables. The no-volume --rm container was stopped and removed."
+    },
+    {
+      "command": "Create FamilyGrowth_Stage2_API34 on D:\\AndroidAvd\\FamilyGrowth and boot with supported software/WHPX renderer combinations",
+      "exitCode": 2,
+      "passed": false,
+      "result": "C-drive capacity issue was eliminated by moving the new project-only AVD to D. Emulator 37.1.11 headless QEMU still exited or remained offline before sys.boot_completed; APK install/start stayed NOT_RUN. Existing user AVD data was not cleared."
+    },
+    {
+      "command": "Official sdkmanager uninstall emulator; sdkmanager emulator; emulator-check accel",
+      "exitCode": 0,
+      "passed": true,
+      "result": "The global Emulator package was fully reinstalled from the official SDK repository. Version remained 37.1.11 and WHPX 10.0.22624 reported usable. Existing AVDs and system images were preserved."
+    },
+    {
+      "command": "Recreate project-only API 34 Pixel Tablet AVD and boot after Emulator reinstall",
+      "exitCode": 2,
+      "passed": false,
+      "result": "Both headless and hidden-window launches started QEMU but no emulator console/ADB device became usable; QEMU then exited or remained idle. APK install/start/rotation stayed NOT_RUN."
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "passed": true,
+      "result": "No whitespace errors at the captured checkpoint."
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "family-growth-android/app/build/outputs/apk/debug/app-debug.apk",
+      "sizeBytes": 10073090,
+      "sha256": "F13B893706C8DCBC32E0724FA75BB7D4025C206B5C196BB7B4EFE38A02F136CD"
+    }
+  ],
+  "limitations": [
+    "Android emulator install/start is not validated. A project-only API 34 Pixel Tablet AVD on D drive also fails before ADB is usable under Emulator 37.1.11.",
+    "A same-version official reinstall of Emulator 37.1.11 did not resolve the runtime issue. The next environment action requires either reinstalling the shared API 34 system image or using a physical Android device.",
+    "AGP 8.7.3 was tested by Google up to compileSdk 35, while this build uses installed compileSdk 36 because current Compose dependencies require at least 35 and SDK 35 is absent.",
+    "Authentication and parent PIN are intentionally outside Stage 2; current API is not production-deployable."
+  ]
+}

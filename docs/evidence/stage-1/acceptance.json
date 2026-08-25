@@ -1,0 +1,15 @@
+{
+  "capturedAt": "2026-08-25T15:23:57.4174727+08:00",
+  "command": "PowerShell required-file enumeration + Markdown local-link parser; git diff --check",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+  "shellType": "PowerShell",
+  "exitCode": 0,
+  "passed": true,
+  "summary": {
+    "requiredFiles": 12,
+    "requiredFilesPassed": true,
+    "markdownLinksPassed": true,
+    "gitDiffCheckPassed": true,
+    "runtimeTests": "NOT_RUN: documentation-only Stage; no runtime code exists"
+  }
+}

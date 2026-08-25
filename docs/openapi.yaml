@@ -1,0 +1,260 @@
+openapi: 3.1.0
+info:
+  title: Family Growth API
+  version: 0.1.1
+  description: Stage 2 已实现的家庭成长基础创建接口；生产认证尚未实现。
+servers:
+  - url: /api/v1
+paths:
+  /families:
+    post:
+      operationId: createFamily
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFamily'
+      responses:
+        '201':
+          description: Family created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+  /families/{familyId}/parents:
+    post:
+      operationId: addParent
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+      requestBody:
+        $ref: '#/components/requestBodies/Named'
+      responses:
+        '201':
+          $ref: '#/components/responses/Created'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /families/{familyId}/children:
+    post:
+      operationId: addChild
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChild'
+      responses:
+        '201':
+          $ref: '#/components/responses/Created'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /families/{familyId}/children/{childId}/plans:
+    post:
+      operationId: createGrowthPlan
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - name: childId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlan'
+      responses:
+        '201':
+          $ref: '#/components/responses/Created'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /families/{familyId}/plans/{planId}/goals:
+    post:
+      operationId: createGrowthGoal
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGoal'
+      responses:
+        '201':
+          $ref: '#/components/responses/Created'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /families/{familyId}/goals/{goalId}/tasks:
+    post:
+      operationId: createGrowthTask
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - name: goalId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTask'
+      responses:
+        '201':
+          $ref: '#/components/responses/Created'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  parameters:
+    FamilyId:
+      name: familyId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  requestBodies:
+    Named:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Named'
+  responses:
+    Created:
+      description: Resource created
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+    ValidationError:
+      description: Request validation failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+    NotFound:
+      description: Resource not found or not visible in the family scope
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+  schemas:
+    CreateFamily:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+    Named:
+      type: object
+      required: [displayName]
+      properties:
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 80
+    CreateChild:
+      type: object
+      required: [displayName, birthDate, ageStage]
+      properties:
+        displayName:
+          type: string
+          maxLength: 80
+        birthDate:
+          type: string
+          format: date
+        ageStage:
+          type: string
+          enum: [INFANT_0_2, EARLY_CHILDHOOD_2_5, CHILD_6_9, PRETEEN_10_12, TEEN_13_PLUS]
+    CreatePlan:
+      type: object
+      required: [title, startDate]
+      properties:
+        title:
+          type: string
+          maxLength: 120
+        description:
+          type: [string, 'null']
+          maxLength: 1000
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: [string, 'null']
+          format: date
+    CreateGoal:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          maxLength: 120
+        description:
+          type: [string, 'null']
+          maxLength: 1000
+    CreateTask:
+      type: object
+      required: [title, category, difficulty, expectedMinutes]
+      properties:
+        title:
+          type: string
+          maxLength: 120
+        description:
+          type: [string, 'null']
+          maxLength: 1000
+        category:
+          type: string
+          enum: [LEARNING, READING, EXERCISE, HABIT, CHORE, SELF_CARE, PARENT_CHILD]
+        difficulty:
+          type: string
+          enum: [EASY, NORMAL, HARD]
+        expectedMinutes:
+          type: integer
+          minimum: 1
+          maximum: 480
+    ApiError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    ApiResponse:
+      type: object
+      required: [data, error, traceId]
+      properties:
+        data: {}
+        error:
+          oneOf:
+            - $ref: '#/components/schemas/ApiError'
+            - type: 'null'
+        traceId:
+          type: [string, 'null']

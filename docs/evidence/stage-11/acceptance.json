@@ -1,0 +1,75 @@
+{
+  "capturedAt": "2026-08-25T16:37:39.0582981+08:00",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+  "shellType": "PowerShell",
+  "passed": false,
+  "summary": "GitHub Release update client, system installer handoff, release workflow, automated gates and the 0.1.1 debug APK are delivered. Stage remains BLOCKED only on real GitHub Release download and same-signature device upgrade acceptance.",
+  "commands": [
+    {
+      "command": "git remote -v",
+      "exitCode": 0,
+      "passed": true,
+      "result": "No remote is configured; no GitHub repository or Release can be inferred safely."
+    },
+    {
+      "command": ".\\gradlew.bat clean testDebugUnitTest --no-daemon --stacktrace",
+      "workingDirectory": "family-growth-android",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Clean JVM unit-test run succeeded after removing a stale incremental compiler cache left by an interrupted first command."
+    },
+    {
+      "command": ".\\gradlew.bat testDebugUnitTest lintDebug assembleDebug",
+      "workingDirectory": "family-growth-android",
+      "exitCode": 0,
+      "passed": true,
+      "result": "53-task final gate completed successfully; update contract tests, Android lint and debug APK assembly passed."
+    },
+    {
+      "command": ".\\gradlew.bat -q printVersionName",
+      "workingDirectory": "family-growth-android",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Printed 0.1.1; the GitHub tag workflow uses the same task to reject mismatched tags."
+    },
+    {
+      "command": "apksigner verify --verbose --print-certs dist\\family-growth-0.1.1-debug.apk",
+      "exitCode": 0,
+      "passed": true,
+      "result": "APK verified with Signature Scheme v2; signer is Android Debug and is not represented as a production signing identity."
+    },
+    {
+      "command": "PowerShell Markdown local-link validation plus JSON parse",
+      "exitCode": 0,
+      "passed": true,
+      "result": "All docs Markdown local links resolved and the Stage 11 acceptance JSON parsed successfully."
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "passed": true,
+      "result": "No whitespace errors were reported; the repository is still an initial uncommitted tree."
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "dist/family-growth-0.1.1-debug.apk",
+      "applicationId": "com.familygrowth.android",
+      "versionName": "0.1.1",
+      "versionCode": 2,
+      "sizeBytes": 10301558,
+      "sha256": "21D0E707D289856F9822AA2EF13062566F4D63A9D6B4F0A85080DC1AE0B8BDCA",
+      "signing": "Android Debug; APK Signature Scheme v2"
+    },
+    {
+      "path": "family-growth-android/app/build/reports/lint-results-debug.html",
+      "description": "Android lint report from the successful final gate."
+    }
+  ],
+  "limitations": [
+    "The delivered debug APK intentionally has no GITHUB_REPOSITORY because this local Git repository has no remote; its parent UI displays the unconfigured state and makes no placeholder request.",
+    "The GitHub Actions workflow has not run because there is no configured remote repository and no repository signing secrets in this workspace.",
+    "Real Release download, unknown-source system flow and same-signature overlay upgrade require a public GitHub Release plus a working physical Android device or emulator; those checks are NOT_RUN.",
+    "AGP 8.7.3 emits an existing compatibility warning for compileSdk 36 because it was tested through 35."
+  ]
+}

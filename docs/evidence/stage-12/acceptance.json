@@ -1,0 +1,56 @@
+{
+  "capturedAt": "2026-08-25T16:52:48.0627409+08:00",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+  "shellType": "PowerShell",
+  "passed": true,
+  "summary": "The Family Growth documentation governance, blockers/TODO/Stage responsibilities, six-step AGENTS startup protocol, category indexes, OpenAPI contract and validation gate now align with the capital-agent-system reference structure while retaining the project-required requirement ledger.",
+  "commands": [
+    {
+      "command": "Compare docs root files and first-level directories with C:\\Users\\70649\\Desktop\\aiWork\\WorkThree\\capital-agent-system\\docs",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Root files match exactly: BLOCKERS.md, codex-skills.md, openapi.yaml, README.md, stage-current.md and TODO.md. No reference category is missing; requirements/ is the only project-specific extension."
+    },
+    {
+      "command": ".\\scripts\\Test-DocumentationLinks.ps1",
+      "exitCode": 0,
+      "passed": true,
+      "result": "62 Markdown files passed relative-link resolution, docs/README reachability, legal Stage status and report/roadmap/index consistency checks; 61 documents were indexed."
+    },
+    {
+      "command": "Python json.loads for docs/evidence/**/*.json and yaml.safe_load for docs/openapi.yaml",
+      "exitCode": 0,
+      "passed": true,
+      "result": "All evidence JSON files and the OpenAPI YAML parsed successfully."
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "passed": true,
+      "result": "No whitespace errors were reported. The repository remains an initial uncommitted worktree."
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "AGENTS.md",
+      "description": "Mandatory six-step startup protocol and Family Growth long-term red lines."
+    },
+    {
+      "path": "docs/BLOCKERS.md",
+      "description": "Single blocker/limitation source matching the reference path."
+    },
+    {
+      "path": "scripts/Test-DocumentationLinks.ps1",
+      "description": "Executable documentation link, reachability and Stage-status validation gate."
+    },
+    {
+      "path": "docs/openapi.yaml",
+      "description": "Parseable OpenAPI 3.1 contract for the six currently implemented Stage 2 endpoints."
+    }
+  ],
+  "limitations": [
+    "Stage 12 is documentation-only and intentionally did not rerun Maven or Android gates because no runtime source, migration, dependency, API implementation or APK was changed.",
+    "The reference project's product-specific Provider, Sidecar and Tauri rules were not copied; their governance responsibilities were adapted to Family Growth.",
+    "requirements/ is retained as a deliberate project extension because the user explicitly requires permanent, prioritized demand tracking."
+  ]
+}
