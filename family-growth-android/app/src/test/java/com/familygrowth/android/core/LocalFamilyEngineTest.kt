@@ -1,0 +1,81 @@
+package com.familygrowth.android.core
+
+import java.math.BigDecimal
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class LocalFamilyEngineTest {
+    @Test
+    fun approvingSubmittedTaskPostsOneTraceableRewardEntry() {
+        val created = LocalFamilyEngine.addTask(
+            state = FamilyLocalState(),
+            title = "阅读二十分钟",
+            minutes = 20,
+            moneyReward = BigDecimal("2.50"),
+            coin = 3,
+            xp = 8,
+        )
+        val submitted = LocalFamilyEngine.submitTask(created, created.tasks.single().id)
+        val approved = LocalFamilyEngine.approveTask(submitted, submitted.tasks.single().id)
+
+        assertEquals(TaskStatus.APPROVED, approved.tasks.single().status)
+        assertEquals(BigDecimal("2.50"), approved.wallet.money)
+        assertEquals(3, approved.wallet.coin)
+        assertEquals(8, approved.wallet.xp)
+        assertEquals("TASK_REWARD", approved.ledger.single().type)
+    }
+
+    @Test
+    fun withdrawalWaitsForParentApprovalThenRecordsTransparentFee() {
+        val funded = LocalFamilyEngine.depositGiftMoney(FamilyLocalState(), BigDecimal("100.00"))
+        val requested = LocalFamilyEngine.requestWithdrawal(funded, BigDecimal("25.00"))
+
+        assertEquals(BigDecimal("100.00"), requested.wallet.money)
+        assertEquals(WithdrawalStatus.PENDING, requested.withdrawals.single().status)
+
+        val withdrawn = LocalFamilyEngine.approveWithdrawal(requested, requested.withdrawals.single().id)
+
+        assertEquals(BigDecimal("75.00"), withdrawn.wallet.money)
+        assertEquals(WithdrawalStatus.APPROVED, withdrawn.withdrawals.single().status)
+        assertTrue(withdrawn.ledger.first().description.contains("线下到账 ¥24.50"))
+        assertTrue(withdrawn.ledger.first().description.contains("手续费 ¥0.50"))
+    }
+
+    @Test
+    fun exchangeAndRewardRedemptionKeepEveryBalanceChangeInLedger() {
+        val funded = LocalFamilyEngine.depositGiftMoney(FamilyLocalState(), BigDecimal("10.00"))
+        val exchanged = LocalFamilyEngine.exchangeMoneyToCoin(funded, BigDecimal("4.00"))
+        val withReward = LocalFamilyEngine.addReward(exchanged, "周末选电影", 3)
+        val redeemed = LocalFamilyEngine.redeemReward(withReward, withReward.rewards.single().id)
+
+        assertEquals(BigDecimal("6.00"), redeemed.wallet.money)
+        assertEquals(1, redeemed.wallet.coin)
+        assertEquals(listOf("REWARD_REDEEM", "MONEY_TO_COIN", "GIFT_MONEY"), redeemed.ledger.map { it.type })
+    }
+
+    @Test
+    fun simulatedFundUsesWalletAndReflectsParentUpdatedNav() {
+        val funded = LocalFamilyEngine.depositGiftMoney(FamilyLocalState(), BigDecimal("20.00"))
+        val bought = LocalFamilyEngine.buyFund(funded, BigDecimal("10.00"))
+        val repriced = LocalFamilyEngine.updateFundNav(bought, BigDecimal("1.1000"))
+        val sold = LocalFamilyEngine.sellAllFund(repriced)
+
+        assertEquals(BigDecimal("21.00"), sold.wallet.money)
+        assertEquals(BigDecimal("0.0000"), sold.fund.shares)
+        assertEquals(listOf("FUND_SELL", "FUND_BUY", "GIFT_MONEY"), sold.ledger.map { it.type })
+    }
+
+    @Test
+    fun insufficientWalletBalanceIsRejectedWithoutCreatingAnEntry() {
+        val empty = FamilyLocalState()
+
+        val error = assertThrows(FamilyRuleException::class.java) {
+            LocalFamilyEngine.buyFund(empty, BigDecimal("1.00"))
+        }
+
+        assertEquals("Money 余额不足", error.message)
+        assertTrue(empty.ledger.isEmpty())
+    }
+}
