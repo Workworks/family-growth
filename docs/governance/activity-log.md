@@ -56,3 +56,8 @@
 | 48 | 14 | 检查真实 Release 前置 | 仓库无四项 Android 签名 Secrets，latest Release API 返回 404；不发布 debug 包冒充正式更新，Stage 14 收敛为稳定签名/备份和设备阻塞 | Stage 14、BLOCKERS |
 | 49 | 14 | 用户授权生成新的 Android release 签名 | 登记 REQ-019/P0；私钥备份目标为 `E:\FamilyGrowthSigningBackup`，恢复密码与私钥分离保存并限制访问；Stage 14 恢复 `IN_PROGRESS` | Stage 14、REQ-019 |
 | 50 | 14 | 生成并验证稳定 release 身份 | 生成 4096-bit RSA/JKS，E 盘私钥与 C 盘恢复记录分离，目录 ACL 仅当前身份 FullControl；配置四项 GitHub Secrets；`testReleaseUnitTest lintRelease assembleRelease` 与 v2 证书指纹通过 | Stage 14 evidence |
+| 51 | 14 | 发布稳定签名 v0.2.0 基线 | tag workflow `32833035700` 成功；公开 Release 精确资产、GitHub digest、versionCode 3 和 release 证书下载复验通过，本地保存到 `dist/` | v0.2.0 Release、Stage 14 evidence |
+| 52 | 14 | 发布同签名 v0.2.1 更新 | 源码递增到 versionCode 4 并独立 commit/tag；workflow `32833403426` 成功；latest API、digest、版本和同证书下载复验通过 | v0.2.1 Release、Stage 14 evidence |
+| 53 | 14 | 对齐 GitHub Actions 运行时 | CI 成功但提示旧 Node 运行时弃用；从官方 release API 确认后将 checkout/setup-java/gradle actions 升级到 v7/v6/v6 | `.github/workflows/android-release.yml` |
+| 54 | 14 | 收敛真实更新状态 | 公开仓库、签名、Secrets、两版 Release 和远端契约全部完成；只缺 Android 设备上的系统确认与数据保留，Stage 14 标记 `BLOCKED` | Stage 14、BLOCKERS/TODO/current |
+| 55 | 14 | 执行发布链收尾门禁 | 文档链接与 207 个 JSON 文件通过；首次 OpenAPI 检查引用旧路径而中止，定位实际文件 `docs/openapi.yaml` 后重跑完整门禁 | Stage 14 evidence、活动日志 |

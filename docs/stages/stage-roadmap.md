@@ -15,7 +15,7 @@
 | 11 | 计划外 | GitHub Release APK 热更新与当前版本交付 | `BLOCKED` |
 | 12 | 计划外 | 参考仓库文档治理与 Agent 启动协议对齐 | `COMPLETED` |
 | 13 | 计划外 | Stage 2–11 基础体验宽度与 Android 前端完善 | `BLOCKED` |
-| 14 | 计划外 | 公开 GitHub 仓库、分阶段提交与 Release 更新链 | `IN_PROGRESS` |
+| 14 | 计划外 | 公开 GitHub 仓库、分阶段提交与 Release 更新链 | `BLOCKED` |
 
 Stage 11 是用户直接提出的发布能力，编号不代表业务交付顺序；它不改变 Stage 2 的 Android 运行态阻塞，也不代表 Stage 3–10 已启动或完成。
 

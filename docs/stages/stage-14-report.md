@@ -1,6 +1,6 @@
 # Stage 14：公开 GitHub 仓库、分阶段提交与 Release 更新链
 
-状态：`IN_PROGRESS`
+状态：`BLOCKED`
 
 日期：2026-08-25
 
@@ -30,8 +30,8 @@
 | WP14-2 | 完成 | 审计 `.gitignore`、敏感信息、大文件与公开范围 |
 | WP14-3 | 完成 | 按 Stage 组织本地 Conventional Commits |
 | WP14-4 | 完成 | `gh repo create --public`、配置 `origin` 并推送 `main` |
-| WP14-5 | 进行中 | 用户已授权生成签名并指定 `E:\FamilyGrowthSigningBackup`；生成/备份、配置 Secrets、构建并创建真实 GitHub Release |
-| WP14-6 | 部分完成 | 远端可见性和更新源绑定已验证；Release asset/digest 与真机更新待签名/设备 |
+| WP14-5 | 完成 | 生成/备份稳定签名，配置 Secrets，发布 v0.2.0 基线与 v0.2.1 更新 |
+| WP14-6 | 完成（设备外） | 远端、latest API、两版 asset/digest/版本/证书均验证；真机覆盖升级仍阻塞 |
 
 ## Git 提交分组
 
@@ -59,7 +59,7 @@
 - [x] AC14-02 `PASS`：公开前 141 个候选文件通过 secret/大文件/忽略规则审计，APK 未进入 Git history。
 - [x] AC14-03 `PASS`：当前项目形成 Stage 2/11/13/12/14 五个 Conventional Commits，清单见证据。
 - [x] AC14-04 `PASS`：`Workworks/family-growth` 已由 GitHub CLI 创建为 PUBLIC，main 推送成功。
-- [ ] AC14-05 Android 构建配置指向该仓库，稳定签名 Release APK 与 digest 可由公开 Release API 读取。
+- [x] AC14-05 `PASS`：Android 默认指向该仓库；v0.2.0/3 与 v0.2.1/4 均由 GitHub Actions 使用同一 release 证书发布，公开 API 返回精确 asset 与 `sha256:` digest，下载复验通过。
 - [ ] AC14-06 真机完成同签名覆盖升级和数据保留；缺设备时必须 `BLOCKED`。
 
 ## 当前实施结果
@@ -69,13 +69,16 @@
 - Android 默认更新源已绑定 `Workworks/family-growth`，仍允许 `GITHUB_REPOSITORY` 构建参数或环境变量覆盖。
 - 绑定仓库后的 0.2.0 debug APK 已重新执行 10 项单测、lint、assemble、aapt 和 apksigner；它用于内部验证，不作为正式 Release。
 - 授权前 `gh secret list` 为空、`releases/latest` 返回 404；授权后已生成独立 release 身份并配置四项 GitHub Secrets，本地 release 全门禁与证书指纹比对通过。
+- [v0.2.0](https://github.com/Workworks/family-growth/releases/tag/v0.2.0) workflow `32833035700` 成功；基线 asset `family-growth-0.2.0.apk`，versionCode 3，digest `sha256:624120c679cb553cb029a178445052191b59e388e8ab50ada560bcbd06e74dad`。
+- [v0.2.1](https://github.com/Workworks/family-growth/releases/tag/v0.2.1) workflow `32833403426` 成功；latest asset `family-growth-0.2.1.apk`，versionCode 4，digest `sha256:83befdfbd292a94fdc09de6f9623020219631616effdc7112fc281a83d745ff3`。
+- 两个下载资产均由 release 证书 `9179a5da2973e8ff9115edd1fb74e21ad70d9540c1d33203c9af442106d2eacb` 签名；APK 未进入 Git history，已下载到本地 `dist/` 交付。
 
 ## 当前阻塞
 
-1. 新签名已生成：私钥放 E 盘，恢复密码单独放当前 Windows 用户目录；两目录 ACL 均只允许当前 Windows 身份完全控制，GitHub 四项 Secrets 已配置。
-2. 当前正在通过 tag workflow 发布同签名基线版与更新版；之后仍需要 Android 真机/平板完成覆盖升级和数据保留验收。
+1. 工程侧与公开 Release 链已完成；签名私钥放 E 盘，恢复密码单独放当前 Windows 用户目录，两目录 ACL 均只允许当前 Windows 身份完全控制。
+2. 只剩 Android 真机/平板：安装稳定基线 0.2.0，在 App 内检查/下载/校验并覆盖至 0.2.1，确认数据保留和失败路径。
 
-公开仓库和分阶段提交已经完成；稳定签名授权已取得，Stage 14 恢复 `IN_PROGRESS`。不得用 debug Release 绕过签名门禁。
+Stage 14 可由 Agent 独立完成的工作已全部收口；因 AC14-06 必须使用 Android 设备，状态为 `BLOCKED`，不得用 API/下载/签名证据替代系统安装确认。
 
 ## 安全检查、已知限制与交接
 

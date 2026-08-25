@@ -1,14 +1,14 @@
 # APK 交付说明
 
-`family-growth-0.2.0-debug.apk` 是 2026-08-25 构建的当前内部基础体验包：
+`family-growth-0.2.1.apk` 是当前稳定签名更新包：
 
 - applicationId：`com.familygrowth.android`
-- versionName：`0.2.0`
-- versionCode：`3`
-- size：`17,181,880` bytes
-- SHA-256：`348C5E0BF08926E079D659520BC7B0CC45259D5BDC947BF63473F93162A19C83`
-- 签名：Android Debug，APK Signature Scheme v2 验证通过
+- versionName：`0.2.1`
+- versionCode：`4`
+- size：`11,177,419` bytes
+- SHA-256：`83BEFDFBD292A94FDC09DE6F9623020219631616EFFDC7112FC281A83D745FF3`
+- 签名：Family Growth Release，APK Signature Scheme v2；证书 SHA-256 `9179A5DA2973E8FF9115EDD1FB74E21AD70D9540C1D33203C9AF442106D2EACB`
 
-该包包含 Stage 2–11 本机基础体验和五区响应式前端。Stage 14 重建后默认更新源为公开仓库 `Workworks/family-growth`；当前仍是 debug 签名，只有发布稳定 release 签名基线后才能作为正式更新链。
+稳定签名基线是 `family-growth-0.2.0.apk`（versionCode 3，SHA-256 `624120C679CB553CB029A178445052191B59E388E8AB50ADA560BCBD06E74DAD`）。安装基线版后，App 应发现 GitHub latest Release `v0.2.1` 并进入校验/系统确认流程；该运行态仍需 Android 设备回放。
 
-`family-growth-0.1.1-debug.apk` 保留为 Stage 11 首版更新能力的历史证据，不是当前功能包。
+GitHub Release：[v0.2.0 基线](https://github.com/Workworks/family-growth/releases/tag/v0.2.0) · [v0.2.1 更新](https://github.com/Workworks/family-growth/releases/tag/v0.2.1)。`*-debug.apk` 仅保留为历史内部证据，不得与稳定签名包混装覆盖。

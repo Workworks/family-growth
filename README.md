@@ -1,6 +1,6 @@
 # Family Growth
 
-儿童成长培养与家庭财商教育平台。Stage 13 已交付 Stage 2–11 的 Android 本机基础体验宽度与 0.2.0 debug APK；生产服务端深度闭环和 Android 真机验收仍待完成。
+儿童成长培养与家庭财商教育平台。Stage 14 已交付公共仓库、稳定 release 签名及 v0.2.0→v0.2.1 GitHub Release 更新链；生产服务端深度闭环和 Android 真机覆盖升级验收仍待完成。
 
 快速入口：
 
@@ -20,4 +20,4 @@ cd family-growth-android
 .\gradlew.bat testDebugUnitTest lintDebug assembleDebug
 ```
 
-当前交付包见 `dist/family-growth-0.2.0-debug.apk`。它已通过单测、lint、构建、包信息、v2 签名和 SHA-256 门禁，但仍是内部 debug 包；没有可用 Android 设备时，不得把它描述为已安装或已完成 V1 真机验收。
+当前稳定包见 `dist/family-growth-0.2.1.apk`，公开发布于 [GitHub Release v0.2.1](https://github.com/Workworks/family-growth/releases/tag/v0.2.1)。0.2.0/0.2.1 使用同一专用 release 证书并通过公开 digest、包信息与签名门禁；没有可用 Android 设备时，仍不得描述为已完成真机覆盖升级或 V1 总验收。

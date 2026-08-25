@@ -22,7 +22,7 @@
 | REQ-016 | 2026-08-25 | 用户范围约束 | 更深度的定制功能暂时不做 | 服务端生产认证/同步、复杂策略、深度报表、基金高级模型、系统级跨 App 管控、家庭个性化主题和运营配置后移；安全不变量不可因“粗略”降级 | P2 | `DEFERRED` | Stage 3–10 后续深化 | `stages/stage-13-report.md` |
 | REQ-017 | 2026-08-25 | 用户 UI 参考 | 前端界面完善好，参考 `E:\test\DiaperTracker` | 借鉴其翡翠/琥珀/Slate 调色、低阴影描边卡片、五区导航、首页总览和分组设置；不复制资产管理内容，转译为成长环与平板优先 Compose 信息架构 | P1 | `IN_PROGRESS` | 13 | `design/35-family-growth-ui-breadth-baseline.md` |
 | REQ-018 | 2026-08-25 | 用户发布优先级与 Git 治理要求 | 把热更新排到最高优先级；由 Agent 使用 GitHub CLI 创建公共仓库；代码按阶段 commit；缺少条件及时说明 | 热更新提升为当前 P0；目标仓库采用已登录账号下可用名 `Workworks/family-growth`；首次未提交工作树按 Stage 所属范围精准暂存，公开前做 secret/二进制审计；正式更新必须使用可长期备份的稳定 release 签名 | P0 | `IN_PROGRESS` | 14（延续 11） | `stages/stage-14-report.md`、`evidence/stage-14/acceptance.json` |
-| REQ-019 | 2026-08-25 | 用户签名授权 | 授权生成新的 Android release 签名，备份到 `E:\FamilyGrowthSigningBackup` | 明确授权 Agent 新建长期 release keystore；私钥备份到指定 E 盘目录，恢复密码与私钥分离存放并限制为当前 Windows 用户访问；四项签名值只写 GitHub Secrets，不进入聊天、Git 或证据 | P0 | `IN_PROGRESS` | 14 | `stages/stage-14-report.md`、`evidence/stage-14/acceptance.json` |
+| REQ-019 | 2026-08-25 | 用户签名授权 | 授权生成新的 Android release 签名，备份到 `E:\FamilyGrowthSigningBackup` | 明确授权 Agent 新建长期 release keystore；私钥备份到指定 E 盘目录，恢复密码与私钥分离存放并限制为当前 Windows 用户访问；四项签名值只写 GitHub Secrets，不进入聊天、Git 或证据 | P0 | `VALIDATED` | 14 | `stages/stage-14-report.md`、`evidence/stage-14/acceptance.json` |
 
 ## 维护记录
 

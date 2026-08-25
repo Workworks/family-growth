@@ -46,11 +46,13 @@
 
 已解除：公开仓库 `Workworks/family-growth` 已创建并推送 `main`。
 
-缺少：稳定 release 签名 secrets、两版 Release 资产和可用 Android 设备上的同签名覆盖升级/数据保留证据。
+已解除：稳定 release keystore/Secrets 与 v0.2.0、v0.2.1 两版同签名 Release 均已完成，公开 digest 和下载签名复验通过。
 
-解除条件：用户确认现有 release keystore，或授权生成新证书并指定长期备份位置；随后连接 Android 真机/平板，使用同一证书发布低/高两个 versionCode，回放检查、下载、系统确认、覆盖升级和数据保留。
+缺少：可用 Android 设备上的同签名覆盖升级/数据保留证据。
 
-推进方：用户确认签名备份并提供设备；Agent 配置、发布和验收。签名私钥不得进入聊天或 Git。
+解除条件：连接 Android 真机/平板，先安装 v0.2.0，再在 App 内检查/下载/校验并由系统确认更新到 v0.2.1，检查数据保留。
+
+推进方：用户提供设备；Agent 回放验收。签名私钥不得进入聊天或 Git。
 
 ### Stage 14：公开仓库与真实 Release 更新链
 
@@ -62,11 +64,13 @@
 
 已完成：新 release keystore、分离恢复记录、私有 ACL、四项 GitHub Secrets 和本地 release 门禁/指纹比对。
 
-缺少：两版 tag workflow 与公开 Release 正在发布；完成后只剩 Android 设备验收覆盖升级。
+已完成：v0.2.0 与 v0.2.1 tag workflow、公开 Release、精确 APK asset、GitHub digest、版本递增和同证书下载复验。
 
-解除条件：Agent 完成签名、Secrets 和两版 Release；用户随后提供 Android 设备回放。
+缺少：Android 设备验收覆盖升级。
 
-推进方：Agent 完成 CI Release；用户后续提供设备。
+解除条件：用户提供 Android 设备，Agent 回放 v0.2.0→v0.2.1 更新与数据保留。
+
+推进方：用户提供设备；Agent 完成系统安装确认与数据保留验收。
 
 ## 2. 工程未完成
 
@@ -82,7 +86,7 @@ Stage 13 已提供这些领域的 Android 本机基础体验，但尚未建设�
 
 ## 3. 当前已知限制
 
-- 现有 Android APK 是 debug 签名测试包，未绑定未知的 GitHub 仓库，不能称为正式发行包。
+- 现有 v0.2.0/v0.2.1 APK 是稳定 release 签名包；历史 debug APK 仅供内部证据，不能与 release 包互相覆盖。
 - 现有基础 API 尚未实现生产认证与家长 PIN，不可直接部署为可用产品。
 - AGP 8.7.3 对 compileSdk 36 有兼容警告；构建通过，但应在后续 Android 依赖 Stage 对齐。
 - H2 只用于隔离测试；正式验收数据库基线是 PostgreSQL。

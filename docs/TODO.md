@@ -11,10 +11,10 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P0 | 14 | `IN_PROGRESS` | 在授权目录生成/备份 release keystore，配置 GitHub Secrets，发布同签名基线版与递增更新版 | Agent | Stage 14 报告与 `evidence/stage-14/acceptance.json` |
+| P0 | 14 | `BLOCKED` | 用 Android 真机/平板安装 0.2.0 release，通过 App 更新至 0.2.1并验证数据保留/失败路径 | 用户提供设备；Agent 回放 | Stage 14 真机证据 |
 | P0 | 2 | `BLOCKED` | 连接 Android 真机/平板，或明确授权重装共享 API 34 system image | 用户提供条件；Agent 回放 | 安装、启动、旋转、截图与结构化证据 |
 | P1 | 13 | `BLOCKED` | 连接 Android 真机/平板，安装 0.2.0 包并回放任务/钱包/PIN/限时/重启持久化 | 用户提供条件；Agent 回放 | Stage 13 真机截图与结构化证据 |
-| P0 | 11 | `BLOCKED` | Stage 14 创建公开仓库后，配置稳定 release 签名并发布两版，再用 Android 设备覆盖升级 | Agent；用户确认签名备份并提供设备 | 真实 Release、APK 签名、覆盖升级与数据保留证据 |
+| P0 | 11 | `BLOCKED` | v0.2.0/0.2.1 两版 Release 已完成；连接 Android 设备回放 App 内检查、下载、校验、系统确认和数据保留 | 用户提供设备；Agent 回放 | 真机覆盖升级证据 |
 
 ## 2. 可由 Agent 继续推进
 
@@ -29,7 +29,7 @@
 | --- | ---: | --- |
 | P0 | 2 | 启用 USB 调试的 Android 真机/平板，或重装共享 API 34 system image 的明确授权 |
 | P1 | 13 | 启用 USB 调试的 Android 真机/平板；可与 Stage 2 同一次回放解除 |
-| P1 | 11 | 公开 GitHub 仓库、稳定 release 签名 secrets、两版 Release 和 Android 设备 |
+| P0 | 11/14 | 启用 USB 调试的 Android 真机/平板；仓库、签名和两版 Release 已具备 |
 
 ## 4. 每次任务的维护规则
 

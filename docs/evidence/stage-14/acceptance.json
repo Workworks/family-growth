@@ -1,9 +1,9 @@
 {
-  "capturedAt": "2026-08-25T17:30:00+08:00",
+  "capturedAt": "2026-08-25T17:48:00+08:00",
   "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
   "shellType": "PowerShell",
   "passed": false,
-  "summary": "The public GitHub repository, stage-oriented Git history, origin/main push and Android repository binding are complete. Stable-signed Release creation and physical-device overlay update remain blocked on signing-key backup approval and a device.",
+  "summary": "Public repository, stage-oriented Git history, stable signing identity, GitHub Secrets and two same-certificate Releases are complete. The only remaining Stage 14 blocker is physical-device in-app overlay update and data-retention acceptance.",
   "repository": {
     "nameWithOwner": "Workworks/family-growth",
     "url": "https://github.com/Workworks/family-growth",
@@ -15,7 +15,10 @@
     { "sha": "99fdb02", "subject": "feat(stage-11): add GitHub Release updater" },
     { "sha": "3f99f8b", "subject": "feat(stage-13): add local family experience and responsive UI" },
     { "sha": "818a603", "subject": "docs(stage-12): align repository governance" },
-    { "sha": "a84b578", "subject": "chore(stage-14): prioritize public release delivery" }
+    { "sha": "a84b578", "subject": "chore(stage-14): prioritize public release delivery" },
+    { "sha": "9f58bb3", "subject": "feat(stage-14): bind public update repository" },
+    { "sha": "7105c37", "subject": "chore(stage-14): configure stable release signing" },
+    { "sha": "309ae5b", "subject": "release(stage-14): prepare 0.2.1 update" }
   ],
   "commands": [
     {
@@ -67,6 +70,18 @@
       "exitCode": 0,
       "passed": true,
       "result": "60-task release gate succeeded. APK v2 signature uses CN=Family Growth, OU=Android Release, O=Workworks, C=CN and certificate SHA-256 9179a5da2973e8ff9115edd1fb74e21ad70d9540c1d33203c9af442106d2eacb."
+    },
+    {
+      "command": "push v0.2.0; gh run watch 32833035700; release/API/download verification",
+      "exitCode": 0,
+      "passed": true,
+      "result": "GitHub Actions completed successfully. Public baseline asset family-growth-0.2.0.apk is versionName 0.2.0/versionCode 3, has GitHub digest sha256:624120c679cb553cb029a178445052191b59e388e8ab50ada560bcbd06e74dad, and uses the expected release certificate."
+    },
+    {
+      "command": "push v0.2.1; gh run watch 32833403426; latest release/API/download verification",
+      "exitCode": 0,
+      "passed": true,
+      "result": "GitHub Actions completed successfully. Latest asset family-growth-0.2.1.apk is versionName 0.2.1/versionCode 4, has GitHub digest sha256:83befdfbd292a94fdc09de6f9623020219631616effdc7112fc281a83d745ff3, and uses the same release certificate as 0.2.0."
     }
   ],
   "artifacts": [
@@ -90,10 +105,29 @@
       "sizeBytes": 11177419,
       "sha256": "8B3A4039F86475E3CC6B51DAFF1090EC891182DDFE74163D5F6B006384253341",
       "signing": "Family Growth release certificate; APK Signature Scheme v2; local pre-tag verification"
+    },
+    {
+      "path": "dist/family-growth-0.2.0.apk",
+      "releaseUrl": "https://github.com/Workworks/family-growth/releases/tag/v0.2.0",
+      "versionName": "0.2.0",
+      "versionCode": 3,
+      "sizeBytes": 11177419,
+      "sha256": "624120C679CB553CB029A178445052191B59E388E8AB50ADA560BCBD06E74DAD",
+      "certificateSha256": "9179A5DA2973E8FF9115EDD1FB74E21AD70D9540C1D33203C9AF442106D2EACB",
+      "workflowRun": "https://github.com/Workworks/family-growth/actions/runs/32833035700"
+    },
+    {
+      "path": "dist/family-growth-0.2.1.apk",
+      "releaseUrl": "https://github.com/Workworks/family-growth/releases/tag/v0.2.1",
+      "versionName": "0.2.1",
+      "versionCode": 4,
+      "sizeBytes": 11177419,
+      "sha256": "83BEFDFBD292A94FDC09DE6F9623020219631616EFFDC7112FC281A83D745FF3",
+      "certificateSha256": "9179A5DA2973E8FF9115EDD1FB74E21AD70D9540C1D33203C9AF442106D2EACB",
+      "workflowRun": "https://github.com/Workworks/family-growth/actions/runs/32833403426"
     }
   ],
   "blockers": [
-    "The stable release identity is now generated and configured; GitHub tag workflows and Release API verification are still pending in this evidence snapshot.",
     "A physical Android device or working emulator is required for same-signature overlay update and data-retention acceptance."
   ]
 }
