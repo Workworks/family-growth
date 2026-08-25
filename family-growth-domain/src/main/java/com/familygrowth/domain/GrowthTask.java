@@ -1,0 +1,3 @@
+package com.familygrowth.domain;
+import java.time.Instant; import java.util.Objects; import java.util.UUID;
+public record GrowthTask(UUID id,UUID familyId,UUID goalId,String title,String description,TaskCategory category,TaskDifficulty difficulty,int expectedMinutes,boolean active,Instant createdAt){public GrowthTask{Objects.requireNonNull(id);Objects.requireNonNull(familyId);Objects.requireNonNull(goalId);Objects.requireNonNull(category);Objects.requireNonNull(difficulty);Objects.requireNonNull(createdAt);title=Family.requireText(title,"title");description=description==null?"":description.trim();if(expectedMinutes<1||expectedMinutes>480)throw new IllegalArgumentException("expectedMinutes must be between 1 and 480");}}

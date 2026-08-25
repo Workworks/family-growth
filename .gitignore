@@ -1,0 +1,16 @@
+.idea/
+.vscode/
+.gradle/
+.kotlin/
+**/build/
+**/target/
+node_modules/
+.env
+.env.*
+!.env.example
+*.jks
+*.keystore
+local.properties
+*.log
+dist/*.apk
+docs/evidence/**/raw/

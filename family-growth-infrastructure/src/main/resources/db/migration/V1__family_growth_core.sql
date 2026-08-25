@@ -1,0 +1,11 @@
+CREATE TABLE family (id UUID PRIMARY KEY, name VARCHAR(100) NOT NULL, version BIGINT NOT NULL DEFAULT 0, created_at TIMESTAMP WITH TIME ZONE NOT NULL);
+CREATE TABLE parent_profile (id UUID PRIMARY KEY, family_id UUID NOT NULL REFERENCES family(id), display_name VARCHAR(80) NOT NULL, version BIGINT NOT NULL DEFAULT 0, created_at TIMESTAMP WITH TIME ZONE NOT NULL);
+CREATE INDEX idx_parent_family ON parent_profile(family_id);
+CREATE TABLE child_profile (id UUID PRIMARY KEY, family_id UUID NOT NULL REFERENCES family(id), display_name VARCHAR(80) NOT NULL, birth_date DATE NOT NULL, age_stage VARCHAR(32) NOT NULL, version BIGINT NOT NULL DEFAULT 0, created_at TIMESTAMP WITH TIME ZONE NOT NULL);
+CREATE INDEX idx_child_family ON child_profile(family_id);
+CREATE TABLE growth_plan (id UUID PRIMARY KEY, family_id UUID NOT NULL REFERENCES family(id), child_id UUID NOT NULL REFERENCES child_profile(id), title VARCHAR(120) NOT NULL, description VARCHAR(1000) NOT NULL DEFAULT '', start_date DATE NOT NULL, end_date DATE, active BOOLEAN NOT NULL, version BIGINT NOT NULL DEFAULT 0, created_at TIMESTAMP WITH TIME ZONE NOT NULL, CONSTRAINT ck_plan_dates CHECK (end_date IS NULL OR end_date >= start_date));
+CREATE INDEX idx_plan_child ON growth_plan(family_id,child_id);
+CREATE TABLE growth_goal (id UUID PRIMARY KEY, family_id UUID NOT NULL REFERENCES family(id), plan_id UUID NOT NULL REFERENCES growth_plan(id), title VARCHAR(120) NOT NULL, description VARCHAR(1000) NOT NULL DEFAULT '', version BIGINT NOT NULL DEFAULT 0, created_at TIMESTAMP WITH TIME ZONE NOT NULL);
+CREATE INDEX idx_goal_plan ON growth_goal(family_id,plan_id);
+CREATE TABLE growth_task (id UUID PRIMARY KEY, family_id UUID NOT NULL REFERENCES family(id), goal_id UUID NOT NULL REFERENCES growth_goal(id), title VARCHAR(120) NOT NULL, description VARCHAR(1000) NOT NULL DEFAULT '', category VARCHAR(32) NOT NULL, difficulty VARCHAR(16) NOT NULL, expected_minutes INTEGER NOT NULL, active BOOLEAN NOT NULL, version BIGINT NOT NULL DEFAULT 0, created_at TIMESTAMP WITH TIME ZONE NOT NULL, CONSTRAINT ck_task_minutes CHECK (expected_minutes BETWEEN 1 AND 480));
+CREATE INDEX idx_task_goal ON growth_task(family_id,goal_id);
