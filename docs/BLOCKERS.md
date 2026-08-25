@@ -46,11 +46,11 @@
 
 已解除：公开仓库 `Workworks/family-growth` 已创建并推送 `main`。
 
-已解除：稳定 release keystore/Secrets 与 v0.2.0、v0.2.1 两版同签名 Release 均已完成，公开 digest 和下载签名复验通过。
+已解除：稳定 release keystore/Secrets 与 v0.2.0、v0.2.1、v0.2.2 三版同签名 Release 均已完成，公开 digest 和下载签名复验通过。
 
 缺少：可用 Android 设备上的同签名覆盖升级/数据保留证据。
 
-解除条件：连接 Android 真机/平板，先安装 v0.2.0，再在 App 内检查/下载/校验并由系统确认更新到 v0.2.1，检查数据保留。
+解除条件：连接 Android 真机/平板，先安装 v0.2.1，再在 App 内检查/下载/校验并由系统确认更新到 v0.2.2，检查数据保留。
 
 推进方：用户提供设备；Agent 回放验收。签名私钥不得进入聊天或 Git。
 
@@ -64,11 +64,11 @@
 
 已完成：新 release keystore、分离恢复记录、私有 ACL、四项 GitHub Secrets 和本地 release 门禁/指纹比对。
 
-已完成：v0.2.0 与 v0.2.1 tag workflow、公开 Release、精确 APK asset、GitHub digest、版本递增和同证书下载复验。
+已完成：v0.2.0、v0.2.1 与 Stage 15 v0.2.2 tag workflow、公开 Release、精确 APK asset、GitHub digest、版本递增和同证书下载复验。
 
 缺少：Android 设备验收覆盖升级。
 
-解除条件：用户提供 Android 设备，Agent 回放 v0.2.0→v0.2.1 更新与数据保留。
+解除条件：用户提供 Android 设备，Agent 回放 v0.2.1→v0.2.2 更新与数据保留。
 
 推进方：用户提供设备；Agent 完成系统安装确认与数据保留验收。
 
@@ -100,7 +100,7 @@ Stage 13 已提供这些领域的 Android 本机基础体验，但尚未建设�
 
 ## 3. 当前已知限制
 
-- 现有 v0.2.0/v0.2.1 APK 是稳定 release 签名包；历史 debug APK 仅供内部证据，不能与 release 包互相覆盖。
+- 现有 v0.2.0/v0.2.1/v0.2.2 APK 是稳定 release 签名包；历史 debug APK 仅供内部证据，不能与 release 包互相覆盖。
 - Stage 3 已实现生产认证/PIN/RBAC；家庭局域网正式部署仍需可信 TLS、备份和 Stage 4–10 业务闭环。
 - AGP 8.7.3 对 compileSdk 36 有兼容警告；构建通过，但应在后续 Android 依赖 Stage 对齐。
 - H2 只用于隔离测试；正式验收数据库基线是 PostgreSQL。

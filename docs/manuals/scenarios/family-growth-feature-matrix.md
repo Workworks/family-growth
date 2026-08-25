@@ -10,7 +10,7 @@
 | 奖励商店、储蓄与愿望 | 本地基础实现/构建通过 | 6、13 | Stage 13 evidence |
 | 纯模拟基金 | 本地基础实现/单测通过 | 7、13 | Stage 13 evidence |
 | 本机 PIN、防沉迷、今日使用与报告 | 本地基础实现/构建通过，运行阻塞 | 8–9、13 | Stage 13 evidence/BLOCKERS |
-| 0.2.1 稳定 APK | 两版 Release、版本、同签名、公开 digest 通过；安装阻塞 | 10、11、14 | Stage 14 evidence/BLOCKERS |
+| 0.2.2 稳定 APK | 三版 Release、版本、同签名、公开 digest 通过；安装阻塞 | 10、11、14、15 | Stage 15 evidence/BLOCKERS |
 | Stage 3–10 生产服务端深化 | Stage 3–4 完成，Stage 5 进行中 | 3–10 | Stage 3–4 evidence / Stage 路线图 |
 | V1 总验收 | 未开始 | 10 | 待补 |
-| GitHub Release 更新实现 | 公开两版已发布、真机覆盖升级阻塞 | 11、14 | Stage 14 evidence/BLOCKERS |
+| GitHub Release 更新实现 | 公开三版已发布、真机覆盖升级阻塞 | 11、14、15 | Stage 15 evidence/BLOCKERS |

@@ -31,7 +31,7 @@
 | WP14-3 | 完成 | 按 Stage 组织本地 Conventional Commits |
 | WP14-4 | 完成 | `gh repo create --public`、配置 `origin` 并推送 `main` |
 | WP14-5 | 完成 | 生成/备份稳定签名，配置 Secrets，发布 v0.2.0 基线与 v0.2.1 更新 |
-| WP14-6 | 完成（设备外） | 远端、latest API、两版 asset/digest/版本/证书均验证；真机覆盖升级仍阻塞 |
+| WP14-6 | 完成（设备外） | Stage 14 当时的两版 asset/digest/版本/证书均验证；真机覆盖升级仍阻塞 |
 
 ## Git 提交分组
 
@@ -70,7 +70,7 @@
 - 绑定仓库后的 0.2.0 debug APK 已重新执行 10 项单测、lint、assemble、aapt 和 apksigner；它用于内部验证，不作为正式 Release。
 - 授权前 `gh secret list` 为空、`releases/latest` 返回 404；授权后已生成独立 release 身份并配置四项 GitHub Secrets，本地 release 全门禁与证书指纹比对通过。
 - [v0.2.0](https://github.com/Workworks/family-growth/releases/tag/v0.2.0) workflow `32833035700` 成功；基线 asset `family-growth-0.2.0.apk`，versionCode 3，digest `sha256:624120c679cb553cb029a178445052191b59e388e8ab50ada560bcbd06e74dad`。
-- [v0.2.1](https://github.com/Workworks/family-growth/releases/tag/v0.2.1) workflow `32833403426` 成功；latest asset `family-growth-0.2.1.apk`，versionCode 4，digest `sha256:83befdfbd292a94fdc09de6f9623020219631616effdc7112fc281a83d745ff3`。
+- [v0.2.1](https://github.com/Workworks/family-growth/releases/tag/v0.2.1) workflow `32833403426` 成功；它在 Stage 14 收口时是 latest asset，versionCode 4，digest `sha256:83befdfbd292a94fdc09de6f9623020219631616effdc7112fc281a83d745ff3`。当前 latest 已由 Stage 15 推进到 v0.2.2。
 - 两个下载资产均由 release 证书 `9179a5da2973e8ff9115edd1fb74e21ad70d9540c1d33203c9af442106d2eacb` 签名；APK 未进入 Git history，已下载到本地 `dist/` 交付。
 
 ## 当前阻塞

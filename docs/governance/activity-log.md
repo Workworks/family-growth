@@ -74,3 +74,5 @@
 | 66 | 15 | 首次本地 release 恢复记录解析 | PowerShell 把 `$label:` 误判为变量名，Gradle 未启动且未输出 secret；改用 `${label}:` 后 release 门禁通过 | Stage 15 evidence 执行注记 |
 | 67 | 15 | 首次 APK 工具定位 | `sdk.dir` 的转义路径解码错误，apksigner/aapt 未执行；改用已记录绝对 SDK 路径后 v2 签名、包名和版本通过 | Stage 15 evidence 执行注记 |
 | 68 | 15 | 完成 0.2.2 本地门禁与交付包 | debug 53 tasks、release 60 tasks 均成功；两侧各 13 项 JVM 测试通过，稳定证书签名 0.2.2/versionCode 5 APK 已复制到 dist | `evidence/stage-15/acceptance.json` |
+| 69 | 15 | 发布 v0.2.2 儿童适龄更新 | Stage commit `68456d8` 推送；workflow `32838297884` 用时 4m18s 全部成功并创建公开 Release。两次 60 秒观察窗到期和一次 API EOF 均未改变远端执行状态 | Stage 15 evidence、v0.2.2 Release |
+| 70 | 15 | 下载复验公开 APK | latest API 返回 v0.2.2 和 digest；远端 asset 的 versionCode 5、包名、大小、SHA-256 与既有 release 证书通过，覆盖本地 dist 交付副本 | `evidence/stage-15/acceptance.json` |

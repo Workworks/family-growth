@@ -46,6 +46,14 @@
       "result": "72 Markdown files/71 indexed documents passed; 210 JSON files parsed; OpenAPI 3.1.0 with 13 paths parsed; whitespace check passed."
     },
     {
+      "command": "push v0.2.2; watch workflow 32838297884; inspect latest API; download and verify release asset",
+      "workingDirectory": "repository root",
+      "shellType": "PowerShell/GitHub Actions",
+      "exitCode": 0,
+      "passed": true,
+      "result": "GitHub Actions finished successfully in 4m18s. latest is v0.2.2 with exact asset/digest; downloaded APK is versionName 0.2.2/versionCode 5 and uses the established release certificate."
+    },
+    {
       "command": "physical tablet touch, landscape, TalkBack, large-font and limit-exit replay",
       "workingDirectory": "Android device",
       "shellType": "NOT_RUN",
@@ -56,7 +64,9 @@
   ],
   "executionNotes": [
     "The first local recovery parser attempt failed before Gradle because PowerShell parsed $label: as an invalid variable reference; ${label}: fixed the command. No secret value was emitted.",
-    "The first APK verification helper mis-decoded the escaped sdk.dir value and therefore did not invoke apksigner/aapt; it was rerun with the already documented absolute SDK path and passed. These were command-construction errors, not product failures."
+    "The first APK verification helper mis-decoded the escaped sdk.dir value and therefore did not invoke apksigner/aapt; it was rerun with the already documented absolute SDK path and passed. These were command-construction errors, not product failures.",
+    "Two 60-second gh run watch windows expired while the 4m18s workflow was legitimately building; a later poll encountered one transient unexpected EOF. The final watch returned exit 0 and all workflow steps passed.",
+    "The first gh release view requested an unsupported isLatest JSON field and exited before reading release data; the corrected gh release/API calls passed."
   ],
   "artifacts": [
     {
@@ -64,9 +74,11 @@
       "versionName": "0.2.2",
       "versionCode": 5,
       "sizeBytes": 11193799,
-      "sha256": "DAD7014A38BAF9E24E309BCD060D9E789AF87EB6570FF87BC939C79AB9482AF3",
+      "sha256": "824F97E6C8E2DFEA5282B5D85C932053A39B02C76A19D1C9C336C59BBBFB5971",
       "certificateSha256": "9179A5DA2973E8FF9115EDD1FB74E21AD70D9540C1D33203C9AF442106D2EACB",
-      "signing": "Family Growth stable release certificate; APK Signature Scheme v2; local candidate before GitHub Release rebuild"
+      "releaseUrl": "https://github.com/Workworks/family-growth/releases/tag/v0.2.2",
+      "workflowRun": "https://github.com/Workworks/family-growth/actions/runs/32838297884",
+      "signing": "GitHub Release asset; Family Growth stable release certificate; APK Signature Scheme v2"
     }
   ],
   "blockers": [

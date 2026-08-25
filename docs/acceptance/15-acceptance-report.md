@@ -2,7 +2,7 @@
 
 状态：`IN_PROGRESS`
 
-Stage 3 已交付 PostgreSQL 生产认证、TaskCompletion 审核和三奖励原子闭环；Stage 13 已交付 Android 本机基础体验宽度，Stage 14 已交付公开 Release 更新链。Stage 4–10、安装交互、重启持久化和 App 内覆盖升级仍未完成。
+Stage 3–4 已交付 PostgreSQL 生产认证、TaskCompletion、三奖励和 Wallet/Ledger；Stage 13 已交付 Android 本机基础体验宽度，Stage 14 已交付公开 Release 更新链，Stage 15 已交付 3 岁起儿童端可离线改造与 v0.2.2。Stage 5–10、安装交互、重启持久化和 App 内覆盖升级仍未完成。
 
 ## 当前矩阵
 
@@ -14,11 +14,13 @@ Stage 3 已交付 PostgreSQL 生产认证、TaskCompletion 审核和三奖励原
 | 生产认证、任务审核与三奖励 | `PASS` | [Stage 3 证据](../evidence/stage-3/acceptance.json) |
 | Wallet/Ledger 调账、对账与并发 | `PASS` | [Stage 4 证据](../evidence/stage-4/acceptance.json) |
 | Android 本地基础业务与五区 UI | `PASS（实现/自动化）` | [Stage 13 证据](../evidence/stage-13/acceptance.json) |
-| Android 单测/lint/0.2.1 APK | `PASS（构建）` | [Stage 14 证据](../evidence/stage-14/acceptance.json) |
+| Android 单测/lint/0.2.2 APK | `PASS（构建/远端）` | [Stage 15 证据](../evidence/stage-15/acceptance.json) |
 | Android 安装、启动、旋转 | `BLOCKED` | [BLOCKERS](../BLOCKERS.md) |
 | 任务、奖励、钱包、基金、防沉迷 | `PASS（本机基础实现）` | [Stage 13](../stages/stage-13-report.md) |
 | Stage 3–10 生产服务端闭环 | `IN_PROGRESS（Stage 3–4 完成）` | [Stage 路线图](../stages/stage-roadmap.md) |
-| GitHub 两版 Release/digest/同签名 | `PASS（远端）` | [Stage 14](../stages/stage-14-report.md) |
+| GitHub 三版 Release/digest/同签名 | `PASS（远端）` | [Stage 15](../stages/stage-15-report.md) |
+| 3 岁起儿童端三入口/单任务/简化财商 | `PASS（实现/自动化）` | [Stage 15](../stages/stage-15-report.md) |
+| 儿童端平板触控/TalkBack/字体放大 | `BLOCKED` | [Stage 15](../stages/stage-15-report.md) |
 | GitHub Release 真机覆盖升级 | `BLOCKED` | [Stage 14](../stages/stage-14-report.md) |
 | V1 端到端总验收 | `NOT_STARTED` | [验收标准](../design/08-acceptance-criteria.md) |
 
