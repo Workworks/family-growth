@@ -1,6 +1,6 @@
 # Stage 8：Android 生产双端核心页面
 
-状态：`NOT_STARTED`
+状态：`IN_PROGRESS`
 
 产品 Phase：7　需求：REQ-003、REQ-004、REQ-006、REQ-021、REQ-022
 

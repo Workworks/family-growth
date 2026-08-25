@@ -1,0 +1,20 @@
+{
+  "capturedAt": "2026-08-25T23:38:00+08:00",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+  "shellType": "PowerShell",
+  "passed": true,
+  "summary": "Stage 7 pure simulation fund NAV, fee preview, position, order and P&L loop passed H2 and PostgreSQL 16.15 gates.",
+  "environment": { "java": "17.0.8", "postgres": "16.15", "postgresImage": "postgres:16-alpine", "containerLifecycle": "isolated localhost-only container removed after gate" },
+  "commands": [
+    { "command": "mvn -q -pl family-growth-boot -am test", "exitCode": 0, "passed": true, "result": "H2 full regression passed with Flyway V1-V6." },
+    { "command": "start isolated PostgreSQL 16 container; set datasource environment; mvn -q -pl family-growth-boot -am test", "exitCode": 0, "passed": true, "result": "PostgreSQL 16.15 migrations, age gate, fee vectors, NAV/rule drift, concurrent confirmation, oversell and P&L tests passed." }
+  ],
+  "acceptance": {
+    "AC7-01": "PASS - 20.00 at NAV 1.00 and 5% fee produced 1.00 fee, 19.00 net and 19.00000000 shares.",
+    "AC7-02": "PASS - positive and negative NAV movements work; nonpositive, excessive shock and duplicate dates are constrained.",
+    "AC7-03": "PASS - Money, shares, weighted cost, fees, realized/unrealized P&L and ledger update atomically.",
+    "AC7-04": "PASS - drift, replay misuse, concurrent duplicate confirmation and oversell were rejected without double debit.",
+    "AC7-05": "PASS - H2 and PostgreSQL schema/API/E2E gates passed."
+  },
+  "security": { "realMarketData": false, "investmentAdvice": false, "earlyChildTradeDenied": true, "secretsInEvidence": false }
+}

@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: Family Growth API
-  version: 0.6.0
-  description: Stage 3–6 生产认证、成长任务、账本兑换、奖励商店、储蓄与愿望 API。
+  version: 0.7.0
+  description: Stage 3–7 生产认证、成长任务、家庭账本与纯模拟基金 API。
 servers:
   - url: /api/v1
 security:
@@ -463,6 +463,45 @@ paths:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody: { required: true, content: { application/json: { schema: { type: object, required: [amount], properties: { amount: { type: number, minimum: 0, multipleOf: 0.01 } } } } } }
       responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/funds:
+    get:
+      operationId: listVirtualFunds
+      parameters: [ { $ref: '#/components/parameters/FamilyId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      operationId: createVirtualFund
+      parameters: [ { $ref: '#/components/parameters/FamilyId' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/VirtualFundRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /families/{familyId}/funds/{fundId}/nav:
+    post:
+      operationId: addFundNav
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { name: fundId, in: path, required: true, schema: { type: string, format: uuid } } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/FundNavRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '403': { $ref: '#/components/responses/Forbidden' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/funds/{fundId}/fee-rules:
+    post:
+      operationId: createFundFeeRule
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { name: fundId, in: path, required: true, schema: { type: string, format: uuid } } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/FundFeeRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '403': { $ref: '#/components/responses/Forbidden' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/funds/{fundId}/trade-previews:
+    post:
+      operationId: previewFundTrade
+      description: Children in the 3–5 age path are denied; a parent must operate jointly.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { name: fundId, in: path, required: true, schema: { type: string, format: uuid } } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/FundTradePreviewRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/fund-trade-previews/{previewId}/confirm:
+    post:
+      operationId: confirmFundTrade
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { name: previewId, in: path, required: true, schema: { type: string, format: uuid } }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/funds/{fundId}/position:
+    get:
+      operationId: getFundPosition
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { name: fundId, in: path, required: true, schema: { type: string, format: uuid } } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
 components:
   securitySchemes:
     bearerAuth:
@@ -708,6 +747,30 @@ components:
       properties:
         title: { type: string, minLength: 1, maxLength: 120 }
         targetAmount: { type: number, minimum: 0.01, multipleOf: 0.01 }
+    VirtualFundRequest:
+      type: object
+      required: [name, riskLabel]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 120 }
+        riskLabel: { type: string, minLength: 1, maxLength: 80 }
+    FundNavRequest:
+      type: object
+      required: [navDate, nav]
+      properties:
+        navDate: { type: string, format: date }
+        nav: { type: number, minimum: 0.000001, multipleOf: 0.000001 }
+    FundFeeRequest:
+      type: object
+      required: [buyFeeRate, sellFeeRate]
+      properties:
+        buyFeeRate: { type: number, minimum: 0, exclusiveMaximum: 1 }
+        sellFeeRate: { type: number, minimum: 0, exclusiveMaximum: 1 }
+    FundTradePreviewRequest:
+      type: object
+      required: [side, inputAmount]
+      properties:
+        side: { type: string, enum: [BUY, SELL] }
+        inputAmount: { type: number, minimum: 0.00000001 }
     ApiError:
       type: object
       required: [code, message]

@@ -8,8 +8,8 @@
 | 4 | 3 | Wallet 与 Ledger | `COMPLETED` |
 | 5 | 4 | GiftMoney、ExchangeRule 与 Coin | `COMPLETED` |
 | 6 | 5 | RewardShop、Saving 与 Wish | `COMPLETED` |
-| 7 | 6 | VirtualFund、NAV、订单、持仓与费用 | `IN_PROGRESS` |
-| 8 | 7 | Android 家长端/孩子端核心页面 | `NOT_STARTED` |
+| 7 | 6 | VirtualFund、NAV、订单、持仓与费用 | `COMPLETED` |
+| 8 | 7 | Android 家长端/孩子端核心页面 | `IN_PROGRESS` |
 | 9 | 8 | 跨域业务闭环与报告 | `NOT_STARTED` |
 | 10 | 9 | APK 构建、安装与 V1 总验收 | `NOT_STARTED` |
 | 11 | 计划外 | GitHub Release APK 热更新与当前版本交付 | `BLOCKED` |
@@ -26,6 +26,6 @@ Stage 13 按用户最新优先级已交付 Stage 2–11 的 Android 本地基础
 
 Stage 14 将 GitHub Release 热更新提升为 P0，负责公开仓库、分 Stage Git 历史、稳定签名 Release 和真实远端更新契约；它延续 Stage 11，但不以仓库创建替代真机覆盖升级。
 
-REQ-020/REQ-022 已恢复并连续推进 Stage 3–10。Stage 3–6 已在 PostgreSQL 通过；Stage 7 当前建设纯模拟基金，后续 Stage 等待前序门禁。
+REQ-020/REQ-022 已恢复并连续推进 Stage 3–10。Stage 3–7 已在 PostgreSQL 通过；Stage 8 当前建设 Android 生产 API 接入，后续 Stage 等待前序门禁。
 
 Stage 15 来自 REQ-021 的最高行为准则，优先于普通功能迭代。儿童端可离线代码/自动化已收敛，仅真实平板验收阻塞；Stage 5 因而恢复推进，儿童门禁继续约束其后所有界面和功能。

@@ -38,6 +38,12 @@
 | GET/POST | `/families/{familyId}/children/{childId}/saving[/transfers]` | PARENT/CHILD 本人 | 查询内部储蓄，或幂等转入/转出并保持总 Money 守恒 |
 | GET/POST | `/families/{familyId}/children/{childId}/wishes` | PARENT/CHILD 本人 | 查询/创建愿望目标 |
 | POST | `/families/{familyId}/wishes/{wishId}/allocation` | PARENT/CHILD 本人 | 显式分配真实储蓄，所有愿望总分配不得超过 Saving |
+| GET/POST | `/families/{familyId}/funds` | PARENT/CHILD / PARENT | 查询/创建家庭纯模拟基金，固定返回风险教育声明 |
+| POST | `/families/{familyId}/funds/{fundId}/nav` | PARENT | 写入可涨可跌的日期 NAV，限制单期 ±50% 且日期唯一 |
+| POST | `/families/{familyId}/funds/{fundId}/fee-rules` | PARENT | 创建版本化买入/卖出费率 |
+| POST | `/families/{familyId}/children/{childId}/funds/{fundId}/trade-previews` | PARENT/适龄 CHILD 本人 | 预览 NAV、费用、净额和份额；3–5 岁 CHILD 会话拒绝 |
+| POST | `/families/{familyId}/fund-trade-previews/{previewId}/confirm` | PARENT/适龄 CHILD 本人 | 幂等确认，NAV/规则漂移返回 409 |
+| GET | `/families/{familyId}/children/{childId}/funds/{fundId}/position` | PARENT/CHILD 本人 | 返回份额、加权成本、市值和已实现/未实现损益 |
 
 批准审核会锁定 Completion 与 Wallet；Coin/Money 流水先追加，再在同一事务更新余额和 Completion。重复提交返回首次结果；重复/冲突审核返回 409，不能重复发奖。XP 的奖励事实保存在 Completion 快照并更新 `child_progress`。
 
@@ -54,4 +60,4 @@
 | 409 | `CONFLICT` | 状态、并发或幂等键冲突 |
 | 429 | `PIN_LOCKED` | PIN 失败达到阈值，暂时锁定 |
 
-字段、校验、Bearer scheme 和完整响应以 [OpenAPI 3.1](../openapi.yaml) 为机器契约。Stage 7 的纯模拟基金接口在完成前不提前声明。
+字段、校验、Bearer scheme 和完整响应以 [OpenAPI 3.1](../openapi.yaml) 为机器契约。

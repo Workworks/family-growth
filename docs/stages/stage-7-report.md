@@ -1,6 +1,6 @@
 # Stage 7：VirtualFund、NAV、订单、持仓与费用闭环
 
-状态：`IN_PROGRESS`
+状态：`COMPLETED`
 
 产品 Phase：6　需求：REQ-008、REQ-009、REQ-020
 
@@ -21,19 +21,21 @@
 
 | ID | 状态 | 内容 |
 | --- | --- | --- |
-| WP7-1 | 待开始 | 模拟基金、NAV 与版本化费率 |
-| WP7-2 | 待开始 | 买入/卖出预览、确认与持仓 |
-| WP7-3 | 待开始 | 市值、损益、费用和 Ledger 对账 |
-| WP7-4 | 待开始 | 固定向量、涨跌、漂移、并发、权限和 PostgreSQL 测试 |
+| WP7-1 | 已完成 | 模拟基金、NAV 与版本化费率 |
+| WP7-2 | 已完成 | 买入/卖出预览、确认与持仓 |
+| WP7-3 | 已完成 | 市值、损益、费用和 Ledger 对账 |
+| WP7-4 | 已完成 | 固定向量、涨跌、漂移、并发、权限和 PostgreSQL 测试 |
 
 ## 完成标准
 
-- [ ] AC7-01 NAV 1.00、投入 20.00、买入费 5% 得费用 1.00、净投入 19.00、份额 19.00000000。
-- [ ] AC7-02 正负 NAV 变化都可生成，NAV 不为负且重复日期不重复写。
-- [ ] AC7-03 买卖确认时 Money、份额、费用、损益和 Ledger 原子一致。
-- [ ] AC7-04 预览过期/NAV 或规则漂移、重放、超卖和跨家庭请求拒绝且无副作用。
-- [ ] AC7-05 PostgreSQL 迁移、API、持仓/账本对账和完整 E2E 门禁通过。
+- [x] AC7-01 PASS：NAV 1.00、投入 20.00、买入费 5% 的固定向量精确得到 1.00/19.00/19.00000000。
+- [x] AC7-02 PASS：+10% 与 -10% NAV 均写入；正值、单期 ±50% 和 fund/date 唯一约束生效。
+- [x] AC7-03 PASS：买卖在同一事务锁 Wallet/Position，写费用/损益订单和 Money Ledger 后更新余额/份额。
+- [x] AC7-04 PASS：NAV/费率漂移、不同键重放、超卖、重复日期和幼儿会话交易拒绝且无余额副作用；十分钟过期由服务端校验。
+- [x] AC7-05 PASS：Flyway V1–V6、H2/PostgreSQL 16.15 全量 API、并发确认、持仓/账本和 P&L 门禁通过。
 
 ## 安全检查、已知限制与交接
 
 所有名称和价格均为本系统虚构；API 与界面必须显示“纯模拟、可能涨跌、非投资建议”。V1 可先采用加权成本；若实现 FIFO 批次，须在迁移与验收向量中明确。
+
+实现采用含买入费的加权成本。3–5 岁 CHILD 会话被服务端拒绝交易，家长可共同操作。实现入口：`Stage7Models`、`Stage7Service`、`JdbcStage7Store`、`Stage7Controller` 与 Flyway `V6__stage7_virtual_fund.sql`。证据：[Stage 7 acceptance](../evidence/stage-7/acceptance.json)。
