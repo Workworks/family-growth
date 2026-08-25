@@ -1,6 +1,6 @@
 # Stage 3：生产认证、TaskCompletion、审核与奖励闭环
 
-状态：`IN_PROGRESS`
+状态：`COMPLETED`
 
 产品 Phase：2　需求：REQ-001、REQ-002、REQ-005、REQ-020
 
@@ -24,11 +24,11 @@
 
 | ID | 状态 | 内容 |
 | --- | --- | --- |
-| WP3-1 | 进行中 | 生产认证、PIN 锁定、会话与服务端角色上下文 |
-| WP3-2 | 待开始 | TaskCompletion 领域状态机、迁移和持久化 |
-| WP3-3 | 待开始 | 审核、XP/Coin/Money 奖励与最小账本原子事务 |
-| WP3-4 | 待开始 | REST/OpenAPI、401/403/404/409 和幂等集成测试 |
-| WP3-5 | 待开始 | PostgreSQL 目标库验证、证据和 Stage commit |
+| WP3-1 | 完成 | 生产认证、PIN 锁定、会话与服务端角色上下文 |
+| WP3-2 | 完成 | TaskCompletion 领域状态机、迁移和持久化 |
+| WP3-3 | 完成 | 审核、XP/Coin/Money 奖励与最小账本原子事务 |
+| WP3-4 | 完成 | REST/OpenAPI、401/403/404/409 和幂等集成测试 |
+| WP3-5 | 完成 | PostgreSQL 目标库验证、证据和 Stage commit |
 
 ## 数据与 API 变化
 
@@ -45,12 +45,14 @@
 
 ## 完成标准
 
-- [ ] AC3-01 bootstrap/login 使用 BCrypt PIN，连续失败触发限时锁定，会话持久化为哈希。
-- [ ] AC3-02 孩子只能为本人和本家庭任务提交 Completion，非法对象返回 404。
-- [ ] AC3-03 家长批准一次后 XP/Coin/Money 与 Ledger 原子一致，重复审核或重放不重复发放。
-- [ ] AC3-04 401/403/404/409、Bean Validation 与统一错误结构自动化通过。
-- [ ] AC3-05 PostgreSQL 16 迁移、约束和集成门禁通过并形成可回放证据。
+- [x] AC3-01 `PASS`：bootstrap/login 使用 BCrypt cost 12；连续五次失败锁定 15 分钟；会话只存 SHA-256 哈希。
+- [x] AC3-02 `PASS`：孩子只能为本人和本家庭任务提交 Completion，跨家庭/孩子/任务对象返回 404。
+- [x] AC3-03 `PASS`：批准一次后 XP/Coin/Money 与两条 Ledger 原子一致，提交重放复用结果，重复审核 409 且不重复发奖。
+- [x] AC3-04 `PASS`：401/403/404/409、Bean Validation 与统一错误结构自动化通过。
+- [x] AC3-05 `PASS`：PostgreSQL 16.15 完整 API、Flyway V1/V2、Hibernate validate 和 13 表断言通过，见 [证据](../evidence/stage-3/acceptance.json)。
 
 ## 安全检查、已知限制与交接
 
 生产认证是本 Stage 的组成部分，不允许用请求头自报角色代替。bootstrap 只创建新家庭首位家长；后续家长邀请在 Stage 8 后深化。Android 仍使用 Stage 13 本地引擎，服务端联调属于 Stage 8–9。
+
+实现期间两次预期内校正已留证：旧匿名 API 测试被 fail-closed 401 拒绝；JPA→JDBC 外键顺序通过显式 flush 修复。没有把这些执行输入/集成顺序问题登记为产品 Bug。

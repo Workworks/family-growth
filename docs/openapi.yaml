@@ -1,41 +1,70 @@
 openapi: 3.1.0
 info:
   title: Family Growth API
-  version: 0.1.1
-  description: Stage 2 已实现的家庭成长基础创建接口；生产认证尚未实现。
+  version: 0.3.0
+  description: Stage 3 生产认证、家庭成长、任务提交审核、三奖励与 Wallet/Ledger API。
 servers:
   - url: /api/v1
+security:
+  - bearerAuth: []
 paths:
-  /families:
+  /auth/bootstrap:
     post:
-      operationId: createFamily
+      operationId: bootstrapFamily
+      security: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateFamily'
-      responses:
-        '201':
-          description: Family created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
-  /families/{familyId}/parents:
-    post:
-      operationId: addParent
-      parameters:
-        - $ref: '#/components/parameters/FamilyId'
-      requestBody:
-        $ref: '#/components/requestBodies/Named'
+              $ref: '#/components/schemas/BootstrapRequest'
       responses:
         '201':
           $ref: '#/components/responses/Created'
         '400':
           $ref: '#/components/responses/ValidationError'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /auth/login:
+    post:
+      operationId: loginParent
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          description: PIN temporarily locked after repeated failures
+  /auth/child-sessions:
+    post:
+      operationId: createChildSession
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [childId]
+              properties:
+                childId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          $ref: '#/components/responses/Created'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
   /families/{familyId}/children:
@@ -54,6 +83,10 @@ paths:
           $ref: '#/components/responses/Created'
         '400':
           $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
   /families/{familyId}/children/{childId}/plans:
@@ -61,12 +94,7 @@ paths:
       operationId: createGrowthPlan
       parameters:
         - $ref: '#/components/parameters/FamilyId'
-        - name: childId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+        - $ref: '#/components/parameters/ChildId'
       requestBody:
         required: true
         content:
@@ -78,6 +106,10 @@ paths:
           $ref: '#/components/responses/Created'
         '400':
           $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
   /families/{familyId}/plans/{planId}/goals:
@@ -102,6 +134,10 @@ paths:
           $ref: '#/components/responses/Created'
         '400':
           $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
   /families/{familyId}/goals/{goalId}/tasks:
@@ -126,9 +162,120 @@ paths:
           $ref: '#/components/responses/Created'
         '400':
           $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /families/{familyId}/children/{childId}/tasks/{taskId}/completions:
+    post:
+      operationId: submitTaskCompletion
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                evidenceNote:
+                  type: [string, 'null']
+                  maxLength: 1000
+      responses:
+        '201':
+          $ref: '#/components/responses/Created'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /families/{familyId}/completions/{completionId}/review:
+    post:
+      operationId: reviewTaskCompletion
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - name: completionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewCompletion'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /families/{familyId}/children/{childId}/wallet:
+    get:
+      operationId: getWallet
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /families/{familyId}/children/{childId}/ledger:
+    get:
+      operationId: getLedger
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
   parameters:
     FamilyId:
       name: familyId
@@ -137,14 +284,28 @@ components:
       schema:
         type: string
         format: uuid
-  requestBodies:
-    Named:
+    ChildId:
+      name: childId
+      in: path
       required: true
+      schema:
+        type: string
+        format: uuid
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 100
+  responses:
+    Ok:
+      description: Operation succeeded
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Named'
-  responses:
+            $ref: '#/components/schemas/ApiResponse'
     Created:
       description: Resource created
       content:
@@ -157,35 +318,68 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiResponse'
+    Unauthorized:
+      description: Missing, invalid or expired Bearer session
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+    Forbidden:
+      description: Authenticated role cannot perform this operation
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
     NotFound:
-      description: Resource not found or not visible in the family scope
+      description: Resource does not exist or is not visible in this family scope
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+    Conflict:
+      description: State or idempotency conflict
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiResponse'
   schemas:
-    CreateFamily:
+    BootstrapRequest:
       type: object
-      required: [name]
+      required: [familyName, parentName, pin]
       properties:
-        name:
+        familyName:
           type: string
           minLength: 1
           maxLength: 100
-    Named:
-      type: object
-      required: [displayName]
-      properties:
-        displayName:
+        parentName:
           type: string
           minLength: 1
           maxLength: 80
+        pin:
+          type: string
+          pattern: '^\\d{6}$'
+          writeOnly: true
+    LoginRequest:
+      type: object
+      required: [familyId, parentId, pin]
+      properties:
+        familyId:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+        pin:
+          type: string
+          pattern: '^\\d{6}$'
+          writeOnly: true
     CreateChild:
       type: object
       required: [displayName, birthDate, ageStage]
       properties:
         displayName:
           type: string
+          minLength: 1
           maxLength: 80
         birthDate:
           type: string
@@ -199,6 +393,7 @@ components:
       properties:
         title:
           type: string
+          minLength: 1
           maxLength: 120
         description:
           type: [string, 'null']
@@ -215,6 +410,7 @@ components:
       properties:
         title:
           type: string
+          minLength: 1
           maxLength: 120
         description:
           type: [string, 'null']
@@ -225,6 +421,7 @@ components:
       properties:
         title:
           type: string
+          minLength: 1
           maxLength: 120
         description:
           type: [string, 'null']
@@ -239,6 +436,27 @@ components:
           type: integer
           minimum: 1
           maximum: 480
+    ReviewCompletion:
+      type: object
+      required: [approved, xpReward, coinReward, moneyReward]
+      properties:
+        approved:
+          type: boolean
+        xpReward:
+          type: integer
+          format: int64
+          minimum: 0
+        coinReward:
+          type: integer
+          format: int64
+          minimum: 0
+        moneyReward:
+          type: number
+          multipleOf: 0.01
+          minimum: 0
+        reviewNote:
+          type: [string, 'null']
+          maxLength: 1000
     ApiError:
       type: object
       required: [code, message]

@@ -104,6 +104,7 @@
 
 - [Stage 1](evidence/stage-1/acceptance.json)
 - [Stage 2](evidence/stage-2/acceptance.json)
+- [Stage 3](evidence/stage-3/acceptance.json)
 - [Stage 11](evidence/stage-11/acceptance.json)
 - [Stage 12](evidence/stage-12/acceptance.json)
 - [Stage 13](evidence/stage-13/acceptance.json)

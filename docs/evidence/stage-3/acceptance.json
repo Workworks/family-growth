@@ -1,0 +1,65 @@
+{
+  "capturedAt": "2026-08-25T18:14:00+08:00",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+  "shellType": "PowerShell",
+  "passed": true,
+  "summary": "Stage 3 production authentication, task completion review and atomic XP/Coin/Money reward flow passed isolated H2 and full PostgreSQL 16.15 API gates.",
+  "environment": {
+    "java": "17.0.8",
+    "maven": "3.9.16 via repository wrapper",
+    "postgres": "16.15",
+    "postgresImage": "postgres:16-alpine",
+    "postgresImageDigest": "sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685",
+    "containerLifecycle": "temporary localhost-only container; stopped and removed after the gate"
+  },
+  "commands": [
+    {
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am test -DskipTests",
+      "exitCode": 1,
+      "passed": false,
+      "result": "Initial compile stopped on a Java record accessor/static helper name shadow; the helper call was qualified before retry."
+    },
+    {
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am test",
+      "exitCode": 1,
+      "passed": false,
+      "result": "Legacy anonymous Stage 2 API tests received the expected new fail-closed 401 and were replaced with authenticated Stage 3 scenarios."
+    },
+    {
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am test",
+      "exitCode": 1,
+      "passed": false,
+      "result": "First authenticated flow exposed deferred JPA flush before JDBC foreign-key writes; explicit parent/child saveAndFlush fixed the transaction ordering."
+    },
+    {
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am test",
+      "exitCode": 0,
+      "passed": true,
+      "result": "H2 PostgreSQL-mode isolation gate passed: 6 domain tests and 4 executed boot tests passed; the PostgreSQL-only schema test was skipped by environment condition."
+    },
+    {
+      "command": "start temporary PostgreSQL 16 container; set test datasource environment; .\\mvnw.cmd -pl family-growth-boot -am test; stop container",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Full API suite and schema validation ran on PostgreSQL 16.15. Six domain tests plus five boot tests passed with zero failures/errors/skips; Flyway V1/V2 and 13 required tables validated."
+    },
+    {
+      "command": "parse docs/openapi.yaml with PyYAML",
+      "exitCode": 0,
+      "passed": true,
+      "result": "OpenAPI 3.1.0 parsed with 11 implemented paths."
+    }
+  ],
+  "acceptance": {
+    "AC3-01": "PASS - BCrypt cost 12 hashes are stored instead of PIN values; opaque session tokens are stored only as 64-character SHA-256 hashes; five failed attempts lock login for 15 minutes.",
+    "AC3-02": "PASS - child submission is restricted to the authenticated child and joined family/plan/task ownership; cross-family access returns 404.",
+    "AC3-03": "PASS - approved completion atomically updates XP, Coin and Money and creates exactly two Money/Coin ledger records for the test vector; replay does not duplicate completion or rewards.",
+    "AC3-04": "PASS - automated negative cases cover missing token 401, CHILD review 403, cross-family 404, repeated review 409 and validation 400.",
+    "AC3-05": "PASS - PostgreSQL 16.15 ran the complete API scenario, Flyway migrations, Hibernate validation and table assertions."
+  },
+  "security": {
+    "secretsInEvidence": false,
+    "rawPinOrSessionStored": false,
+    "realFinancialIntegration": false
+  }
+}

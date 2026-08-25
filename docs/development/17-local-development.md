@@ -9,7 +9,7 @@
 .\mvnw.cmd -pl family-growth-boot -am spring-boot:run
 ```
 
-默认隔离测试可使用 H2；正式验收使用 PostgreSQL，环境变量和凭据不得提交。当前 API 尚无生产认证，不应绑定到不受信网络。
+默认隔离测试可使用 H2；正式验收使用 PostgreSQL，环境变量和凭据不得提交。Stage 3 API 已 fail-closed 并使用 Bearer 会话/BCrypt PIN，但正式局域网部署仍必须配置可信 TLS，不应绑定到不受信网络。
 
 ## Android
 

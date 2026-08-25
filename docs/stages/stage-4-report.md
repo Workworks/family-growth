@@ -1,6 +1,6 @@
 # Stage 4：Wallet 与 Ledger 生产闭环
 
-状态：`NOT_STARTED`
+状态：`IN_PROGRESS`
 
 产品 Phase：3　需求：REQ-005、REQ-009、REQ-020
 

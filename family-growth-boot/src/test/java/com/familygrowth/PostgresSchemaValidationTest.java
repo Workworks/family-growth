@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-@EnabledIfEnvironmentVariable(named = "STAGE2_POSTGRES_URL", matches = ".+")
+@EnabledIfEnvironmentVariable(named = "FAMILY_GROWTH_TEST_POSTGRES_URL", matches = ".+")
 @SpringBootTest(properties = {
-    "spring.datasource.url=${STAGE2_POSTGRES_URL}",
-    "spring.datasource.username=${STAGE2_POSTGRES_USER}",
+    "spring.datasource.url=${FAMILY_GROWTH_TEST_POSTGRES_URL}",
+    "spring.datasource.username=${FAMILY_GROWTH_TEST_POSTGRES_USER:family_growth}",
     "spring.datasource.password=",
     "spring.jpa.hibernate.ddl-auto=validate"
 })
@@ -21,11 +21,13 @@ class PostgresSchemaValidationTest {
     void flywayMigratesAndHibernateValidatesOnPostgres() {
         Integer successfulMigrations = jdbc.queryForObject(
             "select count(*) from flyway_schema_history where success = true", Integer.class);
-        Integer coreTables = jdbc.queryForObject(
+        Integer productionTables = jdbc.queryForObject(
             "select count(*) from information_schema.tables where table_schema = 'public' " +
-                "and table_name in ('family','parent_profile','child_profile','growth_plan','growth_goal','growth_task')",
+                "and table_name in ('family','parent_profile','child_profile','growth_plan','growth_goal','growth_task'," +
+                "'parent_pin_credential','auth_session','child_progress','wallet','task_completion'," +
+                "'ledger_entry','idempotency_operation')",
             Integer.class);
-        assertThat(successfulMigrations).isEqualTo(1);
-        assertThat(coreTables).isEqualTo(6);
+        assertThat(successfulMigrations).isEqualTo(2);
+        assertThat(productionTables).isEqualTo(13);
     }
 }

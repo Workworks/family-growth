@@ -11,7 +11,7 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P0 | 3 | `IN_PROGRESS` | 完成生产认证、任务提交审核、三类奖励、最小 Wallet/Ledger、权限与 PostgreSQL 门禁 | Agent | Stage 3 Spec/证据/commit |
+| P0 | 4 | `IN_PROGRESS` | 完成通用 Wallet/Ledger 调账、对账、并发、重放、权限与 PostgreSQL 门禁 | Agent | Stage 4 Spec/证据/commit |
 | P0 | 14 | `BLOCKED` | 用 Android 真机/平板安装 0.2.0 release，通过 App 更新至 0.2.1并验证数据保留/失败路径 | 用户提供设备；Agent 回放 | Stage 14 真机证据 |
 | P0 | 2 | `BLOCKED` | 连接 Android 真机/平板，或明确授权重装共享 API 34 system image | 用户提供条件；Agent 回放 | 安装、启动、旋转、截图与结构化证据 |
 | P1 | 13 | `BLOCKED` | 连接 Android 真机/平板，安装 0.2.0 包并回放任务/钱包/PIN/限时/重启持久化 | 用户提供条件；Agent 回放 | Stage 13 真机截图与结构化证据 |
@@ -21,7 +21,7 @@
 
 | 顺序 | Stage | 主题 | 前置条件 |
 | ---: | ---: | --- | --- |
-| 1 | 4–7 | Wallet/Ledger、兑换、商店储蓄愿望、纯模拟基金 | Stage 3 完成后按 Spec 顺序推进 |
+| 1 | 5–7 | 兑换、商店储蓄愿望、纯模拟基金 | Stage 4 完成后按 Spec 顺序推进 |
 | 2 | 8–10 | 服务端联调、深度定制与 V1 总验收 | 需要前序后端闭环、部署环境和 Android 设备 |
 
 ## 3. 只能由外部条件解除

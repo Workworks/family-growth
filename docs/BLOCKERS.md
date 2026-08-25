@@ -76,11 +76,11 @@
 
 ### Stage 3–10：V1 生产服务端深度业务
 
-状态：Stage 3 `IN_PROGRESS`，Stage 4–10 `NOT_STARTED`　文档：[Stage 路线图](stages/stage-roadmap.md)
+状态：Stage 3 `COMPLETED`，Stage 4 `IN_PROGRESS`，Stage 5–10 `NOT_STARTED`　文档：[Stage 路线图](stages/stage-roadmap.md)
 
 Stage 13 已提供这些领域的 Android 本机基础体验，但尚未建设生产级服务端任务完成域、事务 Wallet/Ledger、认证/RBAC、多端同步、复杂配置、跨域报告和 V1 端到端总验收。
 
-当前推进：REQ-020 已启动 Stage 3–7，五份 Spec 已补齐；Stage 3 正在实现，Stage 4–7 等待前序不变量门禁。
+当前推进：REQ-020 已启动 Stage 3–7，五份 Spec 已补齐；Stage 3 在 PostgreSQL 通过，Stage 4 正在实现，Stage 5–7 等待账本门禁。
 
 解除方式：按 Stage 3→10 的 Spec 顺序继续工程开发；每个 Stage 仅在前序门禁通过后进入 `IN_PROGRESS`。
 
@@ -89,7 +89,7 @@ Stage 13 已提供这些领域的 Android 本机基础体验，但尚未建设�
 ## 3. 当前已知限制
 
 - 现有 v0.2.0/v0.2.1 APK 是稳定 release 签名包；历史 debug APK 仅供内部证据，不能与 release 包互相覆盖。
-- 现有基础 API 尚未实现生产认证与家长 PIN，不可直接部署为可用产品。
+- Stage 3 已实现生产认证/PIN/RBAC；家庭局域网正式部署仍需可信 TLS、备份和 Stage 4–10 业务闭环。
 - AGP 8.7.3 对 compileSdk 36 有兼容警告；构建通过，但应在后续 Android 依赖 Stage 对齐。
 - H2 只用于隔离测试；正式验收数据库基线是 PostgreSQL。
 

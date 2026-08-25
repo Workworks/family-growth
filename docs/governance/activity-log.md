@@ -62,3 +62,7 @@
 | 54 | 14 | 收敛真实更新状态 | 公开仓库、签名、Secrets、两版 Release 和远端契约全部完成；只缺 Android 设备上的系统确认与数据保留，Stage 14 标记 `BLOCKED` | Stage 14、BLOCKERS/TODO/current |
 | 55 | 14 | 执行发布链收尾门禁 | 文档链接与 207 个 JSON 文件通过；首次 OpenAPI 检查引用旧路径而中止，定位实际文件 `docs/openapi.yaml` 后重跑完整门禁 | Stage 14 evidence、活动日志 |
 | 56 | 3–7 | 用户恢复生产后端闭环主线 | 登记 REQ-020/P0，REQ-016 改为被部分取代；按 Stage 3→7 顺序建立认证、任务奖励、账本、兑换、商店储蓄愿望和纯模拟基金 Spec | Stage 3–7 报告 |
+| 57 | 3 | 实现生产认证与权限边界 | 新增 BCrypt PIN、五次失败/15 分钟锁定、仅存 SHA-256 的 12 小时 Bearer 会话、PARENT/CHILD RBAC 和家庭/孩子对象 404 | Stage 3、OpenAPI |
+| 58 | 3 | 实现 Completion 与三奖励原子事务 | Flyway V2 新增 7 张生产表；孩子提交、家长审核、XP/Coin/Money、两条不可变流水与幂等记录在同事务完成 | Stage 3 code/evidence |
+| 59 | 3 | 修正 JPA/JDBC 写入顺序 | 首次集成测试发现 JPA 延迟 flush 导致凭据/钱包外键先写；家长/孩子跨边界保存改为 saveAndFlush，失败整体回滚 | Stage 3 evidence |
+| 60 | 3/4 | 完成 Stage 3 并启动 Stage 4 | H2 与 PostgreSQL 16.15 全 API 门禁通过；OpenAPI 3.1/11 paths 可解析；Stage 3 收口，Stage 4 转 IN_PROGRESS | Stage 3 evidence、Stage 4 Spec |
