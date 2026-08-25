@@ -1,0 +1,40 @@
+{
+  "capturedAt": "2026-08-25T18:20:00+08:00",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+  "shellType": "PowerShell",
+  "passed": true,
+  "summary": "Stage 4 parent adjustments, immutable ledger reconciliation, idempotent replay, nonnegative balance and PostgreSQL concurrent debit gates passed.",
+  "environment": {
+    "java": "17.0.8",
+    "postgres": "16.15",
+    "postgresImage": "postgres:16-alpine",
+    "containerLifecycle": "temporary localhost-only container; stopped and removed after the gate"
+  },
+  "commands": [
+    {
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am test",
+      "exitCode": 0,
+      "passed": true,
+      "result": "H2 PostgreSQL-mode gate passed with adjustment/replay/role/overdraft/reconciliation scenarios; PostgreSQL-only schema and concurrency tests were skipped by environment condition."
+    },
+    {
+      "command": "start temporary PostgreSQL 16 container; set test datasource environment; .\\mvnw.cmd -pl family-growth-boot -am test; stop container",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Six domain tests and six boot tests passed with zero failures/errors/skips. Flyway V1-V3 validated; two concurrent -7.00 debits against 10.00 allowed exactly one success, leaving 3.00 and a balanced ledger."
+    }
+  ],
+  "acceptance": {
+    "AC4-01": "PASS - authenticated parent/own-child wallet and ledger queries are available; family/object scope is enforced by Stage 3 sessions.",
+    "AC4-02": "PASS - parent adjustment requires a nonempty reason and Idempotency-Key and writes Ledger before Wallet in one transaction.",
+    "AC4-03": "PASS - PostgreSQL FOR UPDATE concurrency test allowed one of two conflicting debits and prevented a negative balance.",
+    "AC4-04": "PASS - reconciliation compares summed Money/Coin deltas to Wallet and returned balanced=true; no ledger mutation API exists and database arithmetic/nonnegative/idempotency constraints apply.",
+    "AC4-05": "PASS - H2 isolation and PostgreSQL 16.15 migration/API/concurrency gates passed."
+  },
+  "security": {
+    "childAdjustmentDenied": true,
+    "crossFamilyHiddenAs404": true,
+    "realFinancialIntegration": false,
+    "secretsInEvidence": false
+  }
+}

@@ -76,11 +76,11 @@
 
 ### Stage 3–10：V1 生产服务端深度业务
 
-状态：Stage 3 `COMPLETED`，Stage 4 `IN_PROGRESS`，Stage 5–10 `NOT_STARTED`　文档：[Stage 路线图](stages/stage-roadmap.md)
+状态：Stage 3–4 `COMPLETED`，Stage 5 `IN_PROGRESS`，Stage 6–10 `NOT_STARTED`　文档：[Stage 路线图](stages/stage-roadmap.md)
 
 Stage 13 已提供这些领域的 Android 本机基础体验，但尚未建设生产级服务端任务完成域、事务 Wallet/Ledger、认证/RBAC、多端同步、复杂配置、跨域报告和 V1 端到端总验收。
 
-当前推进：REQ-020 已启动 Stage 3–7，五份 Spec 已补齐；Stage 3 在 PostgreSQL 通过，Stage 4 正在实现，Stage 5–7 等待账本门禁。
+当前推进：REQ-020 已启动 Stage 3–7，五份 Spec 已补齐；Stage 3–4 在 PostgreSQL 通过，Stage 5 正在实现，Stage 6–7 等待交易门禁。
 
 解除方式：按 Stage 3→10 的 Spec 顺序继续工程开发；每个 Stage 仅在前序门禁通过后进入 `IN_PROGRESS`。
 

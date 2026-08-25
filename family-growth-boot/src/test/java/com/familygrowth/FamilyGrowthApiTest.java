@@ -133,6 +133,48 @@ class FamilyGrowthApiTest {
             "SELECT COUNT(*) FROM task_completion WHERE id = ?", Integer.class, completion)).isEqualTo(1);
         assertThat(jdbc.queryForObject(
             "SELECT COUNT(*) FROM ledger_entry WHERE business_id = ?", Integer.class, completion)).isEqualTo(2);
+
+        MvcResult adjustment = mvc.perform(post("/api/v1/families/" + parent.familyId
+                + "/children/" + child + "/wallet/adjustments")
+            .header("Authorization", bearer(parent.token))
+            .header("Idempotency-Key", "adjust-money-1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"assetType\":\"MONEY\",\"delta\":10.00,\"reason\":\"月度预算调整\"}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.afterBalance").value(12.00))
+            .andReturn();
+        String adjustmentId = text(adjustment, "data", "id");
+        mvc.perform(post("/api/v1/families/" + parent.familyId
+                + "/children/" + child + "/wallet/adjustments")
+            .header("Authorization", bearer(parent.token))
+            .header("Idempotency-Key", "adjust-money-1")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"assetType\":\"MONEY\",\"delta\":10.00,\"reason\":\"重试\"}"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.id").value(adjustmentId));
+        mvc.perform(post("/api/v1/families/" + parent.familyId
+                + "/children/" + child + "/wallet/adjustments")
+            .header("Authorization", bearer(childToken))
+            .header("Idempotency-Key", "child-adjust-denied")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"assetType\":\"MONEY\",\"delta\":1.00,\"reason\":\"越权\"}"))
+            .andExpect(status().isForbidden());
+        mvc.perform(post("/api/v1/families/" + parent.familyId
+                + "/children/" + child + "/wallet/adjustments")
+            .header("Authorization", bearer(parent.token))
+            .header("Idempotency-Key", "overdraw-denied")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"assetType\":\"MONEY\",\"delta\":-100.00,\"reason\":\"超额扣减\"}"))
+            .andExpect(status().isConflict());
+        mvc.perform(get("/api/v1/families/" + parent.familyId
+                + "/children/" + child + "/wallet/reconciliation")
+            .header("Authorization", bearer(parent.token)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.walletMoney").value(12.00))
+            .andExpect(jsonPath("$.data.ledgerMoney").value(12.00))
+            .andExpect(jsonPath("$.data.walletCoin").value(100))
+            .andExpect(jsonPath("$.data.ledgerCoin").value(100))
+            .andExpect(jsonPath("$.data.balanced").value(true));
     }
 
     @Test

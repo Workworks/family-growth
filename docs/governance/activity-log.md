@@ -66,3 +66,5 @@
 | 58 | 3 | 实现 Completion 与三奖励原子事务 | Flyway V2 新增 7 张生产表；孩子提交、家长审核、XP/Coin/Money、两条不可变流水与幂等记录在同事务完成 | Stage 3 code/evidence |
 | 59 | 3 | 修正 JPA/JDBC 写入顺序 | 首次集成测试发现 JPA 延迟 flush 导致凭据/钱包外键先写；家长/孩子跨边界保存改为 saveAndFlush，失败整体回滚 | Stage 3 evidence |
 | 60 | 3/4 | 完成 Stage 3 并启动 Stage 4 | H2 与 PostgreSQL 16.15 全 API 门禁通过；OpenAPI 3.1/11 paths 可解析；Stage 3 收口，Stage 4 转 IN_PROGRESS | Stage 3 evidence、Stage 4 Spec |
+| 61 | 4 | 完成通用 Wallet/Ledger 闭环 | 新增家长正负调账、强制原因/幂等键、数据库唯一约束和对账 API；PostgreSQL 两笔并发 -7/10 仅一笔成功，余额 3 且对账通过 | Stage 4 evidence |
+| 62 | 4/5 | 收口 Stage 4 并启动 Stage 5 | H2/PG、权限、超扣、重放、并发与对账门禁完成；Stage 5 转 IN_PROGRESS | Stage 4/5 报告 |

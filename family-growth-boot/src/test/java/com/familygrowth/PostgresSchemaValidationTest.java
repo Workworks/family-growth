@@ -27,7 +27,7 @@ class PostgresSchemaValidationTest {
                 "'parent_pin_credential','auth_session','child_progress','wallet','task_completion'," +
                 "'ledger_entry','idempotency_operation')",
             Integer.class);
-        assertThat(successfulMigrations).isEqualTo(2);
+        assertThat(successfulMigrations).isEqualTo(3);
         assertThat(productionTables).isEqualTo(13);
     }
 }

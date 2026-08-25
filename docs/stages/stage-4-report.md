@@ -1,6 +1,6 @@
 # Stage 4：Wallet 与 Ledger 生产闭环
 
-状态：`IN_PROGRESS`
+状态：`COMPLETED`
 
 产品 Phase：3　需求：REQ-005、REQ-009、REQ-020
 
@@ -21,10 +21,10 @@
 
 | ID | 状态 | 内容 |
 | --- | --- | --- |
-| WP4-1 | 待开始 | Wallet/Ledger 领域运算、entry type 与规则 |
-| WP4-2 | 待开始 | 原子余额更新、幂等持久化和不可变约束 |
-| WP4-3 | 待开始 | 查询、家长调账、对账 API |
-| WP4-4 | 待开始 | 精度、负余额、并发、重放和 PostgreSQL 门禁 |
+| WP4-1 | 完成 | Wallet/Ledger 领域运算、entry type 与规则 |
+| WP4-2 | 完成 | 原子余额更新、幂等持久化和不可变约束 |
+| WP4-3 | 完成 | 查询、家长调账、对账 API |
+| WP4-4 | 完成 | 精度、负余额、并发、重放和 PostgreSQL 门禁 |
 
 ## 验证方式
 
@@ -36,11 +36,11 @@
 
 ## 完成标准
 
-- [ ] AC4-01 Money/Coin 钱包与流水查询可按家庭/孩子授权访问。
-- [ ] AC4-02 家长调账必须原因、幂等键并原子写余额与流水。
-- [ ] AC4-03 并发扣款最多成功到可用余额，余额不为负。
-- [ ] AC4-04 对账计算与 Wallet 一致；非法更新流水被数据库约束/权限设计阻止。
-- [ ] AC4-05 H2 隔离测试与 PostgreSQL 16 目标库门禁通过。
+- [x] AC4-01 `PASS`：Money/Coin 钱包与流水查询按家庭/孩子授权访问。
+- [x] AC4-02 `PASS`：家长调账强制原因/幂等键，先写流水再更新余额，单事务提交。
+- [x] AC4-03 `PASS`：PostgreSQL 同时两笔超额组合扣款仅一笔成功，最终余额 3.00 且不为负。
+- [x] AC4-04 `PASS`：Ledger delta 与 Wallet 对账为零差异；无流水修改 API，V2/V3 约束保护算术、非负和幂等。
+- [x] AC4-05 `PASS`：H2 隔离测试与 PostgreSQL 16.15 全门禁通过，见 [证据](../evidence/stage-4/acceptance.json)。
 
 ## 安全检查、已知限制与交接
 

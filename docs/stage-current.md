@@ -9,8 +9,9 @@
 | 1 | 0 | 项目立项与总体设计 | `COMPLETED` | 已进入工程迭代 |
 | 2 | 1 | 工程骨架与 Family / Growth 基础 | `BLOCKED` | Emulator 同版本官方重装无效；需授权重装共享 API 34 system image，或连接 Android 真机/平板 |
 | 3 | 2 | 生产认证、TaskCompletion、审核与奖励 | `COMPLETED` | PostgreSQL 16.15 完整 API 与权限门禁通过 |
-| 4 | 3 | Wallet/Ledger 生产闭环 | `IN_PROGRESS` | 深化家长调账、对账、并发和不可变流水 |
-| 5–7 | 4–6 | 兑换至纯模拟基金生产后端 | `NOT_STARTED` | Spec 已建立；Stage 4 通过后顺序推进 |
+| 4 | 3 | Wallet/Ledger 生产闭环 | `COMPLETED` | 调账、幂等、非负、对账和 PostgreSQL 并发门禁通过 |
+| 5 | 4 | GiftMoney、兑换规则与 Coin | `IN_PROGRESS` | 建设版本化规则、预览/确认和透明费用 |
+| 6–7 | 5–6 | 商店储蓄愿望至纯模拟基金 | `NOT_STARTED` | Spec 已建立；Stage 5 通过后顺序推进 |
 | 11 | 计划外 | GitHub Release APK 热更新与当前版本交付 | `BLOCKED` | v0.2.0/0.2.1 两版同签名 Release 已完成；只需 Android 设备回放 App 内覆盖升级 |
 | 12 | 计划外 | 参考仓库文档治理与 Agent 启动协议对齐 | `COMPLETED` | 后续每次对话持续执行 AGENTS Step 1–6 和需求永久登记 |
 | 13 | 计划外 | Stage 2–11 基础体验宽度与 Android 前端完善 | `BLOCKED` | 代码、自动化和 0.2.0 APK 已交付；需 Android 真机/平板回放交互、计时与重启持久化 |
@@ -26,7 +27,7 @@ Stage 13 的可离线工程工作已收口：Android 本地基础体验覆盖任
 
 Stage 14 已完成公开仓库、分阶段提交、main 推送、稳定签名备份/Secrets、Android 更新源绑定和 v0.2.0→v0.2.1 两版公开 Release；latest API、digest、版本和同证书下载复验均通过。只缺 Android 真机/平板覆盖升级与数据保留，因此保持 `BLOCKED`。
 
-REQ-020 已恢复 Stage 3–7 生产后端闭环。Stage 3 已完成服务端认证、RBAC/对象权限、TaskCompletion 与 XP/Coin/Money 原子奖励；Stage 4 当前深化通用 Wallet/Ledger，Stage 5–7 不跨越账本门禁提前标记启动。
+REQ-020 已恢复 Stage 3–7 生产后端闭环。Stage 3–4 已完成认证、任务奖励和 Wallet/Ledger；Stage 5 当前建设 GiftMoney 与双向兑换，Stage 6–7 不跨越交易门禁提前标记启动。
 
 ## 关键决策快照
 

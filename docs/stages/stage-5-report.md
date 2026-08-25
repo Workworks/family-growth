@@ -1,6 +1,6 @@
 # Stage 5：GiftMoney、兑换规则与 Coin 闭环
 
-状态：`NOT_STARTED`
+状态：`IN_PROGRESS`
 
 产品 Phase：4　需求：REQ-005、REQ-007、REQ-009、REQ-020
 

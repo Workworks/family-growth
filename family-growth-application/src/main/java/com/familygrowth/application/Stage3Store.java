@@ -5,6 +5,7 @@ import com.familygrowth.domain.Stage3Models.LedgerEntry;
 import com.familygrowth.domain.Stage3Models.RewardGrant;
 import com.familygrowth.domain.Stage3Models.TaskCompletion;
 import com.familygrowth.domain.Stage3Models.Wallet;
+import com.familygrowth.domain.Stage3Models.WalletReconciliation;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -33,4 +34,10 @@ public interface Stage3Store {
         RewardGrant rewards, String reviewNote, String idempotencyKey, Instant now);
     Wallet getWallet(UUID familyId, UUID childId);
     List<LedgerEntry> getLedger(UUID familyId, UUID childId, int limit);
+    Optional<LedgerEntry> findAdjustment(UUID familyId, String idempotencyKey);
+    LedgerEntry adjustWallet(
+        UUID familyId, UUID childId, UUID actorId,
+        com.familygrowth.domain.Stage3Models.AssetType assetType,
+        java.math.BigDecimal delta, String reason, String idempotencyKey, Instant now);
+    WalletReconciliation reconcile(UUID familyId, UUID childId);
 }

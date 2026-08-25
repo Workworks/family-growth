@@ -93,6 +93,22 @@ public final class Stage3Models {
         }
     }
 
+    public record WalletReconciliation(
+        UUID familyId,
+        UUID childId,
+        BigDecimal walletMoney,
+        BigDecimal ledgerMoney,
+        long walletCoin,
+        long ledgerCoin,
+        boolean balanced
+    ) {
+        public WalletReconciliation {
+            walletMoney = money(walletMoney);
+            ledgerMoney = money(ledgerMoney);
+            balanced = walletMoney.compareTo(ledgerMoney) == 0 && walletCoin == ledgerCoin;
+        }
+    }
+
     public record RewardGrant(long xp, long coin, BigDecimal money) {
         public RewardGrant {
             money = Stage3Models.money(money);

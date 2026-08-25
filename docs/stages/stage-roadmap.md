@@ -5,8 +5,8 @@
 | 1 | 0 | 项目立项与总体设计 | `COMPLETED` |
 | 2 | 1 | 工程骨架、Family/Parent/Child/Growth 基础 | `BLOCKED` |
 | 3 | 2 | 生产认证、TaskCompletion、家长审核与奖励闭环 | `COMPLETED` |
-| 4 | 3 | Wallet 与 Ledger | `IN_PROGRESS` |
-| 5 | 4 | GiftMoney、ExchangeRule 与 Coin | `NOT_STARTED` |
+| 4 | 3 | Wallet 与 Ledger | `COMPLETED` |
+| 5 | 4 | GiftMoney、ExchangeRule 与 Coin | `IN_PROGRESS` |
 | 6 | 5 | RewardShop、Saving 与 Wish | `NOT_STARTED` |
 | 7 | 6 | VirtualFund、NAV、订单、持仓与费用 | `NOT_STARTED` |
 | 8 | 7 | Android 家长端/孩子端核心页面 | `NOT_STARTED` |
@@ -25,4 +25,4 @@ Stage 13 按用户最新优先级已交付 Stage 2–11 的 Android 本地基础
 
 Stage 14 将 GitHub Release 热更新提升为 P0，负责公开仓库、分 Stage Git 历史、稳定签名 Release 和真实远端更新契约；它延续 Stage 11，但不以仓库创建替代真机覆盖升级。
 
-REQ-020 已恢复 Stage 3–7 生产后端主线。Stage 3 的认证、Completion 和原子奖励已在 PostgreSQL 通过；Stage 4 当前深化通用调账、并发与对账，Stage 5–7 等待前序门禁。
+REQ-020 已恢复 Stage 3–7 生产后端主线。Stage 3–4 已在 PostgreSQL 通过；Stage 5 当前建设 GiftMoney、版本化兑换与透明费用，Stage 6–7 等待前序门禁。

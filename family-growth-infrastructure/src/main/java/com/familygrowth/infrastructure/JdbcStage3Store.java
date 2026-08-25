@@ -11,6 +11,7 @@ import com.familygrowth.domain.Stage3Models.LedgerEntry;
 import com.familygrowth.domain.Stage3Models.RewardGrant;
 import com.familygrowth.domain.Stage3Models.TaskCompletion;
 import com.familygrowth.domain.Stage3Models.Wallet;
+import com.familygrowth.domain.Stage3Models.WalletReconciliation;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -231,6 +232,79 @@ class JdbcStage3Store implements Stage3Store {
             SELECT * FROM ledger_entry WHERE family_id = ? AND child_id = ?
             ORDER BY created_at DESC, id DESC LIMIT ?
             """, this::ledger, familyId, childId, limit);
+    }
+
+    @Override
+    public Optional<LedgerEntry> findAdjustment(UUID familyId, String idempotencyKey) {
+        return jdbc.query("""
+            SELECT * FROM ledger_entry
+            WHERE family_id = ? AND entry_type = 'PARENT_ADJUSTMENT' AND idempotency_key = ?
+            """, this::ledger, familyId, idempotencyKey).stream().findFirst();
+    }
+
+    @Override
+    public LedgerEntry adjustWallet(
+        UUID familyId, UUID childId, UUID actorId, AssetType assetType,
+        BigDecimal delta, String reason, String idempotencyKey, Instant now
+    ) {
+        Wallet wallet = jdbc.query(
+            "SELECT child_id, family_id, money_balance, coin_balance, version FROM wallet " +
+                "WHERE family_id = ? AND child_id = ? FOR UPDATE",
+            this::wallet, familyId, childId).stream().findFirst()
+            .orElseThrow(FamilyGrowthService.NotFoundException::new);
+        BigDecimal before = assetType == AssetType.MONEY
+            ? wallet.moneyBalance() : BigDecimal.valueOf(wallet.coinBalance());
+        BigDecimal after = before.add(delta);
+        if (after.signum() < 0) {
+            throw new Stage3Service.ConflictException("Wallet balance cannot be negative");
+        }
+        UUID businessId = UUID.nameUUIDFromBytes(
+            ("PARENT_ADJUSTMENT:" + familyId + ":" + idempotencyKey)
+                .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        UUID groupId = UUID.randomUUID();
+        jdbc.update("""
+            INSERT INTO ledger_entry
+                (id, family_id, child_id, asset_type, delta, before_balance, after_balance,
+                 entry_type, business_type, business_id, group_id, idempotency_key,
+                 actor_id, reason, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'PARENT_ADJUSTMENT', 'PARENT_ADJUSTMENT',
+                    ?, ?, ?, ?, ?, ?)
+            """, UUID.randomUUID(), familyId, childId, assetType.name(), delta, before, after,
+            businessId, groupId, idempotencyKey, actorId, reason, ts(now));
+        if (assetType == AssetType.MONEY) {
+            jdbc.update("""
+                UPDATE wallet SET money_balance = ?, version = version + 1, updated_at = ?
+                WHERE family_id = ? AND child_id = ?
+                """, after, ts(now), familyId, childId);
+        } else {
+            long coinAfter = after.longValueExact();
+            jdbc.update("""
+                UPDATE wallet SET coin_balance = ?, version = version + 1, updated_at = ?
+                WHERE family_id = ? AND child_id = ?
+                """, coinAfter, ts(now), familyId, childId);
+        }
+        jdbc.update("""
+            INSERT INTO idempotency_operation
+                (id, family_id, operation_type, idempotency_key, result_id, created_at)
+            VALUES (?, ?, 'PARENT_ADJUSTMENT', ?, ?, ?)
+            """, UUID.randomUUID(), familyId, idempotencyKey, businessId, ts(now));
+        return findAdjustment(familyId, idempotencyKey).orElseThrow();
+    }
+
+    @Override
+    public WalletReconciliation reconcile(UUID familyId, UUID childId) {
+        Wallet wallet = getWallet(familyId, childId);
+        BigDecimal ledgerMoney = jdbc.queryForObject("""
+            SELECT COALESCE(SUM(delta), 0.00) FROM ledger_entry
+            WHERE family_id = ? AND child_id = ? AND asset_type = 'MONEY'
+            """, BigDecimal.class, familyId, childId);
+        BigDecimal ledgerCoin = jdbc.queryForObject("""
+            SELECT COALESCE(SUM(delta), 0.00) FROM ledger_entry
+            WHERE family_id = ? AND child_id = ? AND asset_type = 'COIN'
+            """, BigDecimal.class, familyId, childId);
+        return new WalletReconciliation(
+            familyId, childId, wallet.moneyBalance(), ledgerMoney,
+            wallet.coinBalance(), ledgerCoin.longValueExact(), true);
     }
 
     private void insertLedger(

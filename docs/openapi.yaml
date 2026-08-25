@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: Family Growth API
-  version: 0.3.0
-  description: Stage 3 生产认证、家庭成长、任务提交审核、三奖励与 Wallet/Ledger API。
+  version: 0.4.0
+  description: Stage 3–4 生产认证、家庭成长、任务审核奖励、Wallet/Ledger 调账与对账 API。
 servers:
   - url: /api/v1
 security:
@@ -270,6 +270,47 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+  /families/{familyId}/children/{childId}/wallet/adjustments:
+    post:
+      operationId: adjustWallet
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletAdjustment'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /families/{familyId}/children/{childId}/wallet/reconciliation:
+    get:
+      operationId: reconcileWallet
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+      responses:
+        '200':
+          $ref: '#/components/responses/Ok'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
   securitySchemes:
     bearerAuth:
@@ -457,6 +498,19 @@ components:
         reviewNote:
           type: [string, 'null']
           maxLength: 1000
+    WalletAdjustment:
+      type: object
+      required: [assetType, delta, reason]
+      properties:
+        assetType:
+          type: string
+          enum: [MONEY, COIN]
+        delta:
+          type: number
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 500
     ApiError:
       type: object
       required: [code, message]
