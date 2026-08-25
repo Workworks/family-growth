@@ -26,6 +26,11 @@
 | GET | `/families/{familyId}/children/{childId}/ledger?limit=50` | PARENT/CHILD 本人 | 查询最近不可变 Money/Coin 流水 |
 | POST | `/families/{familyId}/children/{childId}/wallet/adjustments` | PARENT | 带原因和幂等键执行 Money/Coin 正负调账，禁止负余额 |
 | GET | `/families/{familyId}/children/{childId}/wallet/reconciliation` | PARENT | 汇总 Ledger delta 并与 Wallet 对账 |
+| POST | `/families/{familyId}/children/{childId}/gift-money` | PARENT | 幂等登记压岁钱并原子写入 Money 流水 |
+| POST | `/families/{familyId}/exchange-rules` | PARENT | 创建新的双向比例、费用与单笔预算规则版本 |
+| GET | `/families/{familyId}/exchange-rules/active` | PARENT/CHILD | 查询家庭当前适用规则 |
+| POST | `/families/{familyId}/children/{childId}/exchange-previews` | PARENT/CHILD 本人 | 保存十分钟有效的本金、比例、费用、净额和教育声明快照 |
+| POST | `/families/{familyId}/exchange-previews/{previewId}/confirm` | PARENT/CHILD 本人 | 以幂等键确认；规则未漂移时原子写 Money/Coin 双分录 |
 
 批准审核会锁定 Completion 与 Wallet；Coin/Money 流水先追加，再在同一事务更新余额和 Completion。重复提交返回首次结果；重复/冲突审核返回 409，不能重复发奖。XP 的奖励事实保存在 Completion 快照并更新 `child_progress`。
 
@@ -42,4 +47,4 @@
 | 409 | `CONFLICT` | 状态、并发或幂等键冲突 |
 | 429 | `PIN_LOCKED` | PIN 失败达到阈值，暂时锁定 |
 
-字段、校验、Bearer scheme 和完整响应以 [OpenAPI 3.1](../openapi.yaml) 为机器契约。Stage 5–7 的兑换、商店、储蓄、愿望与基金接口尚未实现，不提前声明。
+字段、校验、Bearer scheme 和完整响应以 [OpenAPI 3.1](../openapi.yaml) 为机器契约。Stage 6–7 的商店、储蓄、愿望与基金接口在各自 Stage 完成前不提前声明。

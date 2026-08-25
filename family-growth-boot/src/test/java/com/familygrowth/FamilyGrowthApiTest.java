@@ -22,7 +22,7 @@ import org.springframework.test.web.servlet.MvcResult;
 @SpringBootTest(properties = {
     "spring.datasource.url=${FAMILY_GROWTH_TEST_POSTGRES_URL:jdbc:h2:mem:familygrowthapi;MODE=PostgreSQL;DB_CLOSE_DELAY=-1}",
     "spring.datasource.username=${FAMILY_GROWTH_TEST_POSTGRES_USER:sa}",
-    "spring.datasource.password=",
+    "spring.datasource.password=${FAMILY_GROWTH_TEST_POSTGRES_PASSWORD:}",
     "spring.jpa.hibernate.ddl-auto=validate"
 })
 @AutoConfigureMockMvc

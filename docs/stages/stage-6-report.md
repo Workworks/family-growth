@@ -1,6 +1,6 @@
 # Stage 6：RewardShop、Saving 与 Wish 闭环
 
-状态：`NOT_STARTED`
+状态：`IN_PROGRESS`
 
 产品 Phase：5　需求：REQ-001、REQ-005、REQ-020
 

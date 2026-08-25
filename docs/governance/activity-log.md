@@ -76,3 +76,7 @@
 | 68 | 15 | 完成 0.2.2 本地门禁与交付包 | debug 53 tasks、release 60 tasks 均成功；两侧各 13 项 JVM 测试通过，稳定证书签名 0.2.2/versionCode 5 APK 已复制到 dist | `evidence/stage-15/acceptance.json` |
 | 69 | 15 | 发布 v0.2.2 儿童适龄更新 | Stage commit `68456d8` 推送；workflow `32838297884` 用时 4m18s 全部成功并创建公开 Release。两次 60 秒观察窗到期和一次 API EOF 均未改变远端执行状态 | Stage 15 evidence、v0.2.2 Release |
 | 70 | 15 | 下载复验公开 APK | latest API 返回 v0.2.2 和 digest；远端 asset 的 versionCode 5、包名、大小、SHA-256 与既有 release 证书通过，覆盖本地 dist 交付副本 | `evidence/stage-15/acceptance.json` |
+| 71 | 5–10 | 用户要求直接完成 Stage 5–10 | 登记 REQ-022/P0；按账本依赖连续推进，仍保留每 Stage Spec/迁移/测试/证据/commit，缺真机不虚假完成 | Stage 5–10 报告 |
+| 72 | 8–10 | 补齐后续 Stage 可执行 Spec | 新增 Android 生产接入、跨域报告、部署/发布/总验收的边界、不变量和编号完成标准 | Stage 8–10 报告 |
+| 73 | 5 | 完成 GiftMoney 与双向兑换闭环 | 新增 Flyway V4、版本化规则、十分钟费用预览、教育声明、钱包锁、Money/Coin 同组双分录、幂等与权限 API | Stage 5 代码/OpenAPI |
+| 74 | 5/6 | PostgreSQL 收口并启动 Stage 6 | H2 全量回归及 PostgreSQL 16.15 V1–V4/API/权限/规则漂移/余额回滚门禁通过；隔离容器已移除 | `evidence/stage-5/acceptance.json` |

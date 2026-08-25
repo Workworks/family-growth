@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: Family Growth API
-  version: 0.4.0
-  description: Stage 3–4 生产认证、家庭成长、任务审核奖励、Wallet/Ledger 调账与对账 API。
+  version: 0.5.0
+  description: Stage 3–5 生产认证、成长任务、Wallet/Ledger、压岁钱与双向兑换 API。
 servers:
   - url: /api/v1
 security:
@@ -311,6 +311,90 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /families/{familyId}/children/{childId}/gift-money:
+    post:
+      operationId: depositGiftMoney
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GiftMoneyRequest'
+      responses:
+        '201': { $ref: '#/components/responses/Created' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /families/{familyId}/exchange-rules:
+    post:
+      operationId: createExchangeRule
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExchangeRuleRequest'
+      responses:
+        '201': { $ref: '#/components/responses/Created' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /families/{familyId}/exchange-rules/active:
+    get:
+      operationId: getActiveExchangeRule
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /families/{familyId}/children/{childId}/exchange-previews:
+    post:
+      operationId: previewExchange
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExchangePreviewRequest'
+      responses:
+        '201': { $ref: '#/components/responses/Created' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /families/{familyId}/exchange-previews/{previewId}/confirm:
+    post:
+      operationId: confirmExchange
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - name: previewId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200': { $ref: '#/components/responses/Ok' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
 components:
   securitySchemes:
     bearerAuth:
@@ -511,6 +595,27 @@ components:
           type: string
           minLength: 1
           maxLength: 500
+    GiftMoneyRequest:
+      type: object
+      required: [amount]
+      properties:
+        amount: { type: number, minimum: 0.01, maximum: 100000, multipleOf: 0.01 }
+        note: { type: [string, 'null'], maxLength: 500 }
+    ExchangeRuleRequest:
+      type: object
+      required: [moneyToCoinRate, coinToMoneyRate, moneyToCoinFeeRate, coinToMoneyFeeRate, maxSourceAmount]
+      properties:
+        moneyToCoinRate: { type: number, exclusiveMinimum: 0 }
+        coinToMoneyRate: { type: number, exclusiveMinimum: 0 }
+        moneyToCoinFeeRate: { type: number, minimum: 0, exclusiveMaximum: 1 }
+        coinToMoneyFeeRate: { type: number, minimum: 0, exclusiveMaximum: 1 }
+        maxSourceAmount: { type: number, minimum: 0.01, multipleOf: 0.01 }
+    ExchangePreviewRequest:
+      type: object
+      required: [direction, sourceAmount]
+      properties:
+        direction: { type: string, enum: [MONEY_TO_COIN, COIN_TO_MONEY] }
+        sourceAmount: { type: number, minimum: 0.01, multipleOf: 0.01 }
     ApiError:
       type: object
       required: [code, message]

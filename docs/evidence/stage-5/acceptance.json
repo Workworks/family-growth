@@ -1,0 +1,40 @@
+{
+  "capturedAt": "2026-08-25T23:12:00+08:00",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+  "shellType": "PowerShell",
+  "passed": true,
+  "summary": "Stage 5 GiftMoney, versioned exchange rules, transparent previews and atomic bidirectional Money/Coin exchange passed H2 and PostgreSQL 16.15 gates.",
+  "environment": {
+    "java": "17.0.8",
+    "postgres": "16.15",
+    "postgresImage": "postgres:16-alpine",
+    "containerLifecycle": "isolated localhost-only test container was stopped and removed after validation"
+  },
+  "commands": [
+    {
+      "command": "mvn -q -pl family-growth-boot -am test",
+      "exitCode": 0,
+      "passed": true,
+      "result": "H2 PostgreSQL-mode full regression passed with Flyway V1-V4."
+    },
+    {
+      "command": "start isolated PostgreSQL 16 container; set test datasource environment; mvn -q -pl family-growth-boot -am test",
+      "exitCode": 0,
+      "passed": true,
+      "result": "PostgreSQL 16.15 full suite passed; schema validation found four successful migrations and 17 production tables."
+    }
+  ],
+  "acceptance": {
+    "AC5-01": "PASS - gift deposit replay returned the original result and produced one business record.",
+    "AC5-02": "PASS - fixed bidirectional rate vectors and amount precision tests passed.",
+    "AC5-03": "PASS - preview snapshots expose source, rate, fee rate, fee, net source, target and education notice.",
+    "AC5-04": "PASS - child configuration, stale rules, insufficient balances and idempotency-key misuse were rejected without wallet side effects.",
+    "AC5-05": "PASS - H2 and PostgreSQL migration, API, authorization and ledger regression gates passed."
+  },
+  "security": {
+    "realFinancialIntegration": false,
+    "childRuleConfigurationDenied": true,
+    "ledgerRequiredForEveryAssetChange": true,
+    "secretsInEvidence": false
+  }
+}

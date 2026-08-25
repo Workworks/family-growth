@@ -20,7 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest(properties = {
     "spring.datasource.url=${FAMILY_GROWTH_TEST_POSTGRES_URL}",
     "spring.datasource.username=${FAMILY_GROWTH_TEST_POSTGRES_USER:family_growth}",
-    "spring.datasource.password=",
+    "spring.datasource.password=${FAMILY_GROWTH_TEST_POSTGRES_PASSWORD:}",
     "spring.jpa.hibernate.ddl-auto=validate"
 })
 class Stage4ConcurrencyTest {

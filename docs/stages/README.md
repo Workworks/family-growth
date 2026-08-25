@@ -9,6 +9,9 @@
 - [Stage 5：GiftMoney、兑换规则与 Coin](stage-5-report.md) — `IN_PROGRESS`
 - [Stage 6：RewardShop、Saving 与 Wish](stage-6-report.md) — `NOT_STARTED`
 - [Stage 7：VirtualFund、NAV、订单、持仓与费用](stage-7-report.md) — `NOT_STARTED`
+- [Stage 8：Android 生产双端核心页面](stage-8-report.md) — `NOT_STARTED`
+- [Stage 9：跨域闭环、使用统计与家庭报告](stage-9-report.md) — `NOT_STARTED`
+- [Stage 10：V1 发布、部署与总验收](stage-10-report.md) — `NOT_STARTED`
 - [Stage 11：GitHub Release APK 热更新与当前版本交付](stage-11-report.md) — `BLOCKED`
 - [Stage 12：参考仓库文档治理与 Agent 启动协议对齐](stage-12-report.md) — `COMPLETED`
 - [Stage 13：Stage 2–11 基础体验宽度与 Android 前端完善](stage-13-report.md) — `BLOCKED`
