@@ -4,7 +4,7 @@
 | ---: | ---: | --- | --- |
 | 1 | 0 | 项目立项与总体设计 | `COMPLETED` |
 | 2 | 1 | 工程骨架、Family/Parent/Child/Growth 基础 | `BLOCKED` |
-| 3 | 2 | TaskCompletion、家长审核与奖励闭环 | `NOT_STARTED` |
+| 3 | 2 | 生产认证、TaskCompletion、家长审核与奖励闭环 | `IN_PROGRESS` |
 | 4 | 3 | Wallet 与 Ledger | `NOT_STARTED` |
 | 5 | 4 | GiftMoney、ExchangeRule 与 Coin | `NOT_STARTED` |
 | 6 | 5 | RewardShop、Saving 与 Wish | `NOT_STARTED` |
@@ -24,3 +24,5 @@ Stage 12 是用户直接提出的 P0 长期治理要求，只调整文档结构�
 Stage 13 按用户最新优先级已交付 Stage 2–11 的 Android 本地基础体验宽度、五区前端和 0.2.0 debug APK；真机运行态仍阻塞。深度服务端定制后移，不改变 Stage 3–10 完整生产能力仍待建设的事实。
 
 Stage 14 将 GitHub Release 热更新提升为 P0，负责公开仓库、分 Stage Git 历史、稳定签名 Release 和真实远端更新契约；它延续 Stage 11，但不以仓库创建替代真机覆盖升级。
+
+REQ-020 已恢复 Stage 3–7 生产后端主线。当前只将 Stage 3 标记 `IN_PROGRESS`；Stage 4–7 已建立可执行 Spec，但须在前序账本/认证不变量通过后顺序启动。

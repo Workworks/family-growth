@@ -61,3 +61,4 @@
 | 53 | 14 | 对齐 GitHub Actions 运行时 | CI 成功但提示旧 Node 运行时弃用；从官方 release API 确认后将 checkout/setup-java/gradle actions 升级到 v7/v6/v6 | `.github/workflows/android-release.yml` |
 | 54 | 14 | 收敛真实更新状态 | 公开仓库、签名、Secrets、两版 Release 和远端契约全部完成；只缺 Android 设备上的系统确认与数据保留，Stage 14 标记 `BLOCKED` | Stage 14、BLOCKERS/TODO/current |
 | 55 | 14 | 执行发布链收尾门禁 | 文档链接与 207 个 JSON 文件通过；首次 OpenAPI 检查引用旧路径而中止，定位实际文件 `docs/openapi.yaml` 后重跑完整门禁 | Stage 14 evidence、活动日志 |
+| 56 | 3–7 | 用户恢复生产后端闭环主线 | 登记 REQ-020/P0，REQ-016 改为被部分取代；按 Stage 3→7 顺序建立认证、任务奖励、账本、兑换、商店储蓄愿望和纯模拟基金 Spec | Stage 3–7 报告 |

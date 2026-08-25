@@ -6,7 +6,7 @@ Phase 是产品生命周期，Stage 是可独立验收和提交的工程包。�
 | ---: | --- | --- | --- |
 | 0 | 项目立项与总体设计 | `COMPLETED` | [Phase 0](phase-0/README.md) |
 | 1 | 工程骨架与 Family/Growth 基础 | `BLOCKED` | [Phase 1](phase-1/README.md) |
-| 2 | 任务提交、审核与奖励 | `NOT_STARTED` | [Phase 2](phase-2/README.md) |
+| 2 | 任务提交、审核与奖励 | `IN_PROGRESS` | [Phase 2](phase-2/README.md) |
 | 3 | Wallet 与 Ledger | `NOT_STARTED` | [Phase 3](phase-3/README.md) |
 | 4 | 压岁钱、兑换与 Coin | `NOT_STARTED` | [Phase 4](phase-4/README.md) |
 | 5 | 商店、储蓄与愿望 | `NOT_STARTED` | [Phase 5](phase-5/README.md) |
