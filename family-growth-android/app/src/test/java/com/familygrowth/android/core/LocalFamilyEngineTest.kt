@@ -78,4 +78,44 @@ class LocalFamilyEngineTest {
         assertEquals("Money 余额不足", error.message)
         assertTrue(empty.ledger.isEmpty())
     }
+
+    @Test
+    fun rewardInterestIsReversibleAndNeverChangesTheWalletLedger() {
+        val withReward = LocalFamilyEngine.addReward(FamilyLocalState(), "周末一起去公园", 4)
+        val rewardId = withReward.rewards.single().id
+
+        val interested = LocalFamilyEngine.toggleRewardInterest(withReward, rewardId)
+        val removed = LocalFamilyEngine.toggleRewardInterest(interested, rewardId)
+
+        assertEquals(listOf(rewardId), interested.rewardInterestIds)
+        assertTrue(removed.rewardInterestIds.isEmpty())
+        assertEquals(withReward.wallet, interested.wallet)
+        assertTrue(interested.ledger.isEmpty())
+    }
+
+    @Test
+    fun learningVideoSubmitsOneTaskOnlyAfterNinetyPercentActualPlayback() {
+        val lesson = LearningCatalog.lessons.first()
+        var state = FamilyLocalState()
+
+        repeat(16) { state = LocalFamilyEngine.recordLearningPlayback(state, lesson.id, 1) }
+        assertTrue(state.tasks.isEmpty())
+        assertEquals(false, state.learningProgress.single().completed)
+
+        state = LocalFamilyEngine.recordLearningPlayback(state, lesson.id, 1)
+        val task = state.tasks.single()
+        assertEquals(TaskStatus.SUBMITTED, task.status)
+        assertEquals(TaskSource.LEARNING_VIDEO, task.source)
+        assertEquals(2, task.coinReward)
+        assertTrue(state.ledger.isEmpty())
+
+        val replayed = LocalFamilyEngine.recordLearningPlayback(state, lesson.id, 1)
+        assertEquals(1, replayed.tasks.size)
+        assertEquals(state.learningProgress, replayed.learningProgress)
+
+        val approved = LocalFamilyEngine.approveTask(replayed, task.id)
+        assertEquals(2, approved.wallet.coin)
+        assertEquals(5, approved.wallet.xp)
+        assertEquals("TASK_REWARD", approved.ledger.single().type)
+    }
 }

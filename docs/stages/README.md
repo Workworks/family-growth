@@ -18,3 +18,5 @@
 - [Stage 14：公开 GitHub 仓库、分阶段提交与 Release 更新链](stage-14-report.md) — `BLOCKED`
 - [Stage 15：3 岁起儿童端发展适龄改造](stage-15-report.md) — `BLOCKED`
 - [Stage 16：儿童舒适品牌图标与 v0.3.1 交付](stage-16-report.md) — `BLOCKED`
+- [Stage 17：服务端零钱回收与冻结式兑现闭环](stage-17-report.md) — `IN_PROGRESS`
+- [Stage 18：双视角排版、奖励浏览与教学视频任务](stage-18-report.md) — `IN_PROGRESS`

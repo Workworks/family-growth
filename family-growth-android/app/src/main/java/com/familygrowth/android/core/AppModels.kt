@@ -8,6 +8,7 @@ import java.util.UUID
 enum class AppMode { CHILD, PARENT }
 enum class AppSection { TODAY, TASKS, WALLET, GROWTH, PARENT }
 enum class TaskStatus { TODO, SUBMITTED, APPROVED }
+enum class TaskSource { FAMILY, LEARNING_VIDEO }
 enum class WithdrawalStatus { PENDING, APPROVED }
 
 object ChildExperiencePolicy {
@@ -29,6 +30,8 @@ data class LocalGrowthTask(
     val coinReward: Int,
     val xpReward: Int,
     val status: TaskStatus = TaskStatus.TODO,
+    val source: TaskSource = TaskSource.FAMILY,
+    val sourceVideoId: String? = null,
 )
 
 data class WalletSnapshot(
@@ -61,6 +64,32 @@ data class LocalRewardItem(
     val title: String,
     val coinPrice: Int,
 )
+
+data class LocalLearningProgress(
+    val videoId: String,
+    val watchedSeconds: Int = 0,
+    val completed: Boolean = false,
+)
+
+data class LearningLesson(
+    val id: String,
+    val title: String,
+    val prompt: String,
+    val resourceName: String,
+    val durationSeconds: Int,
+    val symbol: String,
+)
+
+object LearningCatalog {
+    val lessons = listOf(
+        LearningLesson("color-garden", "认识三种颜色", "跟着颜色慢慢看", "lesson_color_garden", 18, "●"),
+        LearningLesson("count-to-five", "一起数到五", "看看圆点一个个出现", "lesson_count_to_five", 18, "1·2·3"),
+        LearningLesson("shape-home", "形状找到家", "看看圆形、方形和三角形", "lesson_shape_home", 18, "△○□"),
+    )
+
+    fun byId(id: String): LearningLesson =
+        lessons.singleOrNull { it.id == id } ?: throw FamilyRuleException("教学视频不存在")
+}
 
 data class LocalSavingGoal(
     val id: String = UUID.randomUUID().toString(),
@@ -95,6 +124,8 @@ data class FamilyLocalState(
     val ledger: List<LocalLedgerEntry> = emptyList(),
     val withdrawals: List<LocalWithdrawalRequest> = emptyList(),
     val rewards: List<LocalRewardItem> = emptyList(),
+    val rewardInterestIds: List<String> = emptyList(),
+    val learningProgress: List<LocalLearningProgress> = emptyList(),
     val savings: List<LocalSavingGoal> = emptyList(),
     val wishes: List<LocalWish> = emptyList(),
     val fund: LocalFundPosition = LocalFundPosition(),

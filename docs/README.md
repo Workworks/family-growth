@@ -31,6 +31,7 @@
 - [35 基础体验视觉与信息架构](design/35-family-growth-ui-breadth-baseline.md)
 - [36 儿童端发展与行为设计基线](design/36-child-experience-behavioral-baseline.md)
 - [37 儿童舒适品牌图标基线](design/37-child-comfort-brand-icon.md)
+- [38 儿童奖励浏览与教学视频交互](design/38-child-reward-video-interaction.md)
 
 ## 接口参考 · `reference/`
 
@@ -91,6 +92,8 @@
 - [Stage 14：公开 GitHub 仓库与 Release 更新链](stages/stage-14-report.md)
 - [Stage 15：3 岁起儿童端发展适龄改造](stages/stage-15-report.md)
 - [Stage 16：儿童舒适品牌图标与 v0.3.1 交付](stages/stage-16-report.md)
+- [Stage 17：服务端零钱回收与冻结式兑现闭环](stages/stage-17-report.md)
+- [Stage 18：双视角排版、奖励浏览与教学视频任务](stages/stage-18-report.md)
 
 ## 项目计划与 Phase · `program/` `phases/`
 
@@ -126,6 +129,8 @@
 - [Stage 14](evidence/stage-14/acceptance.json)
 - [Stage 15](evidence/stage-15/acceptance.json)
 - [Stage 16](evidence/stage-16/acceptance.json)
+- Stage 17 尚在 Spec/实现阶段，未执行门禁前不登记虚假成功证据。
+- Stage 18 证据将在本 Stage 门禁执行后创建，未运行前不登记虚假成功链接。
 
 ## 目录约定
 

@@ -24,7 +24,8 @@ class LocalFamilyStore(context: Context) {
         put("tasks", JSONArray().apply { state.tasks.forEach { task -> put(JSONObject().apply {
             put("id", task.id); put("title", task.title); put("minutes", task.minutes)
             put("moneyReward", task.moneyReward.toPlainString()); put("coinReward", task.coinReward)
-            put("xpReward", task.xpReward); put("status", task.status.name)
+            put("xpReward", task.xpReward); put("status", task.status.name); put("source", task.source.name)
+            task.sourceVideoId?.let { put("sourceVideoId", it) }
         }) } })
         put("wallet", JSONObject().apply {
             put("money", state.wallet.money.toPlainString()); put("coin", state.wallet.coin); put("xp", state.wallet.xp)
@@ -40,6 +41,10 @@ class LocalFamilyStore(context: Context) {
         }) } })
         put("rewards", JSONArray().apply { state.rewards.forEach { reward -> put(JSONObject().apply {
             put("id", reward.id); put("title", reward.title); put("coinPrice", reward.coinPrice)
+        }) } })
+        put("rewardInterestIds", JSONArray().apply { state.rewardInterestIds.forEach { put(it) } })
+        put("learningProgress", JSONArray().apply { state.learningProgress.forEach { progress -> put(JSONObject().apply {
+            put("videoId", progress.videoId); put("watchedSeconds", progress.watchedSeconds); put("completed", progress.completed)
         }) } })
         put("savings", JSONArray().apply { state.savings.forEach { goal -> put(JSONObject().apply {
             put("id", goal.id); put("title", goal.title); put("target", goal.target.toPlainString()); put("saved", goal.saved.toPlainString())
@@ -64,6 +69,8 @@ class LocalFamilyStore(context: Context) {
                 id = value.getString("id"), title = value.getString("title"), minutes = value.getInt("minutes"),
                 moneyReward = value.decimal("moneyReward"), coinReward = value.getInt("coinReward"),
                 xpReward = value.getInt("xpReward"), status = TaskStatus.valueOf(value.getString("status")),
+                source = TaskSource.valueOf(value.optString("source", TaskSource.FAMILY.name)),
+                sourceVideoId = value.optString("sourceVideoId").takeIf(String::isNotBlank),
             ) },
             wallet = WalletSnapshot(wallet.decimal("money", "0.00"), wallet.optInt("coin"), wallet.optInt("xp")),
             ledger = root.optJSONArray("ledger").mapObjects { value -> LocalLedgerEntry(
@@ -77,6 +84,12 @@ class LocalFamilyStore(context: Context) {
                 createdAt = value.optLong("createdAt"),
             ) },
             rewards = root.optJSONArray("rewards").mapObjects { value -> LocalRewardItem(value.getString("id"), value.getString("title"), value.getInt("coinPrice")) },
+            rewardInterestIds = root.optJSONArray("rewardInterestIds").mapStrings(),
+            learningProgress = root.optJSONArray("learningProgress").mapObjects { value -> LocalLearningProgress(
+                videoId = value.getString("videoId"),
+                watchedSeconds = value.optInt("watchedSeconds"),
+                completed = value.optBoolean("completed"),
+            ) },
             savings = root.optJSONArray("savings").mapObjects { value -> LocalSavingGoal(value.getString("id"), value.getString("title"), value.decimal("target"), value.decimal("saved", "0.00")) },
             wishes = root.optJSONArray("wishes").mapObjects { value -> LocalWish(value.getString("id"), value.getString("title"), value.decimal("target")) },
             fund = LocalFundPosition(fund.decimal("nav", "1.0000"), fund.decimal("shares", "0.0000")),
@@ -93,6 +106,11 @@ class LocalFamilyStore(context: Context) {
     private inline fun <T> JSONArray?.mapObjects(block: (JSONObject) -> T): List<T> {
         if (this == null) return emptyList()
         return buildList { for (index in 0 until length()) add(block(getJSONObject(index))) }
+    }
+
+    private fun JSONArray?.mapStrings(): List<String> {
+        if (this == null) return emptyList()
+        return buildList { for (index in 0 until length()) add(getString(index)) }
     }
 
     companion object {

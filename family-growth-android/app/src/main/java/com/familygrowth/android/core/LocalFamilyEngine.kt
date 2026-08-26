@@ -3,6 +3,7 @@ package com.familygrowth.android.core
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.LocalDate
+import kotlin.math.ceil
 
 object LocalFamilyEngine {
     fun addTask(state: FamilyLocalState, title: String, minutes: Int, moneyReward: BigDecimal, coin: Int, xp: Int): FamilyLocalState {
@@ -84,6 +85,48 @@ object LocalFamilyEngine {
         if (state.wallet.coin < reward.coinPrice) throw FamilyRuleException("Coin 余额不足")
         val entry = LocalLedgerEntry(type = "REWARD_REDEEM", description = "兑换奖励：${reward.title}", coinDelta = -reward.coinPrice)
         return post(state, entry)
+    }
+
+    fun toggleRewardInterest(state: FamilyLocalState, id: String): FamilyLocalState {
+        if (state.rewards.none { it.id == id }) throw FamilyRuleException("奖励不存在")
+        val interests = state.rewardInterestIds.toMutableSet()
+        if (!interests.add(id)) interests.remove(id)
+        return state.copy(rewardInterestIds = interests.toList())
+    }
+
+    fun recordLearningPlayback(state: FamilyLocalState, videoId: String, playedSeconds: Int): FamilyLocalState {
+        if (playedSeconds !in 1..5) throw FamilyRuleException("播放进度无效")
+        val lesson = LearningCatalog.byId(videoId)
+        val current = state.learningProgress.singleOrNull { it.videoId == videoId }
+            ?: LocalLearningProgress(videoId)
+        if (current.completed) return state
+
+        val watched = (current.watchedSeconds + playedSeconds).coerceAtMost(lesson.durationSeconds)
+        val completed = watched >= ceil(lesson.durationSeconds * 0.9).toInt()
+        val updatedProgress = current.copy(watchedSeconds = watched, completed = completed)
+        val progress = state.learningProgress.filterNot { it.videoId == videoId } + updatedProgress
+        if (!completed) return state.copy(learningProgress = progress)
+
+        val taskId = "video:$videoId"
+        val existing = state.tasks.singleOrNull { it.id == taskId }
+        val tasks = when {
+            existing == null -> state.tasks + LocalGrowthTask(
+                id = taskId,
+                title = "看完：${lesson.title}",
+                minutes = 1,
+                moneyReward = BigDecimal.ZERO.setScale(2),
+                coinReward = 2,
+                xpReward = 5,
+                status = TaskStatus.SUBMITTED,
+                source = TaskSource.LEARNING_VIDEO,
+                sourceVideoId = videoId,
+            )
+            existing.status == TaskStatus.TODO -> state.tasks.map {
+                if (it.id == taskId) it.copy(status = TaskStatus.SUBMITTED) else it
+            }
+            else -> state.tasks
+        }
+        return state.copy(tasks = tasks, learningProgress = progress)
     }
 
     fun addSavingGoal(state: FamilyLocalState, title: String, target: BigDecimal): FamilyLocalState {

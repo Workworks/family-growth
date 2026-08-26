@@ -8,6 +8,7 @@
 | Wallet/Ledger | 服务端调账、幂等、并发与对账闭环通过 | 4、13 | Stage 4 evidence |
 | 压岁钱、兑换与零钱回收待审 | 礼金/双向兑换服务端通过；零钱回收为本机透明待审基础，服务端冻结/PAID 尚缺 | 5、10、13 | Stage 5/10/13 evidence |
 | 奖励商店、储蓄与愿望 | 服务端 H2/PostgreSQL 闭环通过 | 6、13 | Stage 6 evidence |
+| 儿童奖励浏览与教学视频任务 | Android 离线实现、JVM/lint/build/签名通过；真机交互待验收 | 18 | Stage 18 报告/evidence |
 | 纯模拟基金 | 服务端 NAV/费用/持仓/P&L 与 3–5 岁门禁通过 | 7、13 | Stage 7 evidence |
 | PIN、防沉迷、今日使用与报告 | 生产认证/分钟事件/事实报告通过；禁用时段与临时放行审计尚缺 | 8–10、13 | Stage 8–10 evidence/BLOCKERS |
 | 0.3.0 稳定 APK | 本地/CI 同签名、版本、包名、公开 digest 和下载复验通过；安装阻塞 | 10、11、14、15 | Stage 10 evidence/BLOCKERS |

@@ -107,3 +107,7 @@
 | 5 | 16 | 执行 Android 全量和稳定签名门禁 | 112 项任务通过；首次稳定签名 clean 被 Windows lint-cache 锁阻断，正常停止 Gradle daemon 后重跑 61 项成功；19 项 release JVM、lint、v2 签名、v0.3.1/versionCode 7 和图标资源通过 | `evidence/stage-16/acceptance.json` |
 | 6 | 16 | 发布并复验 v0.3.1 | commit `f487430` 与 tag 推送；workflow `32923187112` 用时 4m21s 成功。远端 APK 11,366,435 字节、GitHub digest、versionCode 7、包名和稳定证书通过；本地 dist 已替换为远端资产 | Stage 16 evidence、v0.3.1 Release |
 | 7 | 16 | 收敛 Stage 状态 | 可离线更新修复、图标和 Release 全部完成；真实平板桌面与应用内升级缺设备，Stage 16 标记 `BLOCKED`，BUG-002 保持 `FIXED_PENDING_DEVICE` | Stage 16、BLOCKERS/TODO/current |
+| 8 | 17 | 用户自行测试并要求 Agent 先继续下一步 | 登记 REQ-025/P0；按现有 LIM 顺序启动 Stage 17，优先建设服务端冻结式零钱回收，不等待平板且不接真实支付 | `stages/stage-17-report.md`、LIM-012 |
+| 9 | 18 | 用户反馈双视角排版、奖励浏览和教学视频任务 | 登记 REQ-026–028/P0 与 BUG-003；Stage 18 暂时抢占 Stage 17 代码实施。教学内容限定原创离线、无广告/推荐/自动播放，观看 90% 只提交任务并由家长审核发奖 | `design/38-child-reward-video-interaction.md`、`stages/stage-18-report.md` |
+| 10 | 17/18 | 按 Stage 保存 Spec 并完成 Android 实现 | Stage 17 Spec 以 `85f14a6` 独立提交；Stage 18 完成双段视角、奖励详情/兴趣、三段原创本地视频、真实播放累计和视频任务审核闭环 | Stage 17 commit、Stage 18 Android 代码 |
+| 11 | 18 | 执行 Android 离线与稳定签名门禁 | clean 后 debug/release 各 12 项 JVM、lint、assemble 共 113 个任务通过；APK 为 0.3.2/versionCode 8、三段 raw 视频资源和既有 release 证书 | 待写入 Stage 18 evidence |

@@ -98,6 +98,18 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     fun approveWithdrawal(id: String) = mutate("申请已确认，扣款和手续费已进入流水") { LocalFamilyEngine.approveWithdrawal(it, id) }
     fun addReward(title: String, price: Int) = mutate { LocalFamilyEngine.addReward(it, title, price) }
     fun redeemReward(id: String) = mutate("奖励兑换已记录") { LocalFamilyEngine.redeemReward(it, id) }
+    fun toggleRewardInterest(id: String) {
+        val selecting = id !in state.rewardInterestIds
+        mutate(if (selecting) "已经记下你想要它，可以和家长说一说" else "已经先不选这个奖励") {
+            LocalFamilyEngine.toggleRewardInterest(it, id)
+        }
+    }
+    fun recordLearningSecond(videoId: String) {
+        val wasCompleted = state.learningProgress.any { it.videoId == videoId && it.completed }
+        mutate { LocalFamilyEngine.recordLearningPlayback(it, videoId, 1) }
+        val isCompleted = state.learningProgress.any { it.videoId == videoId && it.completed }
+        if (!wasCompleted && isCompleted) message = "这节看完了，等家长确认"
+    }
     fun addSaving(title: String, target: BigDecimal) = mutate { LocalFamilyEngine.addSavingGoal(it, title, target) }
     fun saveToGoal(id: String, amount: BigDecimal) = mutate("已存入目标") { LocalFamilyEngine.saveToGoal(it, id, amount) }
     fun addWish(title: String, target: BigDecimal) = mutate { LocalFamilyEngine.addWish(it, title, target) }

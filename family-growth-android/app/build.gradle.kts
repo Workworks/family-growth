@@ -17,8 +17,8 @@ android {
         applicationId = "com.familygrowth.android"
         minSdk = 26
         targetSdk = 34
-        versionCode = 7
-        versionName = "0.3.1"
+        versionCode = 8
+        versionName = "0.3.2"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "GITHUB_REPOSITORY", githubRepository.asBuildConfigString())
         buildConfigField("String", "GITHUB_API_VERSION", "2026-03-10".asBuildConfigString())

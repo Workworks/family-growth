@@ -11,6 +11,8 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
+| P0 | 18 | `IN_PROGRESS` | 完成双视角排版、奖励浏览/兴趣和本地教学视频任务闭环，构建并发布 v0.3.2 | Agent | Stage 18 代码/证据/Release |
+| P0 | 17 | `IN_PROGRESS` | Stage 18 交付后恢复服务端零钱回收规则、冻结/PAID 和 PostgreSQL 并发闭环 | Agent | Stage 17 代码/证据/OpenAPI |
 | P0 | 16 | `BLOCKED` | 在平板手动安装 v0.3.1，验证图标蒙版/壁纸对比；发布后续测试版回放修复后的应用内下载 | 用户提供设备；Agent 回放 | Stage 16 真机证据 |
 | P0 | 10 | `BLOCKED` | 用平板连接可访问 HTTPS 家庭服务，回放首装、全链路、TalkBack、重启与 v0.2.2→v0.3.0 更新 | 用户提供设备/服务；Agent 回放 | Stage 10 真机证据 |
 | P0 | 8 | `BLOCKED` | 平板回放生产登录同步、孩子提交、家长确认、旋转和无障碍；代码/JVM/lint/build 已过 | 用户提供设备；Agent 回放 | Stage 8 真机证据 |
@@ -24,7 +26,8 @@
 
 | 顺序 | Stage | 主题 | 前置条件 |
 | ---: | ---: | --- | --- |
-| — | — | 当前无可独立继续的 P0 Stage 工程 | Stage 16 可离线工程和 Release 已完成；等待设备/服务或用户启动 LIM-012/013 深度任务 |
+| 1 | 18 | 双视角排版、奖励浏览与教学视频任务 | 无；视频资源随 APK 离线提供 |
+| 2 | 17 | 服务端零钱回收与冻结式兑现闭环 | Stage 18 当前测试反馈交付后恢复；不接真实支付 |
 
 ## 3. 只能由外部条件解除
 

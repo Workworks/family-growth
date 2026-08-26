@@ -47,14 +47,14 @@ fun FamilyGrowthApp(appViewModel: FamilyAppViewModel = viewModel(), updateViewMo
         val tablet = maxWidth >= 840.dp
         if (tablet) {
             Row(Modifier.fillMaxSize()) {
-                TabletNavigation(appViewModel, Modifier.width(216.dp).fillMaxHeight(), onParentRequest = { showParentAccess = true })
-                AppContent(appViewModel, updateViewModel, snackbar, Modifier.weight(1f).fillMaxHeight()) { showParentAccess = true }
+                TabletNavigation(appViewModel, Modifier.width(244.dp).fillMaxHeight(), onParentRequest = { showParentAccess = true })
+                AppContent(appViewModel, updateViewModel, snackbar, Modifier.weight(1f).fillMaxHeight(), showModeSwitch = false) { showParentAccess = true }
             }
         } else {
             Scaffold(
                 containerColor = MaterialTheme.colorScheme.background,
                 bottomBar = { BottomNavigation(appViewModel) { showParentAccess = true } },
-            ) { padding -> AppContent(appViewModel, updateViewModel, snackbar, Modifier.padding(padding).fillMaxSize()) { showParentAccess = true } }
+            ) { padding -> AppContent(appViewModel, updateViewModel, snackbar, Modifier.padding(padding).fillMaxSize(), showModeSwitch = true) { showParentAccess = true } }
         }
     }
 
@@ -64,7 +64,7 @@ fun FamilyGrowthApp(appViewModel: FamilyAppViewModel = viewModel(), updateViewMo
 @Composable
 private fun TabletNavigation(viewModel: FamilyAppViewModel, modifier: Modifier, onParentRequest: () -> Unit) {
     Surface(modifier, color = MaterialTheme.colorScheme.surface, border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)) {
-        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.statusBarsPadding().navigationBarsPadding().padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(if (viewModel.mode == AppMode.CHILD) "一起成长" else "Family", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
             Text(if (viewModel.mode == AppMode.CHILD) "看看 · 去做 · 给家长看" else "GROWTH · 本机基础版", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(20.dp))
@@ -81,12 +81,10 @@ private fun TabletNavigation(viewModel: FamilyAppViewModel, modifier: Modifier, 
             }
             Spacer(Modifier.weight(1f))
             Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceVariant) {
-                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     StatusDot(if (viewModel.mode == AppMode.PARENT) "家长模式" else "孩子模式", if (viewModel.mode == AppMode.PARENT) GrowthColors.Amber else GrowthColors.Emerald)
                     Text(if (viewModel.mode == AppMode.CHILD) "做完就去玩一会儿" else "今日 ${viewModel.state.usage.usedMinutes}/${viewModel.state.usage.dailyLimitMinutes} 分钟", style = MaterialTheme.typography.bodySmall)
-                    TextButton(onClick = { if (viewModel.mode == AppMode.PARENT) viewModel.enterChild() else onParentRequest() }, contentPadding = PaddingValues(0.dp)) {
-                        Text(if (viewModel.mode == AppMode.PARENT) "切换孩子模式" else "家长验证")
-                    }
+                    ModeSwitcher(viewModel, onParentRequest)
                 }
             }
         }
@@ -117,13 +115,14 @@ private fun AppContent(
     updateViewModel: UpdateViewModel,
     snackbar: SnackbarHostState,
     modifier: Modifier,
+    showModeSwitch: Boolean,
     onParentRequest: () -> Unit,
 ) {
     Scaffold(
         modifier = modifier,
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbar) },
-        topBar = { GrowthTopBar(viewModel, onParentRequest) },
+        topBar = { GrowthTopBar(viewModel, showModeSwitch, onParentRequest) },
     ) { padding ->
         Box(Modifier.padding(padding).fillMaxSize()) {
             if (viewModel.isChildLocked) {
@@ -139,26 +138,51 @@ private fun AppContent(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun GrowthTopBar(viewModel: FamilyAppViewModel, onParentRequest: () -> Unit) {
-    TopAppBar(
-        title = {
+private fun GrowthTopBar(viewModel: FamilyAppViewModel, showModeSwitch: Boolean, onParentRequest: () -> Unit) {
+    Surface(color = MaterialTheme.colorScheme.background) {
+        Column(
+            Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 20.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
             Column {
                 Text(sectionTitle(viewModel.section, viewModel.mode), style = MaterialTheme.typography.titleLarge)
                 Text(if (viewModel.mode == AppMode.PARENT) "家长视角 · 本机基础版" else "一次做一件小事", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-        },
-        actions = {
-            AssistChip(
-                onClick = { if (viewModel.mode == AppMode.PARENT) viewModel.enterChild() else onParentRequest() },
-                label = { Text(if (viewModel.mode == AppMode.PARENT) "切换孩子" else "家长验证") },
-                leadingIcon = { Icon(if (viewModel.mode == AppMode.PARENT) Icons.Rounded.SupervisorAccount else Icons.Rounded.ChildCare, null, Modifier.size(18.dp)) },
-            )
-            Spacer(Modifier.width(12.dp))
-        },
-        colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-    )
+            if (showModeSwitch) ModeSwitcher(viewModel, onParentRequest)
+        }
+    }
+}
+
+@Composable
+private fun ModeSwitcher(viewModel: FamilyAppViewModel, onParentRequest: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+    ) {
+        Row(Modifier.padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            if (viewModel.mode == AppMode.CHILD) {
+                Button(onClick = {}, modifier = Modifier.weight(1f).heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)) {
+                    Icon(Icons.Rounded.ChildCare, null, Modifier.size(18.dp)); Spacer(Modifier.width(4.dp)); Text("孩子视角")
+                }
+            } else {
+                TextButton(onClick = viewModel::enterChild, modifier = Modifier.weight(1f).heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)) {
+                    Icon(Icons.Rounded.ChildCare, null, Modifier.size(18.dp)); Spacer(Modifier.width(4.dp)); Text("孩子视角")
+                }
+            }
+            if (viewModel.mode == AppMode.PARENT) {
+                Button(onClick = {}, modifier = Modifier.weight(1f).heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)) {
+                    Icon(Icons.Rounded.SupervisorAccount, null, Modifier.size(18.dp)); Spacer(Modifier.width(4.dp)); Text("家长视角")
+                }
+            } else {
+                TextButton(onClick = onParentRequest, modifier = Modifier.weight(1f).heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)) {
+                    Icon(Icons.Rounded.SupervisorAccount, null, Modifier.size(18.dp)); Spacer(Modifier.width(4.dp)); Text("家长视角")
+                }
+            }
+        }
+    }
 }
 
 private fun sectionTitle(section: AppSection, mode: AppMode) = when (section) {

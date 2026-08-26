@@ -28,6 +28,10 @@
 | REQ-022 | 2026-08-25 | 用户连续交付指令 | 直接完成 Stage 5–10 | 按 5→10 依赖顺序连续完成生产兑换、商店/储蓄/愿望、纯模拟基金、Android 生产接入、跨域报告和 V1 发布验收；每 Stage 仍需独立 Spec/迁移/测试/证据/commit，真实设备缺失的安装项不得伪造完成 | P0 | `IN_PROGRESS` | 5–10 | `stages/stage-5-report.md`–`stage-10-report.md` |
 | REQ-023 | 2026-08-26 | 用户下一阶段与视觉要求 | 继续下阶段任务，并设计让儿童看起来舒服的 App 图标 | 启动 Stage 16；图标面向 3 岁起儿童，采用温和低刺激配色、清楚轮廓、无文字/金币/金融暗示/高唤醒元素，兼容 Android adaptive/legacy launcher，并随稳定签名 v0.3.1 发布；真机视觉与覆盖升级仍需设备验收 | P0 | `IN_PROGRESS` | 16 | `design/37-child-comfort-brand-icon.md`、`stages/stage-16-report.md` |
 | REQ-024 | 2026-08-26 | 用户缺陷修复指令 | 修复应用更新时提示 APK 下载或校验失败 | 作为 Stage 16 首要 P0：真实 Release 校验仍 fail-closed；增强 GitHub/CDN 弱网下载重试、超时、线程安全进度和错误分类，不通过关闭摘要/大小/来源校验规避失败 | P0 | `IN_PROGRESS` | 16 | `bug/bugList.md` BUG-002、`stages/stage-16-report.md` |
+| REQ-025 | 2026-08-26 | 用户连续推进指令 | 用户自行测试 v0.3.1，Agent 先进行下一步任务 | 启动 Stage 17，优先解除 LIM-012：建设服务端零钱回收规则、透明报价、申请、家长审批冻结、线下 PAID 扣账、拒绝/撤销释放、幂等和 PostgreSQL 并发闭环；不接真实支付 | P0 | `IN_PROGRESS` | 17 | `stages/stage-17-report.md`、`design/04-wallet-ledger-design.md` |
+| REQ-026 | 2026-08-26 | 用户测试反馈 | 调整家长和孩子视角按钮排版 | Stage 18 将角色切换改为清晰的双段式控件；手机和平板都保留大触控目标，进入家长视角仍必须通过 PIN，不用前端排版变化绕过权限 | P0 | `IN_PROGRESS` | 18 | `stages/stage-18-report.md`、BUG-003 |
+| REQ-027 | 2026-08-26 | 用户儿童端交互需求 | 孩子端需要更多界面交互，可以在奖励商店浏览想要的东西 | 在“我的”入口内提供奖励卡片、详情和“我想要/先不选”；孩子只能表达兴趣，不直接扣 Coin 或兑换，家长仍负责配置和确认 | P0 | `IN_PROGRESS` | 18 | `design/38-child-reward-video-interaction.md`、`stages/stage-18-report.md` |
+| REQ-028 | 2026-08-26 | 用户教学内容需求 | 接入教学视频，在应用里看完就算完成任务 | 首版使用原创、离线、无广告/推荐/追踪且不自动播放的短视频；累计实际播放达到 90% 后生成已提交任务，仍由家长审核发放固定透明奖励 | P0 | `IN_PROGRESS` | 18 | `design/38-child-reward-video-interaction.md`、`stages/stage-18-report.md` |
 
 ## 维护记录
 
@@ -44,3 +48,5 @@
 - 2026-08-25：登记直接连续完成 Stage 5–10 的 P0 指令；允许 Agent 连续推进工程与发布，真机验收仍以真实设备为完成前提。
 - 2026-08-26：登记继续下一阶段并设计儿童舒适 App 图标的要求，启动 Stage 16 品牌图标与 v0.3.1 交付。
 - 2026-08-26：登记应用内更新“APK 下载或校验失败”缺陷，作为 Stage 16 首要 P0 修复且保持安全校验不降级。
+- 2026-08-26：登记用户自行测试期间继续下一步工程，启动 Stage 17 服务端零钱回收生产闭环。
+- 2026-08-26：登记测试反馈中的视角切换排版、奖励商店浏览和应用内教学视频完成任务三项 P0，启动 Stage 18；Stage 17 方案保留并暂时让位。

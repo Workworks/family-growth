@@ -1,5 +1,7 @@
 package com.familygrowth.android.ui
 
+import android.net.Uri
+import android.widget.VideoView
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,13 +12,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import com.familygrowth.android.R
 import com.familygrowth.android.core.*
 import com.familygrowth.android.remote.ConnectionState
 import com.familygrowth.android.update.UpdateUiState
 import com.familygrowth.android.update.UpdateViewModel
+import kotlinx.coroutines.delay
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.text.SimpleDateFormat
@@ -25,6 +31,7 @@ import java.util.Locale
 
 private enum class WalletAction { GIFT, EXCHANGE, WITHDRAW }
 private enum class GrowthDialog { REWARD, SAVING, WISH, FUND_BUY, FUND_NAV, SAVING_DEPOSIT }
+private enum class ChildGrowthArea { LESSONS, REWARDS }
 
 @Composable
 fun WalletScreen(viewModel: FamilyAppViewModel) {
@@ -135,7 +142,14 @@ fun GrowthScreen(viewModel: FamilyAppViewModel) {
                 if (state.rewards.isEmpty()) EmptyInvitation("🎁", "还没有家庭奖励", if (viewModel.mode == AppMode.PARENT) "添加一个可兑现的家庭奖励。" else "请家长先设置奖励项目。")
                 else state.rewards.forEach { reward ->
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) { Text(reward.title, style = MaterialTheme.typography.titleMedium); Text("${reward.coinPrice} Coin", color = GrowthColors.Amber, fontFamily = FontFamily.Monospace) }
+                        Column(Modifier.weight(1f)) {
+                            Text(reward.title, style = MaterialTheme.typography.titleMedium)
+                            Text("${reward.coinPrice} Coin", color = GrowthColors.Amber, fontFamily = FontFamily.Monospace)
+                        }
+                        if (reward.id in state.rewardInterestIds) {
+                            StatusDot("孩子想要", ChildColors.Coral)
+                            Spacer(Modifier.width(8.dp))
+                        }
                         Button(onClick = { viewModel.redeemReward(reward.id) }, enabled = state.wallet.coin >= reward.coinPrice) { Text("兑换给孩子") }
                     }
                 }
@@ -170,6 +184,9 @@ fun GrowthScreen(viewModel: FamilyAppViewModel) {
 @Composable
 private fun ChildGrowthScreen(viewModel: FamilyAppViewModel) {
     val state = viewModel.state
+    var area by remember { mutableStateOf(ChildGrowthArea.LESSONS) }
+    var selectedReward by remember { mutableStateOf<LocalRewardItem?>(null) }
+    var selectedLesson by remember { mutableStateOf<LearningLesson?>(null) }
     LazyColumn(
         Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 20.dp),
@@ -178,7 +195,7 @@ private fun ChildGrowthScreen(viewModel: FamilyAppViewModel) {
         item {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("我的成长", style = MaterialTheme.typography.headlineMedium)
-                Text("看一看就好。要选择时，请家长一起。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("选一个小课堂，或者看看想要的奖励。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         item {
@@ -196,50 +213,197 @@ private fun ChildGrowthScreen(viewModel: FamilyAppViewModel) {
             }
         }
         item {
-            GrowthCard {
-                SectionTitle("家长帮我存起来", "这是家庭里的成长记录")
-                Text("¥${state.wallet.money}", style = MaterialTheme.typography.headlineMedium, color = ChildColors.Moss)
-                Text("想用、想换或想了解时，先和家长说一说。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        item {
-            GrowthCard {
-                SectionTitle("可以期待的家庭奖励", "和家长一起选择")
-                if (state.rewards.isEmpty()) {
-                    EmptyInvitation("☆", "还没有家庭奖励", "家长可以先放进一个一起约定的小奖励。")
-                } else {
-                    state.rewards.take(3).forEach { reward ->
-                        Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text("☆", style = MaterialTheme.typography.headlineSmall, color = ChildColors.Sun)
-                            Text(reward.title, Modifier.padding(start = 12.dp).weight(1f), style = MaterialTheme.typography.bodyLarge)
-                            Text("${reward.coinPrice} 颗星", style = MaterialTheme.typography.bodyLarge, color = ChildColors.Moss)
-                        }
-                    }
+            Surface(
+                shape = MaterialTheme.shapes.large,
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            ) {
+                Row(Modifier.fillMaxWidth().padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    ChildAreaButton("安静小课堂", area == ChildGrowthArea.LESSONS, Modifier.weight(1f)) { area = ChildGrowthArea.LESSONS }
+                    ChildAreaButton("奖励商店", area == ChildGrowthArea.REWARDS, Modifier.weight(1f)) { area = ChildGrowthArea.REWARDS }
                 }
             }
         }
-        if (state.wishes.isNotEmpty()) {
-            item {
-                GrowthCard {
-                    SectionTitle("我的小愿望", "慢慢来，不着急")
-                    state.wishes.take(2).forEach { wish ->
-                        Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text("♡", style = MaterialTheme.typography.headlineSmall, color = ChildColors.Coral)
-                            Text(wish.title, Modifier.padding(start = 12.dp), style = MaterialTheme.typography.bodyLarge)
-                        }
-                    }
+        if (area == ChildGrowthArea.LESSONS) {
+            item { SectionTitle("今天看一个就好", "视频不会自动播放，看完记为待家长确认的任务") }
+            items(LearningCatalog.lessons, key = { it.id }) { lesson ->
+                val progress = state.learningProgress.singleOrNull { it.videoId == lesson.id }
+                ChildLessonCard(lesson, progress) { selectedLesson = lesson }
+            }
+        } else {
+            item { SectionTitle("奖励商店", "点开看看；喜欢就告诉家长") }
+            if (state.rewards.isEmpty()) {
+                item { GrowthCard { EmptyInvitation("☆", "还没有家庭奖励", "请家长先添加一个一起约定的奖励。") } }
+            } else {
+                items(state.rewards, key = { it.id }) { reward ->
+                    ChildRewardBrowseCard(reward, reward.id in state.rewardInterestIds) { selectedReward = reward }
                 }
             }
         }
         item {
             Text(
-                "更多事情由家长管理。你可以随时请家长一起看看。",
+                "看累了就停下来。更多事情请家长一起看看。",
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
             )
         }
     }
+
+    selectedReward?.let { reward ->
+        ChildRewardDetailDialog(
+            reward = reward,
+            interested = reward.id in state.rewardInterestIds,
+            dismiss = { selectedReward = null },
+            toggleInterest = { viewModel.toggleRewardInterest(reward.id) },
+        )
+    }
+    selectedLesson?.let { lesson ->
+        LearningVideoDialog(
+            lesson = lesson,
+            progress = state.learningProgress.singleOrNull { it.videoId == lesson.id },
+            dismiss = { selectedLesson = null },
+            watchedSecond = { viewModel.recordLearningSecond(lesson.id) },
+        )
+    }
+}
+
+@Composable
+private fun ChildAreaButton(label: String, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    if (selected) {
+        Button(onClick = onClick, modifier = modifier.heightIn(min = 56.dp)) { Text(label) }
+    } else {
+        TextButton(onClick = onClick, modifier = modifier.heightIn(min = 56.dp)) { Text(label) }
+    }
+}
+
+@Composable
+private fun ChildLessonCard(lesson: LearningLesson, progress: LocalLearningProgress?, open: () -> Unit) {
+    val completed = progress?.completed == true
+    val fraction = (progress?.watchedSeconds ?: 0).toFloat().div(lesson.durationSeconds).coerceIn(0f, 1f)
+    GrowthCard {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Surface(shape = MaterialTheme.shapes.large, color = if (completed) ChildColors.Mist else ChildColors.Sun.copy(alpha = .38f), modifier = Modifier.size(72.dp)) {
+                Box(contentAlignment = Alignment.Center) { Text(lesson.symbol, style = MaterialTheme.typography.titleLarge, color = ChildColors.Ink) }
+            }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Text(lesson.title, style = MaterialTheme.typography.titleLarge)
+                Text(lesson.prompt, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                LinearProgressIndicator(progress = { fraction }, Modifier.fillMaxWidth())
+                Text(if (completed) "已看完 · 等家长确认" else "约 18 秒 · 不会自动播放", style = MaterialTheme.typography.bodySmall, color = if (completed) ChildColors.Moss else MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Button(onClick = open, modifier = Modifier.heightIn(min = 56.dp)) { Text(if (completed) "再看" else "打开") }
+        }
+    }
+}
+
+@Composable
+private fun ChildRewardBrowseCard(reward: LocalRewardItem, interested: Boolean, open: () -> Unit) {
+    GrowthCard {
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Surface(shape = MaterialTheme.shapes.large, color = if (interested) ChildColors.Coral.copy(alpha = .22f) else ChildColors.Sun.copy(alpha = .5f), modifier = Modifier.size(72.dp)) {
+                Box(contentAlignment = Alignment.Center) { Text(if (interested) "♥" else "☆", style = MaterialTheme.typography.headlineMedium, color = if (interested) ChildColors.Coral else ChildColors.Ink) }
+            }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(reward.title, style = MaterialTheme.typography.titleLarge)
+                Text("${reward.coinPrice} 颗星", style = MaterialTheme.typography.bodyLarge, color = ChildColors.Moss)
+                Text(if (interested) "已经告诉家长：我想要" else "点开看看是什么", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            OutlinedButton(onClick = open, modifier = Modifier.heightIn(min = 56.dp)) { Text("看看") }
+        }
+    }
+}
+
+@Composable
+private fun ChildRewardDetailDialog(reward: LocalRewardItem, interested: Boolean, dismiss: () -> Unit, toggleInterest: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = dismiss,
+        icon = { Text(if (interested) "♥" else "☆", style = MaterialTheme.typography.displaySmall, color = if (interested) ChildColors.Coral else ChildColors.Sun) },
+        title = { Text(reward.title) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("需要 ${reward.coinPrice} 颗星", style = MaterialTheme.typography.titleLarge, color = ChildColors.Moss)
+                Text("这是家长放进商店的家庭奖励。你可以说‘我想要’，不会现在就扣掉星星。", style = MaterialTheme.typography.bodyLarge)
+            }
+        },
+        confirmButton = {
+            Button(onClick = toggleInterest, modifier = Modifier.heightIn(min = 52.dp)) { Text(if (interested) "先不选" else "我想要") }
+        },
+        dismissButton = { TextButton(onClick = dismiss, modifier = Modifier.heightIn(min = 52.dp)) { Text("返回商店") } },
+    )
+}
+
+@Composable
+private fun LearningVideoDialog(lesson: LearningLesson, progress: LocalLearningProgress?, dismiss: () -> Unit, watchedSecond: () -> Unit) {
+    val context = LocalContext.current
+    var videoView by remember(lesson.id) { mutableStateOf<VideoView?>(null) }
+    var playing by remember(lesson.id) { mutableStateOf(false) }
+    var videoError by remember(lesson.id) { mutableStateOf(false) }
+    val completed = progress?.completed == true
+    val fraction = (progress?.watchedSeconds ?: 0).toFloat().div(lesson.durationSeconds).coerceIn(0f, 1f)
+
+    LaunchedEffect(playing, lesson.id) {
+        while (playing) {
+            delay(1_000)
+            if (videoView?.isPlaying == true) watchedSecond() else playing = false
+        }
+    }
+    DisposableEffect(lesson.id) {
+        onDispose { videoView?.stopPlayback() }
+    }
+
+    AlertDialog(
+        onDismissRequest = dismiss,
+        title = { Text(lesson.title) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                AndroidView(
+                    factory = { videoContext ->
+                        VideoView(videoContext).also { view ->
+                            videoView = view
+                            val uri = Uri.parse("android.resource://${context.packageName}/${learningVideoResource(lesson.id)}")
+                            view.setVideoURI(uri)
+                            view.setOnCompletionListener { playing = false }
+                            view.setOnErrorListener { _, _, _ -> playing = false; videoError = true; true }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().aspectRatio(16f / 9f),
+                )
+                LinearProgressIndicator(progress = { fraction }, Modifier.fillMaxWidth())
+                if (videoError) {
+                    Text("视频暂时无法播放。关闭后重新打开；观看进度已经保存。", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyLarge)
+                }
+                Text(
+                    if (completed) "这节看完了，任务正在等家长确认。" else "只计算实际播放时间。可以随时暂停，拖到结尾不会直接完成。",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (completed) ChildColors.Moss else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                enabled = !videoError,
+                onClick = {
+                    videoView?.let { view ->
+                        if (playing) view.pause() else {
+                            if (!view.isPlaying && view.currentPosition >= view.duration - 500) view.seekTo(0)
+                            view.start()
+                        }
+                        playing = !playing
+                    }
+                },
+                modifier = Modifier.heightIn(min = 52.dp),
+            ) { Icon(if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, null); Spacer(Modifier.width(6.dp)); Text(if (playing) "暂停" else if (completed) "再看一次" else "开始播放") }
+        },
+        dismissButton = { TextButton(onClick = dismiss, modifier = Modifier.heightIn(min = 52.dp)) { Text("关闭") } },
+    )
+}
+
+private fun learningVideoResource(id: String): Int = when (id) {
+    "color-garden" -> R.raw.lesson_color_garden
+    "count-to-five" -> R.raw.lesson_count_to_five
+    "shape-home" -> R.raw.lesson_shape_home
+    else -> throw FamilyRuleException("教学视频资源不存在")
 }
 
 @Composable
