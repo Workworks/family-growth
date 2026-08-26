@@ -119,8 +119,12 @@ class JdbcStage9Store implements Stage9Store {
     }
 
     private Wallet wallet(UUID family, UUID child) {
-        return jdbc.query("SELECT * FROM wallet WHERE family_id=? AND child_id=?", (r, n) -> new Wallet(
-            r.getObject("child_id", UUID.class), r.getObject("family_id", UUID.class), r.getBigDecimal("money_balance"), r.getLong("coin_balance"), r.getLong("version")), family, child)
+        return jdbc.query("SELECT * FROM wallet WHERE family_id=? AND child_id=?", (r, n) -> {
+            BigDecimal money = r.getBigDecimal("money_balance");
+            BigDecimal reserved = r.getBigDecimal("reserved_money");
+            return new Wallet(r.getObject("child_id", UUID.class), r.getObject("family_id", UUID.class),
+                money, reserved, money.subtract(reserved), r.getLong("coin_balance"), r.getLong("version"));
+        }, family, child)
             .stream().findFirst().orElseThrow(FamilyGrowthService.NotFoundException::new);
     }
 

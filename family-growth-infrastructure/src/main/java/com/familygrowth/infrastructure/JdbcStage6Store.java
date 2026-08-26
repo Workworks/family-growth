@@ -68,7 +68,7 @@ class JdbcStage6Store implements Stage6Store {
         ensureSaving(familyId,childId,now); WalletRow wallet=lockWallet(familyId,childId); SavingAccount saving=lockSaving(familyId,childId);
         BigDecimal walletAfter=direction==SavingDirection.DEPOSIT?wallet.money().subtract(amount):wallet.money().add(amount);
         BigDecimal savingAfter=direction==SavingDirection.DEPOSIT?saving.balance().add(amount):saving.balance().subtract(amount);
-        if(walletAfter.signum()<0||savingAfter.signum()<0)throw new Stage3Service.ConflictException("Money balance is insufficient");
+        if(walletAfter.compareTo(wallet.reserved())<0||savingAfter.signum()<0)throw new Stage3Service.ConflictException("Money balance is insufficient");
         UUID id=UUID.randomUUID(),group=UUID.randomUUID(); BigDecimal delta=direction==SavingDirection.DEPOSIT?amount.negate():amount;
         jdbc.update("""
             INSERT INTO saving_transaction(id,family_id,child_id,direction,amount,wallet_before,wallet_after,saving_before,saving_after,ledger_group_id,idempotency_key,actor_id,created_at)
@@ -112,7 +112,7 @@ class JdbcStage6Store implements Stage6Store {
     private RewardProduct product(UUID familyId,UUID id){return jdbc.query("SELECT * FROM reward_product WHERE family_id=? AND id=?",this::productRow,familyId,id).stream().findFirst().orElseThrow(FamilyGrowthService.NotFoundException::new);}
     private RewardProduct lockProduct(UUID familyId,UUID id){return jdbc.query("SELECT * FROM reward_product WHERE family_id=? AND id=? FOR UPDATE",this::productRow,familyId,id).stream().findFirst().orElseThrow(FamilyGrowthService.NotFoundException::new);}
     private RewardOrder lockOrder(UUID familyId,UUID id){return jdbc.query("SELECT * FROM reward_order WHERE family_id=? AND id=? FOR UPDATE",this::orderRow,familyId,id).stream().findFirst().orElseThrow(FamilyGrowthService.NotFoundException::new);}
-    private WalletRow lockWallet(UUID familyId,UUID childId){return jdbc.query("SELECT money_balance,coin_balance FROM wallet WHERE family_id=? AND child_id=? FOR UPDATE",(rs,row)->new WalletRow(rs.getBigDecimal(1),rs.getLong(2)),familyId,childId).stream().findFirst().orElseThrow(FamilyGrowthService.NotFoundException::new);}
+    private WalletRow lockWallet(UUID familyId,UUID childId){return jdbc.query("SELECT money_balance,reserved_money,coin_balance FROM wallet WHERE family_id=? AND child_id=? FOR UPDATE",(rs,row)->new WalletRow(rs.getBigDecimal(1),rs.getBigDecimal(2),rs.getLong(3)),familyId,childId).stream().findFirst().orElseThrow(FamilyGrowthService.NotFoundException::new);}
     private SavingAccount lockSaving(UUID familyId,UUID childId){return jdbc.query("SELECT * FROM saving_account WHERE family_id=? AND child_id=? FOR UPDATE",this::savingRow,familyId,childId).stream().findFirst().orElseThrow(FamilyGrowthService.NotFoundException::new);}
     private void insertLedger(UUID familyId,UUID childId,String asset,BigDecimal delta,BigDecimal before,BigDecimal after,String entryType,String businessType,UUID businessId,UUID group,String key,UUID actor,String reason,Instant now){
         jdbc.update("INSERT INTO ledger_entry(id,family_id,child_id,asset_type,delta,before_balance,after_balance,entry_type,business_type,business_id,group_id,idempotency_key,actor_id,reason,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
@@ -124,5 +124,5 @@ class JdbcStage6Store implements Stage6Store {
     private SavingTransaction savingTxRow(ResultSet rs,int row)throws SQLException{return new SavingTransaction(uuid(rs,"id"),uuid(rs,"family_id"),uuid(rs,"child_id"),SavingDirection.valueOf(rs.getString("direction")),rs.getBigDecimal("amount"),rs.getBigDecimal("wallet_before"),rs.getBigDecimal("wallet_after"),rs.getBigDecimal("saving_before"),rs.getBigDecimal("saving_after"),uuid(rs,"ledger_group_id"),rs.getString("idempotency_key"),uuid(rs,"actor_id"),instant(rs,"created_at"));}
     private Wish wishRow(ResultSet rs,int row)throws SQLException{return new Wish(uuid(rs,"id"),uuid(rs,"family_id"),uuid(rs,"child_id"),rs.getString("title"),rs.getBigDecimal("target_amount"),rs.getBigDecimal("allocated_amount"),BigDecimal.ZERO,false,rs.getLong("version"),instant(rs,"created_at"));}
     private static UUID uuid(ResultSet rs,String name)throws SQLException{return rs.getObject(name,UUID.class);} private static Instant instant(ResultSet rs,String name)throws SQLException{Timestamp value=rs.getTimestamp(name);return value==null?null:value.toInstant();} private static Timestamp ts(Instant value){return Timestamp.from(value);}
-    private record WalletRow(BigDecimal money,long coin){} private record AllocationReplay(UUID wishId,BigDecimal after){}
+    private record WalletRow(BigDecimal money,BigDecimal reserved,long coin){} private record AllocationReplay(UUID wishId,BigDecimal after){}
 }

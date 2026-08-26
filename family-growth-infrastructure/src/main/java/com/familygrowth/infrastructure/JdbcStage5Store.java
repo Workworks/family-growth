@@ -132,7 +132,7 @@ class JdbcStage5Store implements Stage5Store {
             coinAfter = coinBefore.subtract(preview.sourceAmount());
             moneyAfter = moneyBefore.add(preview.targetAmount());
         }
-        if (moneyAfter.signum() < 0 || coinAfter.signum() < 0) {
+        if (moneyAfter.compareTo(wallet.reserved()) < 0 || coinAfter.signum() < 0) {
             throw new Stage3Service.ConflictException("Wallet balance is insufficient");
         }
         long checkedCoin = coinAfter.longValueExact();
@@ -167,8 +167,8 @@ class JdbcStage5Store implements Stage5Store {
     }
 
     private WalletRow lockWallet(UUID familyId, UUID childId) {
-        return jdbc.query("SELECT money_balance,coin_balance FROM wallet WHERE family_id=? AND child_id=? FOR UPDATE",
-            (rs, row) -> new WalletRow(rs.getBigDecimal(1), rs.getLong(2)), familyId, childId)
+        return jdbc.query("SELECT money_balance,reserved_money,coin_balance FROM wallet WHERE family_id=? AND child_id=? FOR UPDATE",
+            (rs, row) -> new WalletRow(rs.getBigDecimal(1), rs.getBigDecimal(2), rs.getLong(3)), familyId, childId)
             .stream().findFirst().orElseThrow(FamilyGrowthService.NotFoundException::new);
     }
 
@@ -215,5 +215,5 @@ class JdbcStage5Store implements Stage5Store {
         Timestamp value=rs.getTimestamp(name); return value==null?null:value.toInstant();
     }
     private static Timestamp ts(Instant value) { return Timestamp.from(value); }
-    private record WalletRow(BigDecimal money,long coin) {}
+    private record WalletRow(BigDecimal money, BigDecimal reserved, long coin) {}
 }

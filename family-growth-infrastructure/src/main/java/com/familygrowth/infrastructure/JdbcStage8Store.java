@@ -4,7 +4,7 @@ import com.familygrowth.application.FamilyGrowthService;import com.familygrowth.
  private final JdbcTemplate jdbc;JdbcStage8Store(JdbcTemplate jdbc){this.jdbc=jdbc;}
  @Override public ChildSyncSnapshot snapshot(UUID family,UUID child,Instant now){
   String name=jdbc.query("SELECT display_name FROM child_profile WHERE family_id=? AND id=?",(r,n)->r.getString(1),family,child).stream().findFirst().orElseThrow(FamilyGrowthService.NotFoundException::new);
-  Wallet wallet=jdbc.query("SELECT child_id,family_id,money_balance,coin_balance,version FROM wallet WHERE family_id=? AND child_id=?",(r,n)->new Wallet(r.getObject("child_id",UUID.class),r.getObject("family_id",UUID.class),r.getBigDecimal("money_balance"),r.getLong("coin_balance"),r.getLong("version")),family,child).stream().findFirst().orElseThrow(FamilyGrowthService.NotFoundException::new);
+  Wallet wallet=jdbc.query("SELECT child_id,family_id,money_balance,reserved_money,coin_balance,version FROM wallet WHERE family_id=? AND child_id=?",(r,n)->{var money=r.getBigDecimal("money_balance");var reserved=r.getBigDecimal("reserved_money");return new Wallet(r.getObject("child_id",UUID.class),r.getObject("family_id",UUID.class),money,reserved,money.subtract(reserved),r.getLong("coin_balance"),r.getLong("version"));},family,child).stream().findFirst().orElseThrow(FamilyGrowthService.NotFoundException::new);
   List<SyncTask> tasks=jdbc.query("""
    SELECT t.id,t.title,t.expected_minutes,
    COALESCE((SELECT tc.status FROM task_completion tc WHERE tc.family_id=t.family_id AND tc.child_id=? AND tc.task_id=t.id ORDER BY tc.submitted_at DESC LIMIT 1),'TODO') AS task_status,

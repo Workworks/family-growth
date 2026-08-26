@@ -169,7 +169,7 @@ class JdbcStage3Store implements Stage3Store {
         if (approve) {
             ensureChildAccounts(familyId, completion.childId(), now);
             Wallet wallet = jdbc.query(
-                "SELECT child_id, family_id, money_balance, coin_balance, version FROM wallet " +
+                "SELECT child_id, family_id, money_balance, reserved_money, coin_balance, version FROM wallet " +
                     "WHERE family_id = ? AND child_id = ? FOR UPDATE",
                 this::wallet, familyId, completion.childId()).stream().findFirst()
                 .orElseThrow(FamilyGrowthService.NotFoundException::new);
@@ -220,7 +220,7 @@ class JdbcStage3Store implements Stage3Store {
     @Override
     public Wallet getWallet(UUID familyId, UUID childId) {
         return jdbc.query("""
-            SELECT child_id, family_id, money_balance, coin_balance, version
+            SELECT child_id, family_id, money_balance, reserved_money, coin_balance, version
             FROM wallet WHERE family_id = ? AND child_id = ?
             """, this::wallet, familyId, childId).stream().findFirst()
             .orElseThrow(FamilyGrowthService.NotFoundException::new);
@@ -248,14 +248,15 @@ class JdbcStage3Store implements Stage3Store {
         BigDecimal delta, String reason, String idempotencyKey, Instant now
     ) {
         Wallet wallet = jdbc.query(
-            "SELECT child_id, family_id, money_balance, coin_balance, version FROM wallet " +
+            "SELECT child_id, family_id, money_balance, reserved_money, coin_balance, version FROM wallet " +
                 "WHERE family_id = ? AND child_id = ? FOR UPDATE",
             this::wallet, familyId, childId).stream().findFirst()
             .orElseThrow(FamilyGrowthService.NotFoundException::new);
         BigDecimal before = assetType == AssetType.MONEY
             ? wallet.moneyBalance() : BigDecimal.valueOf(wallet.coinBalance());
         BigDecimal after = before.add(delta);
-        if (after.signum() < 0) {
+        if (after.signum() < 0
+            || (assetType == AssetType.MONEY && after.compareTo(wallet.reservedMoney()) < 0)) {
             throw new Stage3Service.ConflictException("Wallet balance cannot be negative");
         }
         UUID businessId = UUID.nameUUIDFromBytes(
@@ -347,8 +348,10 @@ class JdbcStage3Store implements Stage3Store {
     }
 
     private Wallet wallet(ResultSet rs, int row) throws SQLException {
+        BigDecimal money = rs.getBigDecimal("money_balance");
+        BigDecimal reserved = rs.getBigDecimal("reserved_money");
         return new Wallet(rs.getObject("child_id", UUID.class), rs.getObject("family_id", UUID.class),
-            rs.getBigDecimal("money_balance"), rs.getLong("coin_balance"), rs.getLong("version"));
+            money, reserved, money.subtract(reserved), rs.getLong("coin_balance"), rs.getLong("version"));
     }
 
     private LedgerEntry ledger(ResultSet rs, int row) throws SQLException {

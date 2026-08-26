@@ -58,10 +58,17 @@ public final class Stage3Models {
         }
     }
 
-    public record Wallet(UUID childId, UUID familyId, BigDecimal moneyBalance, long coinBalance, long version) {
+    public record Wallet(
+        UUID childId, UUID familyId, BigDecimal moneyBalance, BigDecimal reservedMoney,
+        BigDecimal availableMoney, long coinBalance, long version
+    ) {
         public Wallet {
             moneyBalance = money(moneyBalance);
-            if (moneyBalance.signum() < 0 || coinBalance < 0) {
+            reservedMoney = money(reservedMoney);
+            availableMoney = money(availableMoney);
+            if (moneyBalance.signum() < 0 || reservedMoney.signum() < 0
+                || reservedMoney.compareTo(moneyBalance) > 0 || coinBalance < 0
+                || availableMoney.compareTo(moneyBalance.subtract(reservedMoney)) != 0) {
                 throw new IllegalArgumentException("Wallet balance cannot be negative");
             }
         }
