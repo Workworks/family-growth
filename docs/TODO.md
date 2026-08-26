@@ -11,7 +11,8 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P0 | 17 | `IN_PROGRESS` | 恢复服务端零钱回收规则、冻结/PAID 和 PostgreSQL 并发闭环 | Agent | Stage 17 代码/证据/OpenAPI |
+| P0 | 19 | `IN_PROGRESS` | 修复真机更新 0%：系统下载、阶段反馈、官方备用入口、两版 Release 测试链 | Agent | Stage 19 代码/证据/Release |
+| P0 | 17 | `IN_PROGRESS` | Stage 19 交付后恢复服务端零钱回收规则、冻结/PAID 和 PostgreSQL 并发闭环 | Agent | Stage 17 代码/证据/OpenAPI |
 | P0 | 18 | `BLOCKED` | 在平板用 v0.3.1 检查并更新至 v0.3.2，测试双视角、视频计时、奖励兴趣和重启保留 | 用户测试；Agent 根据反馈修复 | Stage 18 真机证据 |
 | P0 | 16 | `BLOCKED` | 在平板手动安装 v0.3.1，验证图标后用应用内更新至已发布的 v0.3.2 | 用户提供设备；Agent 回放 | Stage 16/18 真机证据 |
 | P0 | 10 | `BLOCKED` | 用平板连接可访问 HTTPS 家庭服务，回放首装、全链路、TalkBack、重启与 v0.2.2→v0.3.0 更新 | 用户提供设备/服务；Agent 回放 | Stage 10 真机证据 |
@@ -26,7 +27,8 @@
 
 | 顺序 | Stage | 主题 | 前置条件 |
 | ---: | ---: | --- | --- |
-| 1 | 17 | 服务端零钱回收与冻结式兑现闭环 | Stage 18 可离线工程已交付；不接真实支付 |
+| 1 | 19 | GitHub Release 下载 0% 真机修复 | 无；旧客户端需手动安装一次修复基线 |
+| 2 | 17 | 服务端零钱回收与冻结式兑现闭环 | Stage 19 当前 P0 缺陷交付后恢复 |
 
 ## 3. 只能由外部条件解除
 

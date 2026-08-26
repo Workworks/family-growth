@@ -24,6 +24,7 @@ class UpdateModelsTest {
             "https://github.com/acme/family-growth/releases/download/v0.1.1/family-growth-0.1.1.apk",
             "sha256:${"a".repeat(64)}",
             1024,
+            "https://api.github.com/repos/acme/family-growth/releases/assets/12345",
         )
         assertEquals(expected, selectReleaseAsset(version, "acme/family-growth", listOf(expected)))
     }
@@ -41,6 +42,7 @@ class UpdateModelsTest {
             "https://github.com/acme/family-growth/releases/download/v0.1.1/family-growth-0.1.1.apk",
             null,
             1024,
+            "https://api.github.com/repos/acme/family-growth/releases/assets/12345",
         )
         assertThrows(UpdateException::class.java) {
             selectReleaseAsset(version, "acme/family-growth", listOf(base))
@@ -48,6 +50,16 @@ class UpdateModelsTest {
         assertThrows(UpdateException::class.java) {
             selectReleaseAsset(version, "acme/family-growth", listOf(base.copy(downloadUrl = "https://example.com/update.apk", digest = "sha256:${"b".repeat(64)}")))
         }
+        assertThrows(UpdateException::class.java) {
+            selectReleaseAsset(version, "acme/family-growth", listOf(base.copy(apiUrl = "https://api.github.com/repos/other/repo/releases/assets/12345", digest = "sha256:${"b".repeat(64)}")))
+        }
+    }
+
+    @Test fun `only exact repository GitHub asset API endpoint is trusted`() {
+        assertTrue(isTrustedGitHubAssetApi(URI("https://api.github.com/repos/acme/family-growth/releases/assets/12345"), "acme/family-growth"))
+        assertTrue(!isTrustedGitHubAssetApi(URI("http://api.github.com/repos/acme/family-growth/releases/assets/12345"), "acme/family-growth"))
+        assertTrue(!isTrustedGitHubAssetApi(URI("https://api.github.com/repos/acme/other/releases/assets/12345"), "acme/family-growth"))
+        assertTrue(!isTrustedGitHubAssetApi(URI("https://api.github.com/repos/acme/family-growth/releases/assets/not-a-number"), "acme/family-growth"))
     }
 
     @Test fun `only HTTPS GitHub release redirect hosts are trusted`() {

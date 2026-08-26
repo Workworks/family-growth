@@ -94,6 +94,7 @@
 - [Stage 16：儿童舒适品牌图标与 v0.3.1 交付](stages/stage-16-report.md)
 - [Stage 17：服务端零钱回收与冻结式兑现闭环](stages/stage-17-report.md)
 - [Stage 18：双视角排版、奖励浏览与教学视频任务](stages/stage-18-report.md)
+- [Stage 19：GitHub Release 下载 0% 真机修复](stages/stage-19-report.md)
 
 ## 项目计划与 Phase · `program/` `phases/`
 

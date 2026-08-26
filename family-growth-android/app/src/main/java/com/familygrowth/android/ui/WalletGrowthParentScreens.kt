@@ -20,6 +20,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.familygrowth.android.R
 import com.familygrowth.android.core.*
 import com.familygrowth.android.remote.ConnectionState
+import com.familygrowth.android.update.DownloadPhase
+import com.familygrowth.android.update.DownloadProgress
 import com.familygrowth.android.update.UpdateUiState
 import com.familygrowth.android.update.UpdateViewModel
 import kotlinx.coroutines.delay
@@ -561,13 +563,42 @@ private fun UpdatePanel(viewModel: UpdateViewModel) {
             UpdateUiState.Checking -> { LinearProgressIndicator(Modifier.fillMaxWidth()); Text("正在检查…") }
             UpdateUiState.UpToDate -> { Text("当前已是最新版本。"); TextButton(onClick = viewModel::check) { Text("重新检查") } }
             is UpdateUiState.Available -> { Text("发现 ${state.update.version}，下载后先校验再交给系统安装。"); Button(onClick = { viewModel.download(state.update) }) { Text("下载更新") } }
-            is UpdateUiState.Downloading -> { LinearProgressIndicator(progress = { state.percent / 100f }, Modifier.fillMaxWidth()); Text("下载并校验 ${state.percent}%") }
+            is UpdateUiState.Downloading -> {
+                val progress = state.progress
+                if (progress.phase == DownloadPhase.DOWNLOADING && progress.percent != null) {
+                    LinearProgressIndicator(progress = { progress.percent / 100f }, Modifier.fillMaxWidth())
+                } else {
+                    LinearProgressIndicator(Modifier.fillMaxWidth())
+                }
+                Text(downloadStatusText(progress), style = MaterialTheme.typography.titleMedium)
+                progress.detail?.let { Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                TextButton(onClick = viewModel::cancelDownload) { Text("取消下载") }
+            }
             is UpdateUiState.Ready -> { Text("APK 已通过 SHA-256 校验。"); Button(onClick = { viewModel.install(state.update, state.file) }) { Text("打开系统安装界面") } }
             is UpdateUiState.PermissionRequired -> { Text("请允许本应用安装未知来源应用，返回后继续。"); Button(onClick = { viewModel.install(state.update, state.file) }) { Text("继续安装") } }
-            is UpdateUiState.Error -> { Text(state.message, color = MaterialTheme.colorScheme.error); TextButton(onClick = viewModel::check) { Text("重试") } }
+            is UpdateUiState.Error -> {
+                Text(state.message, color = MaterialTheme.colorScheme.error)
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onClick = viewModel::check) { Text("重新检查") }
+                    state.update?.let { update -> TextButton(onClick = { viewModel.openReleasePage(update) }) { Text("浏览器打开发布页") } }
+                }
+            }
         }
     }
 }
+
+private fun downloadStatusText(progress: DownloadProgress): String = when (progress.phase) {
+    DownloadPhase.QUEUED -> "已交给 Android 系统下载，正在排队"
+    DownloadPhase.CONNECTING -> "正在连接 GitHub 下载节点（入口 ${progress.sourceAttempt}/2）"
+    DownloadPhase.SWITCHING_SOURCE -> "主入口没有收到数据，正在切换官方备用入口"
+    DownloadPhase.PAUSED -> progress.detail ?: "系统暂时暂停下载"
+    DownloadPhase.VERIFYING -> "下载完成，正在校验大小和 SHA-256"
+    DownloadPhase.DOWNLOADING -> progress.percent?.let { percent ->
+        "正在下载 $percent% · ${formatMegabytes(progress.downloadedBytes)} / ${formatMegabytes(progress.totalBytes)}"
+    } ?: "正在接收 APK 数据"
+}
+
+private fun formatMegabytes(bytes: Long): String = String.format(Locale.US, "%.1f MB", bytes.coerceAtLeast(0L) / (1024.0 * 1024.0))
 
 @Composable
 private fun AmountDialog(

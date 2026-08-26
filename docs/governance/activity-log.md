@@ -113,3 +113,6 @@
 | 11 | 18 | 执行 Android 离线与稳定签名门禁 | clean 后 debug/release 各 12 项 JVM、lint、assemble 共 113 个任务通过；APK 为 0.3.2/versionCode 8、三段 raw 视频资源和既有 release 证书 | 待写入 Stage 18 evidence |
 | 12 | 18 | 发布并复验 v0.3.2 | workflow `32944254891` 用时 4m39s 成功；远端 APK 11,437,471 字节、SHA-256 `bdda44e1...9b010`、versionCode 8、包名和稳定证书通过，远端资产覆盖本地 dist | `evidence/stage-18/acceptance.json`、v0.3.2 Release |
 | 13 | 18/17 | 收敛状态并恢复后端主线 | Stage 18 可离线工程已完成，仅真实平板交互/覆盖升级阻塞；Stage 17 恢复为 Agent 下一主线，未丢失任何 Stage 17 待办 | current/TODO/BLOCKERS、Stage 17/18 |
+| 14 | 19 | 用户真机反馈更新仍停在 0% | 登记 REQ-029/BUG-004 并再次暂停 Stage 17；旧客户端在首字节前最多静默阻塞 120 秒且无系统调度/备用入口。Stage 19 保留所有安全校验，改造系统下载和官方 API 回退 | `stages/stage-19-report.md`、BUG-004 |
+| 15 | 19 | 完成系统下载与阶段反馈改造 | APK 交给 DownloadManager；排队/连接/暂停/下载/校验分开显示，45 秒无新数据切换同 Release Asset API，可取消并在两入口失败后打开 Release 页面；大小/SHA-256 不降级 | Android `update/`、更新面板 |
+| 16 | 19 | 执行 v0.3.3 双变体门禁 | clean 后 debug/release 单测、lint、assemble 共 113 个任务通过；v0.3.3/versionCode 9 和既有稳定证书通过 | 待 Stage 19 evidence |

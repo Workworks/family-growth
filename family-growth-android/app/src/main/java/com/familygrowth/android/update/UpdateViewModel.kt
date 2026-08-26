@@ -1,6 +1,8 @@
 package com.familygrowth.android.update
 
 import android.app.Application
+import android.content.Intent
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.runtime.getValue
@@ -9,7 +11,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.familygrowth.android.BuildConfig
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -19,6 +23,7 @@ class UpdateViewModel(application: Application) : AndroidViewModel(application) 
     private val client = repository.takeIf(::isValidGitHubRepository)?.let {
         runCatching { GitHubReleaseClient(it) }.getOrNull()
     }
+    private var downloadJob: Job? = null
 
     var state: UpdateUiState by mutableStateOf(if (client == null) UpdateUiState.Unconfigured else UpdateUiState.Idle)
         private set
@@ -45,10 +50,11 @@ class UpdateViewModel(application: Application) : AndroidViewModel(application) 
 
     fun download(update: UpdateInfo) {
         val updateClient = client ?: return
-        state = UpdateUiState.Downloading(update, 0)
-        viewModelScope.launch {
-            runCatching {
-                withContext(Dispatchers.IO) {
+        if (downloadJob?.isActive == true) return
+        state = UpdateUiState.Downloading(update, DownloadProgress(DownloadPhase.QUEUED))
+        downloadJob = viewModelScope.launch {
+            try {
+                val file = withContext(Dispatchers.IO) {
                     updateClient.download(getApplication(), update) { percent ->
                         mainHandler.post {
                             if (state is UpdateUiState.Downloading) {
@@ -57,12 +63,32 @@ class UpdateViewModel(application: Application) : AndroidViewModel(application) 
                         }
                     }
                 }
-            }.onSuccess { file ->
                 state = UpdateUiState.Ready(update, file)
-            }.onFailure {
-                state = UpdateUiState.Error(it.message ?: "下载更新失败")
+            } catch (_: CancellationException) {
+                state = UpdateUiState.Available(update)
+            } catch (_: InterruptedException) {
+                state = UpdateUiState.Available(update)
+            } catch (exception: Exception) {
+                state = UpdateUiState.Error(exception.message ?: "下载更新失败", update)
+            } finally {
+                downloadJob = null
             }
         }
+    }
+
+    fun cancelDownload() {
+        val downloading = state as? UpdateUiState.Downloading ?: return
+        client?.cancel(getApplication())
+        downloadJob?.cancel()
+        state = UpdateUiState.Available(downloading.update)
+    }
+
+    fun openReleasePage(update: UpdateInfo) {
+        runCatching {
+            getApplication<Application>().startActivity(
+                Intent(Intent.ACTION_VIEW, Uri.parse(update.releasePageUrl)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+            )
+        }.onFailure { state = UpdateUiState.Error("无法打开 GitHub Release 页面", update) }
     }
 
     fun install(update: UpdateInfo, file: java.io.File) {

@@ -20,3 +20,4 @@
 - [Stage 16：儿童舒适品牌图标与 v0.3.1 交付](stage-16-report.md) — `BLOCKED`
 - [Stage 17：服务端零钱回收与冻结式兑现闭环](stage-17-report.md) — `IN_PROGRESS`
 - [Stage 18：双视角排版、奖励浏览与教学视频任务](stage-18-report.md) — `BLOCKED`
+- [Stage 19：GitHub Release 下载 0% 真机修复](stage-19-report.md) — `IN_PROGRESS`

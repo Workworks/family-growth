@@ -30,6 +30,7 @@ data class ReleaseAsset(
     val downloadUrl: String,
     val digest: String?,
     val size: Long,
+    val apiUrl: String? = null,
 )
 
 data class UpdateInfo(
@@ -44,11 +45,22 @@ sealed interface UpdateUiState {
     data object Checking : UpdateUiState
     data object UpToDate : UpdateUiState
     data class Available(val update: UpdateInfo) : UpdateUiState
-    data class Downloading(val update: UpdateInfo, val percent: Int) : UpdateUiState
+    data class Downloading(val update: UpdateInfo, val progress: DownloadProgress) : UpdateUiState
     data class Ready(val update: UpdateInfo, val file: File) : UpdateUiState
     data class PermissionRequired(val update: UpdateInfo, val file: File) : UpdateUiState
-    data class Error(val message: String) : UpdateUiState
+    data class Error(val message: String, val update: UpdateInfo? = null) : UpdateUiState
 }
+
+enum class DownloadPhase { QUEUED, CONNECTING, DOWNLOADING, PAUSED, SWITCHING_SOURCE, VERIFYING }
+
+data class DownloadProgress(
+    val phase: DownloadPhase,
+    val percent: Int? = null,
+    val downloadedBytes: Long = 0L,
+    val totalBytes: Long = 0L,
+    val sourceAttempt: Int = 1,
+    val detail: String? = null,
+)
 
 private val sha256DigestPattern = Regex("^sha256:[0-9a-fA-F]{64}$")
 private val githubRepositoryPattern = Regex("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
@@ -59,6 +71,15 @@ fun isTrustedGitHubAssetRedirect(uri: URI): Boolean {
     val host = uri.host.orEmpty().lowercase()
     val trustedHost = host == "github.com" || host.endsWith(".githubusercontent.com")
     return uri.scheme.equals("https", ignoreCase = true) && trustedHost
+}
+
+fun isTrustedGitHubAssetApi(uri: URI, repository: String): Boolean {
+    val expectedPrefix = "/repos/$repository/releases/assets/"
+    val assetId = uri.path.orEmpty().removePrefix(expectedPrefix)
+    return uri.scheme.equals("https", ignoreCase = true) &&
+        uri.host.equals("api.github.com", ignoreCase = true) &&
+        uri.path.orEmpty().startsWith(expectedPrefix) &&
+        assetId.matches(Regex("^[1-9]\\d*$"))
 }
 
 fun downloadFailureMessage(exception: Throwable, attempts: Int): String = when (exception) {
@@ -96,6 +117,10 @@ fun selectReleaseAsset(version: SemanticVersion, repository: String, assets: Lis
         throw UpdateException("Release asset 下载地址不是配置仓库的 GitHub HTTPS 地址")
     }
     if (asset.size <= 0L) throw UpdateException("Release asset 文件大小无效")
+    val apiUri = asset.apiUrl?.let { runCatching { URI(it) }.getOrNull() }
+    if (apiUri == null || !isTrustedGitHubAssetApi(apiUri, repository)) {
+        throw UpdateException("Release asset API 地址不是配置仓库的 GitHub HTTPS 地址")
+    }
     return asset
 }
 
