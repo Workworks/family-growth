@@ -29,7 +29,7 @@
 | WP19-1 | 已完成 | 需求/Bug/Spec 和 Stage 17 优先级交接 |
 | WP19-2 | 已完成 | ReleaseAsset API URL 契约、DownloadManager 与校验缓存 |
 | WP19-3 | 已完成 | 阶段/暂停/失败 UI、卡顿切换与取消 |
-| WP19-4 | 进行中 | 双变体测试/lint/build和 v0.3.3 稳定签名已过；待两版 Release |
+| WP19-4 | 进行中 | 双变体测试/lint/build和 v0.3.3 稳定签名已过；v0.3.4 作为纯热更新验证目标构建中 |
 | WP19-5 | 未开始 | 真机从修复基线更新到测试目标、数据保留和 BUG 关闭 |
 
 ## 验证方式

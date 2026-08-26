@@ -116,3 +116,4 @@
 | 14 | 19 | 用户真机反馈更新仍停在 0% | 登记 REQ-029/BUG-004 并再次暂停 Stage 17；旧客户端在首字节前最多静默阻塞 120 秒且无系统调度/备用入口。Stage 19 保留所有安全校验，改造系统下载和官方 API 回退 | `stages/stage-19-report.md`、BUG-004 |
 | 15 | 19 | 完成系统下载与阶段反馈改造 | APK 交给 DownloadManager；排队/连接/暂停/下载/校验分开显示，45 秒无新数据切换同 Release Asset API，可取消并在两入口失败后打开 Release 页面；大小/SHA-256 不降级 | Android `update/`、更新面板 |
 | 16 | 19 | 执行 v0.3.3 双变体门禁 | clean 后 debug/release 单测、lint、assemble 共 113 个任务通过；v0.3.3/versionCode 9 和既有稳定证书通过 | 待 Stage 19 evidence |
+| 17 | 19 | 准备独立热更新验证目标 | v0.3.3 保留为必须手动安装一次的修复基线；仅递增版本为 v0.3.4/versionCode 10，供新版客户端真实检查、下载和覆盖升级 | Stage 19 |
