@@ -11,7 +11,7 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P0 | 待立项（建议 20） | `NOT_STARTED` | 以 REQ-030 和全量剩余清单先建立全面教学核心 Spec：课程范围、课程/课节模型、教学任务字段、排课与完成判定 | Agent；T-01 的年龄/学科范围由用户确认 | `requirements/teaching-and-project-backlog.md` |
+| P0 | 待立项（建议 20） | `NOT_STARTED` | 以 REQ-030/031 建立“学段底座与家长配置”Spec：年龄推荐、家长覆盖与审计、四学段路由、分层反馈档案、纪录片权利目录 | Agent | `design/39-age-stage-teaching-experience.md`、`requirements/teaching-and-project-backlog.md` |
 | P0 | 18 | `BLOCKED` | 在平板用 v0.3.3→v0.3.4 更新链同时测试双视角、视频计时、奖励兴趣和重启保留 | 用户测试；Agent 根据反馈修复 | Stage 18/19 真机证据 |
 | P0 | 16 | `BLOCKED` | 在平板覆盖安装 v0.3.3，验证儿童图标及原有数据保留 | 用户提供设备；Agent 回放 | Stage 16/19 真机证据 |
 | P0 | 10 | `BLOCKED` | 用平板连接可访问 HTTPS 家庭服务，回放首装、全链路、TalkBack、重启与 v0.2.2→v0.3.0 更新 | 用户提供设备/服务；Agent 回放 | Stage 10 真机证据 |
@@ -24,7 +24,7 @@
 
 ## 2. 可由 Agent 继续推进
 
-REQ-030 已确认现有“通用任务 + 3 个短视频”不足以支撑全面教学。Agent 可立即先建立建议 Stage 20 Spec 并升级课程/教学任务核心模型；首批年龄段、学科边界和内容来源需要用户产品决策。LIM-013 数据权利/完整时段审计仍为并行 P0 安全事项，删除保留策略需先完成产品与隐私决策。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
+REQ-030 已确认现有“通用任务 + 3 个短视频”不足以支撑全面教学；REQ-031 已明确幼儿园、小学、初中、高中四学段、家长配置年龄和分层页面，不再等待年龄范围产品决策。Agent 可立即建立建议 Stage 20 Spec，先实现学段事实源、家长配置、页面路由、反馈档案和纪录片权利目录，再按 Stage 21–26 推进共用教学引擎和四学段体验。LIM-013 数据权利/完整时段审计仍为并行 P0 安全事项。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
 
 ## 3. 只能由外部条件解除
 

@@ -32,6 +32,7 @@
 - [36 儿童端发展与行为设计基线](design/36-child-experience-behavioral-baseline.md)
 - [37 儿童舒适品牌图标基线](design/37-child-comfort-brand-icon.md)
 - [38 儿童奖励浏览与教学视频交互](design/38-child-reward-video-interaction.md)
+- [39 四学段教学体验与内容分层](design/39-age-stage-teaching-experience.md)
 
 ## 接口参考 · `reference/`
 
@@ -106,7 +107,7 @@
 ## 治理、需求、缺陷与调研
 
 - [治理入口](governance/README.md) · [行为日志](governance/activity-log.md)
-- [需求规则](requirements/README.md) · [需求账本](requirements/requirement-ledger.md) · [教学与项目剩余清单](requirements/teaching-and-project-backlog.md)
+- [需求规则](requirements/README.md) · [需求账本](requirements/requirement-ledger.md) · [教学与项目剩余清单](requirements/teaching-and-project-backlog.md) · [四学段体验基线](design/39-age-stage-teaching-experience.md)
 - [Bug](bug/bugList.md) · [AQ](aq/aq.md) · [BLOCKERS](BLOCKERS.md)
 - [调研索引](research/README.md)
 
