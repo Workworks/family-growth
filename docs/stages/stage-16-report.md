@@ -1,6 +1,6 @@
 # Stage 16：儿童舒适品牌图标与 v0.3.1 交付
 
-状态：`IN_PROGRESS`
+状态：`BLOCKED`
 
 日期：2026-08-26
 
@@ -30,7 +30,7 @@
 | WP16-1 | 完成 | 登记需求、品牌图标基线与生成提示词 |
 | WP16-2 | 完成 | 生成、检查并固化 1024px 品牌母版 |
 | WP16-3 | 完成 | 接入 adaptive/round/legacy/monochrome Android 资源 |
-| WP16-4 | 进行中 | Android/文档/签名门禁已过，待提交并发布 v0.3.1 |
+| WP16-4 | 完成 | Android/文档/签名门禁及公开 v0.3.1 Release 下载复验通过 |
 | WP16-5 | 阻塞 | 平板桌面蒙版、壁纸对比、首次启动与 v0.3.0→v0.3.1 覆盖升级 |
 
 ## 验证方式
@@ -51,15 +51,17 @@
 - [x] AC16-02 `PASS`：原创母版使用书本/新芽和低刺激配色，无文字、金融诱导或高唤醒元素；主体缩入中央安全区。
 - [x] AC16-03 `PASS`：Android 5 档 legacy、adaptive、round、API 33 monochrome 资源和 Manifest 接入完成。
 - [x] AC16-04 `PASS`：debug/release 单测、lint、构建通过；稳定签名 v0.3.1/versionCode 7、包名与证书核验通过。
-- [ ] AC16-05 `PENDING`：公开 v0.3.1 Release、digest 和下载签名复验通过。
+- [x] AC16-05 `PASS`：公开 v0.3.1 Release、GitHub digest、下载版本/包名和同一证书复验通过。
 - [ ] AC16-06 `BLOCKED`：平板桌面视觉与 v0.3.0→v0.3.1 覆盖升级缺真实设备。
 
 ## 当前阻塞
 
-尚无可用 Android 平板/真机，WP16-5 不能以生成图或构建替代。其余工程工作可继续推进。
+尚无可用 Android 平板/真机，WP16-5 不能以生成图或构建替代。全部可离线工程与公开 Release 已完成，Stage 因真实桌面和更新回放缺失保持 `BLOCKED`。
 
 ## 当前实施结果
 
 BUG-002 保持安全校验不降级：只有网络/文件 IO 进入最多三次重试，HTTP、来源、大小、digest 等契约错误立即失败；进度按百分比节流并由主线程发布，旧版无原因通用提示改为超时、DNS/连接、TLS 或网络/存储分类。真实 v0.3.0 Release API 元数据和 CDN 重定向探针通过，说明发布资产本身当前有效；旧版用户设备的具体 IOException 无法从通用提示反推。
 
 图标由内置图像生成模式创建透明母版，再由项目脚本确定性缩入 60% adaptive 安全区并派生资源。视觉语义为“圆角小书托起两片新芽”，采用鼠尾草绿、暖米白和少量柔和杏色；蒙版预览见 `evidence/stage-16/icon-preview.png`。
+
+代码提交 `f487430` 已推送并发布 [v0.3.1](https://github.com/Workworks/family-growth/releases/tag/v0.3.1)。workflow `32923187112` 用时 4m21s 成功；远端 APK 为 11,366,435 字节，SHA-256 `30c0b95fa98fdc5dd91222607a941f965eac678e1f8a68c56cd5cd232021d37b`，versionCode 7、包名和稳定证书均通过。旧 v0.3.0 因 BUG-002 位于下载端，应手动安装一次 v0.3.1，之后再使用修复后的应用内更新链。

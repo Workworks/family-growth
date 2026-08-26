@@ -105,3 +105,5 @@
 | 3 | 16 | 完成 BUG-002 离线修复 | 下载改为 30 秒连接、120 秒读取、最多 3 次 IO 重试、identity 传输、进度节流/主线程发布和分类错误；验证错误立即失败，来源/大小/SHA-256 未放宽 | Android `update/`、`UpdateModelsTest` |
 | 4 | 16 | 使用 imagegen 生成儿童舒适图标 | 生成透明“圆角书本托起新芽”母版；项目脚本缩入 adaptive 60% 安全区并派生五档 legacy、round、adaptive 与 monochrome 资源 | `branding/`、`scripts/generate_android_icons.py`、图标预览 |
 | 5 | 16 | 执行 Android 全量和稳定签名门禁 | 112 项任务通过；首次稳定签名 clean 被 Windows lint-cache 锁阻断，正常停止 Gradle daemon 后重跑 61 项成功；19 项 release JVM、lint、v2 签名、v0.3.1/versionCode 7 和图标资源通过 | `evidence/stage-16/acceptance.json` |
+| 6 | 16 | 发布并复验 v0.3.1 | commit `f487430` 与 tag 推送；workflow `32923187112` 用时 4m21s 成功。远端 APK 11,366,435 字节、GitHub digest、versionCode 7、包名和稳定证书通过；本地 dist 已替换为远端资产 | Stage 16 evidence、v0.3.1 Release |
+| 7 | 16 | 收敛 Stage 状态 | 可离线更新修复、图标和 Release 全部完成；真实平板桌面与应用内升级缺设备，Stage 16 标记 `BLOCKED`，BUG-002 保持 `FIXED_PENDING_DEVICE` | Stage 16、BLOCKERS/TODO/current |

@@ -1,11 +1,11 @@
 {
-  "capturedAt": "2026-08-26T10:19:04+08:00",
+  "capturedAt": "2026-08-26T10:39:00+08:00",
   "stage": 16,
-  "status": "IN_PROGRESS",
+  "status": "BLOCKED",
   "passed": false,
   "workingDirectory": "C:/Users/70649/Desktop/aiWork/studyApp",
   "shellType": "PowerShell",
-  "summary": "BUG-002 offline fix, child-comfort launcher assets, Android gates and local stable signing passed; public v0.3.1 release is pending and physical-tablet verification is blocked.",
+  "summary": "BUG-002 offline fix, child-comfort launcher assets, Android gates, stable signing and public v0.3.1 release passed; physical-tablet verification is blocked.",
   "checks": [
     {
       "command": "gh api releases/latest; curl -L headers for v0.3.0 asset",
@@ -48,6 +48,18 @@
       "exitCode": 0,
       "passed": true,
       "result": "APK v2 signature valid; applicationId com.familygrowth.android, versionName 0.3.1, versionCode 7, certificate SHA-256 9179a5da...2eacb, adaptive/round/monochrome resources present."
+    },
+    {
+      "command": "git push main/tag v0.3.1; gh run watch 32923187112 --exit-status",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Stage commit f487430 pushed; Android GitHub Release workflow completed successfully in 4m21s and created v0.3.1."
+    },
+    {
+      "command": "gh release download v0.3.1; GitHub latest API; aapt/apksigner remote asset verification",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Remote asset was 11,366,435 bytes with matching GitHub/SHA-256 30c0b95f...1d37b; versionCode 7, package and stable certificate passed."
     }
   ],
   "artifacts": {
@@ -61,13 +73,14 @@
       "bytes": 171623,
       "sha256": "f9083dd4f548104d29d4bf6cfc6db5f542419a113a0dcc0f8c98cbcc37e2f778"
     },
-    "localApk": {
+    "releaseApk": {
       "path": "dist/family-growth-0.3.1.apk",
       "bytes": 11366435,
-      "sha256": "909b235bf0c8a452ca5ce80c5028fa7122efd8da5f0305fd81f65c638abab4cb"
+      "sha256": "30c0b95fa98fdc5dd91222607a941f965eac678e1f8a68c56cd5cd232021d37b",
+      "releaseUrl": "https://github.com/Workworks/family-growth/releases/tag/v0.3.1"
     }
   },
   "blocked": [
-    "Physical tablet is unavailable for launcher-mask, wallpaper contrast, actual in-app download, installer confirmation, and v0.3.0 to v0.3.1 data-retention verification."
+    "Physical tablet is unavailable for launcher-mask, wallpaper contrast, actual in-app download, installer confirmation, and data-retention verification. v0.3.0 must be manually upgraded because the fix is delivered by v0.3.1 itself."
   ]
 }

@@ -47,8 +47,11 @@ cd family-growth-android
 - 基线：[v0.2.0](https://github.com/Workworks/family-growth/releases/tag/v0.2.0)，versionCode 3，asset `family-growth-0.2.0.apk`。
 - 更新：[v0.2.1](https://github.com/Workworks/family-growth/releases/tag/v0.2.1)，versionCode 4，asset `family-growth-0.2.1.apk`。
 - 儿童适龄更新：[v0.2.2](https://github.com/Workworks/family-growth/releases/tag/v0.2.2)，versionCode 5，asset `family-growth-0.2.2.apk`。
-- 三版证书相同；GitHub latest API 当前返回 v0.2.2 及其 `sha256:` digest。
-- 真机验收顺序：安装 0.2.1 → 创建少量本机数据 → 家长区检查更新 → 下载/校验 → 系统确认 → 检查版本 0.2.2 与数据保留。
+- 生产闭环更新：[v0.3.0](https://github.com/Workworks/family-growth/releases/tag/v0.3.0)，versionCode 6。
+- 下载修复与儿童图标：[v0.3.1](https://github.com/Workworks/family-growth/releases/tag/v0.3.1)，versionCode 7，asset `family-growth-0.3.1.apk`。
+- 所有正式版本证书相同；GitHub latest API 当前返回 v0.3.1 及其 `sha256:` digest。
+- v0.3.0 的更新下载端存在 BUG-002，遇到“APK 下载或校验失败”时需手动安装 v0.3.1；v0.3.1 起具备三次有限重试、120 秒读取窗口和超时/DNS/TLS/存储分类提示。
+- 真机验收顺序：手动安装 v0.3.1 → 创建少量本机数据 → 发布同签名更高测试版本 → 家长区检查更新 → 下载/校验 → 系统确认 → 检查版本与数据保留。
 
 ## 6. 验收步骤
 
