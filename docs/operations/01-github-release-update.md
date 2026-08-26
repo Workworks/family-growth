@@ -50,9 +50,11 @@ cd family-growth-android
 - 生产闭环更新：[v0.3.0](https://github.com/Workworks/family-growth/releases/tag/v0.3.0)，versionCode 6。
 - 下载修复与儿童图标：[v0.3.1](https://github.com/Workworks/family-growth/releases/tag/v0.3.1)，versionCode 7，asset `family-growth-0.3.1.apk`。
 - 双视角、奖励浏览与教学视频：[v0.3.2](https://github.com/Workworks/family-growth/releases/tag/v0.3.2)，versionCode 8，asset `family-growth-0.3.2.apk`。
-- 所有正式版本证书相同；GitHub latest API 当前返回 v0.3.2 及其 `sha256:` digest。
-- v0.3.0 的更新下载端存在 BUG-002，遇到“APK 下载或校验失败”时需手动安装 v0.3.1；v0.3.1 起具备三次有限重试、120 秒读取窗口和超时/DNS/TLS/存储分类提示。
-- 真机验收顺序：手动安装 v0.3.1 → 创建少量本机数据 → 家长区检查到 v0.3.2 → 下载/校验 → 系统确认 → 检查版本与数据保留。
+- 系统下载器修复基线：[v0.3.3](https://github.com/Workworks/family-growth/releases/tag/v0.3.3)，versionCode 9。
+- 热更新验证目标：[v0.3.4](https://github.com/Workworks/family-growth/releases/tag/v0.3.4)，versionCode 10。
+- 所有正式版本证书相同；GitHub latest API 当前返回 v0.3.4 及其 `sha256:` digest。
+- v0.3.0–v0.3.2 的客户端都不含 Stage 19 系统下载器；遇到失败或长期 0% 时必须手动覆盖安装 v0.3.3 一次，不能期待旧客户端远程获得修复代码。
+- 真机验收顺序：不卸载、不清数据，手动覆盖 v0.3.3 → 检查本机数据 → 家长区检查到 v0.3.4 → 记录排队/连接/下载/暂停/校验阶段 → 系统确认 → 检查版本与数据保留。
 
 ## 6. 验收步骤
 

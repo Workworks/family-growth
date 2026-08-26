@@ -1,6 +1,6 @@
 # Stage 19：GitHub Release 下载 0% 真机修复
 
-状态：`IN_PROGRESS`
+状态：`BLOCKED`
 
 日期：2026-08-26
 
@@ -29,8 +29,8 @@
 | WP19-1 | 已完成 | 需求/Bug/Spec 和 Stage 17 优先级交接 |
 | WP19-2 | 已完成 | ReleaseAsset API URL 契约、DownloadManager 与校验缓存 |
 | WP19-3 | 已完成 | 阶段/暂停/失败 UI、卡顿切换与取消 |
-| WP19-4 | 进行中 | 双变体测试/lint/build和 v0.3.3 稳定签名已过；v0.3.4 作为纯热更新验证目标构建中 |
-| WP19-5 | 未开始 | 真机从修复基线更新到测试目标、数据保留和 BUG 关闭 |
+| WP19-4 | 已完成 | 双变体测试/lint/build、稳定签名、v0.3.3 修复基线和 v0.3.4 验证目标均已发布复验 |
+| WP19-5 | 阻塞 | 真机从修复基线更新到测试目标、数据保留和 BUG 关闭 |
 
 ## 验证方式
 
@@ -46,9 +46,17 @@
 - [x] AC19-01 `PASS_OFFLINE`：DownloadManager 的排队/连接/暂停/下载/校验使用独立状态；收到字节前不显示百分比。
 - [x] AC19-02 `PASS_OFFLINE`：45 秒无新字节取消主系统任务并切换同仓库 Asset API；两入口均失败后返回系统原因并提供 Release 页面。
 - [x] AC19-03 `PASS_OFFLINE`：下载成功后从系统目录复制到 App 缓存前强制校验精确大小和 SHA-256；Android 系统继续执行包名、版本和同签名安装门禁。
-- [ ] AC19-04 `PENDING`：双变体测试/lint/build、稳定签名和两版 Release 复验通过。
+- [x] AC19-04 `PASS`：22 项 debug/release JVM、lint/build通过；v0.3.3/v0.3.4 远端摘要、版本、包名和同证书复验通过。
 - [ ] AC19-05 `BLOCKED`：真实设备从修复基线更新到测试目标并保留数据。
 
 ## 安全检查、限制与交接
 
 本 Stage 不加入第三方下载代理，不把 HTTPS 或 digest 校验降级。若用户网络同时阻断 GitHub Release CDN 的两个官方入口，新版会明确失败阶段，但仍需要用户调整网络或后续获得授权建设独立可信镜像。
+
+## 交付
+
+- 修复 commit：`54cdcb8`；验证目标 commit：`d2160a8`。
+- 手动修复基线：[v0.3.3](https://github.com/Workworks/family-growth/releases/tag/v0.3.3)，APK SHA-256 `9dbb1e4617a04eb8f2f0f24b85ff2abe6ac28b75af969ac0157bda291bc38b85`。
+- 热更新目标：[v0.3.4](https://github.com/Workworks/family-growth/releases/tag/v0.3.4)，APK SHA-256 `a0e359faa913a6b5b3b9482260d4653cef028d52b1d03be64d2996133f10bc3e`。
+- Actions：`32949154719`（4m16s）、`32949579505`（4m28s）。
+- 结构化证据：`docs/evidence/stage-19/acceptance.json`。

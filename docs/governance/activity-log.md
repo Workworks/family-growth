@@ -117,3 +117,5 @@
 | 15 | 19 | 完成系统下载与阶段反馈改造 | APK 交给 DownloadManager；排队/连接/暂停/下载/校验分开显示，45 秒无新数据切换同 Release Asset API，可取消并在两入口失败后打开 Release 页面；大小/SHA-256 不降级 | Android `update/`、更新面板 |
 | 16 | 19 | 执行 v0.3.3 双变体门禁 | clean 后 debug/release 单测、lint、assemble 共 113 个任务通过；v0.3.3/versionCode 9 和既有稳定证书通过 | 待 Stage 19 evidence |
 | 17 | 19 | 准备独立热更新验证目标 | v0.3.3 保留为必须手动安装一次的修复基线；仅递增版本为 v0.3.4/versionCode 10，供新版客户端真实检查、下载和覆盖升级 | Stage 19 |
+| 18 | 19 | 发布并复验两版更新测试链 | v0.3.3 workflow `32949154719` 4m16s 成功，远端 SHA-256 `9dbb1e46...38b85`；v0.3.4 workflow `32949579505` 4m28s 成功，latest SHA-256 `a0e359fa...0bc3e`；两版同证书 | `evidence/stage-19/acceptance.json` |
+| 19 | 19/17 | 收敛 Stage 19 并恢复 Stage 17 | 可离线修复、两版 Release 和远端复验完成；必须由用户手动安装 v0.3.3 后更新 v0.3.4，故 BUG-004/Stage 19 保持设备阻塞；Stage 17 再次恢复 | current/TODO/BLOCKERS、Stage 17/19 |

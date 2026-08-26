@@ -14,4 +14,4 @@
 | 0.3.2 稳定 APK | 本地/CI 同签名、版本、包名、公开 digest 和下载复验通过；安装阻塞 | 10、11、14–16、18 | Stage 18 evidence/BLOCKERS |
 | Stage 3–10 生产服务端深化 | Stage 3–7/9 自动化完成；Stage 8/10 真机阻塞且深度缺口显式保留 | 3–10 | Stage 3–10 evidence / Stage 路线图 |
 | V1 总验收 | 自动化/恢复/远端 Release 通过；真机未完成 | 10 | Stage 10 evidence |
-| GitHub Release 更新实现 | v0.2.0–v0.3.2 六个同签名正式版本已发布，真机覆盖升级阻塞 | 11、14–16、18 | Stage 18 evidence/BLOCKERS |
+| GitHub Release 更新实现 | v0.2.0–v0.3.4 八个同签名正式版本已发布；v0.3.3 起使用系统下载与官方 Asset API 回退，真机 v0.3.3→v0.3.4 覆盖升级待验收 | 11、14–16、18–19 | Stage 19 evidence/BLOCKERS |

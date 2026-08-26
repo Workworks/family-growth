@@ -1,0 +1,64 @@
+{
+  "capturedAt": "2026-08-26T16:54:20+08:00",
+  "stage": 19,
+  "status": "BLOCKED",
+  "passed": false,
+  "workingDirectory": "C:/Users/70649/Desktop/aiWork/studyApp",
+  "shellType": "PowerShell",
+  "summary": "System DownloadManager update flow, explicit connection phases, official GitHub Asset API fallback, stable v0.3.3 repair baseline and v0.3.4 verification target passed offline and remote gates; the user device upgrade remains required.",
+  "checks": [
+    {
+      "command": "curl GitHub release asset API with application/octet-stream",
+      "exitCode": 0,
+      "passed": true,
+      "result": "The exact same public release asset is available through the validated api.github.com repository asset endpoint and redirects over HTTPS to GitHub release-assets infrastructure."
+    },
+    {
+      "command": ".\\gradlew.bat clean testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease",
+      "exitCode": 0,
+      "passed": true,
+      "result": "113 Gradle tasks succeeded; 22 debug and 22 release JVM tests, both lint variants, resource linking and stable signed v0.3.3 APK builds passed."
+    },
+    {
+      "command": "UpdateModelsTest exact repository release/API endpoint vectors",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Foreign repositories, HTTP, non-numeric asset IDs, missing digest and foreign browser URLs fail closed; exact HTTPS browser and Asset API endpoints pass."
+    },
+    {
+      "command": ".\\gradlew.bat testReleaseUnitTest lintRelease assembleRelease",
+      "exitCode": 0,
+      "passed": true,
+      "result": "60-task v0.3.4 verification-target gate passed with versionCode 10 and the same stable signing identity."
+    },
+    {
+      "command": "git tag v0.3.3; gh run watch 32949154719 --exit-status; remote asset verification",
+      "exitCode": 0,
+      "passed": true,
+      "result": "v0.3.3 workflow succeeded in 4m16s; remote APK is 11,437,471 bytes, SHA-256 9dbb1e46...38b85, versionCode 9 and the stable certificate."
+    },
+    {
+      "command": "git tag v0.3.4; gh run watch 32949579505 --exit-status; latest API and remote asset verification",
+      "exitCode": 0,
+      "passed": true,
+      "result": "v0.3.4 workflow succeeded in 4m28s; latest APK is 11,437,475 bytes, SHA-256 a0e359fa...0bc3e, versionCode 10 and the stable certificate."
+    }
+  ],
+  "artifacts": {
+    "repairBaseline": {
+      "path": "dist/family-growth-0.3.3.apk",
+      "bytes": 11437471,
+      "sha256": "9dbb1e4617a04eb8f2f0f24b85ff2abe6ac28b75af969ac0157bda291bc38b85",
+      "releaseUrl": "https://github.com/Workworks/family-growth/releases/tag/v0.3.3"
+    },
+    "verificationTarget": {
+      "path": "dist/family-growth-0.3.4.apk",
+      "bytes": 11437475,
+      "sha256": "a0e359faa913a6b5b3b9482260d4653cef028d52b1d03be64d2996133f10bc3e",
+      "releaseUrl": "https://github.com/Workworks/family-growth/releases/tag/v0.3.4"
+    }
+  },
+  "blocked": [
+    "The installed v0.3.1 client cannot receive downloader code remotely. The user must manually install v0.3.3 once, then use its in-app updater to install v0.3.4 and report the displayed phase/result and data retention."
+  ]
+}
