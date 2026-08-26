@@ -1,0 +1,79 @@
+{
+  "capturedAt": "2026-08-26T15:51:00+08:00",
+  "stage": 18,
+  "status": "BLOCKED",
+  "passed": false,
+  "workingDirectory": "C:/Users/70649/Desktop/aiWork/studyApp",
+  "shellType": "PowerShell",
+  "summary": "Role layout, child reward browsing, offline learning-video task loop, Android gates, stable signing and public v0.3.2 release passed; physical-tablet interaction and upgrade verification are blocked.",
+  "checks": [
+    {
+      "command": ".\\scripts\\generate_learning_videos.ps1; ffprobe each lesson",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Three original 640x360 H.264/yuv420p videos were generated at exactly 18 seconds each; they have no network, ad, recommendation or autoplay dependency."
+    },
+    {
+      "command": ".\\gradlew.bat clean testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease",
+      "exitCode": 0,
+      "passed": true,
+      "result": "113 tasks succeeded; 12 debug and 12 release JVM tests, both lint variants, resource linking and both APK builds passed."
+    },
+    {
+      "command": "LocalFamilyEngineTest reward/video vectors",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Reward interest toggles without wallet or ledger mutation; an 18-second lesson stays incomplete at 16 seconds, submits exactly one task at 17 seconds, and posts Coin/XP only after parent approval."
+    },
+    {
+      "command": "aapt dump badging/resources; apksigner verify --print-certs",
+      "exitCode": 0,
+      "passed": true,
+      "result": "applicationId com.familygrowth.android, versionName 0.3.2, versionCode 8, all three raw lesson resources and stable certificate SHA-256 9179a5da...2eacb passed."
+    },
+    {
+      "command": ".\\scripts\\Test-DocumentationLinks.ps1; git diff --check",
+      "exitCode": 0,
+      "passed": true,
+      "result": "81 Markdown files and 80 indexed documents passed reachability/link validation; staged whitespace validation passed."
+    },
+    {
+      "command": "git push main/tag v0.3.2; gh run watch 32944254891 --exit-status",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Stage commits 85f14a6 and 3f9228b were pushed; Android GitHub Release workflow completed successfully in 4m39s and created v0.3.2."
+    },
+    {
+      "command": "gh release download v0.3.2; GitHub latest API; aapt/apksigner remote verification",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Remote asset was 11,437,471 bytes with matching GitHub/SHA-256 bdda44e1...9b010; versionCode 8, package, raw lessons and stable certificate passed. The verified remote asset replaced the local dist copy."
+    }
+  ],
+  "artifacts": {
+    "colorLesson": {
+      "path": "family-growth-android/app/src/main/res/raw/lesson_color_garden.mp4",
+      "bytes": 16538,
+      "sha256": "b73255fac0428f0ec060b702eb0d6c9a01f1e66218382d84d31f8a0e8041e119"
+    },
+    "countLesson": {
+      "path": "family-growth-android/app/src/main/res/raw/lesson_count_to_five.mp4",
+      "bytes": 19056,
+      "sha256": "df635ed65d1adfa384da8ca12c3b68c070ecf04e16b14e153aba8a74c63bb4b5"
+    },
+    "shapeLesson": {
+      "path": "family-growth-android/app/src/main/res/raw/lesson_shape_home.mp4",
+      "bytes": 18454,
+      "sha256": "9e61a3083b1545d3e70d18f1f5a05d6baacd5c9373d005d3af3e65408f0f806e"
+    },
+    "releaseApk": {
+      "path": "dist/family-growth-0.3.2.apk",
+      "bytes": 11437471,
+      "sha256": "bdda44e1952aeed7f2d196cc1a9ffab36fd188106b3be61bc1cefeb13a19b010",
+      "releaseUrl": "https://github.com/Workworks/family-growth/releases/tag/v0.3.2"
+    }
+  },
+  "blocked": [
+    "Physical tablet is unavailable for role-switch layout, video playback timing, reward-interest persistence, TalkBack, app restart, and v0.3.1-to-v0.3.2 in-app upgrade/data-retention verification."
+  ]
+}

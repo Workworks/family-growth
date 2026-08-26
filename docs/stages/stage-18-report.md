@@ -1,6 +1,6 @@
 # Stage 18：双视角排版、奖励浏览与教学视频任务
 
-状态：`IN_PROGRESS`
+状态：`BLOCKED`
 
 日期：2026-08-26
 
@@ -31,13 +31,13 @@
 | WP18-2 | 已完成 | 双段式角色切换和手机/平板响应式排版 |
 | WP18-3 | 已完成 | 奖励详情、兴趣切换、家长标记与持久化 |
 | WP18-4 | 已完成 | 原创教学视频、播放器、真实时长累计与任务提交 |
-| WP18-5 | 进行中 | JVM/lint/build/签名已通过；待 v0.3.2 Release、下载复验与证据收口 |
+| WP18-5 | 已完成（真机除外） | JVM/lint/build/签名、v0.3.2 Release、下载复验和证据已收口 |
 
 ## 验证方式
 
 | ID | 环境 | 操作 | 预期 | 证据 |
 | --- | --- | --- | --- | --- |
-| V18-01 | JVM | 奖励兴趣切换、视频 89%/90%、重复完成、旧 JSON 解码 | 不扣账；阈值正确；只提交一次；旧状态可读 | Stage 18 evidence |
+| V18-01 | JVM + 静态兼容检查 | 奖励兴趣切换、视频 89%/90%、重复完成；检查旧 JSON 缺少新字段时的默认分支 | 不扣账；阈值正确；只提交一次；旧状态读取逻辑有默认值 | Stage 18 evidence/代码审查 |
 | V18-02 | Compose/static | 检查双段控件、三入口、空/详情/播放状态和 48dp 目标 | 标签完整、无第四入口、无自动播放 | 测试与代码审查 |
 | V18-03 | Android | test、lint、debug/release 构建、版本/包名/签名/资源 | 全部通过并产出稳定签名 APK | Stage 18 evidence |
 | V18-04 | Release | workflow、latest API、asset digest、签名与版本复验 | v0.3.2 可由 v0.3.1 检查到且同签名 | Stage 18 evidence |
@@ -49,9 +49,18 @@
 - [x] AC18-02 `PASS_OFFLINE`：奖励详情和兴趣状态已持久化，JVM 证明切换不改变钱包和 Ledger；待真机触控确认。
 - [x] AC18-03 `PASS_OFFLINE`：三个 18 秒 H.264 本地视频不自动播放，17 秒阈值后幂等提交一条任务，审核前 Ledger 为空。
 - [x] AC18-04 `PASS_OFFLINE`：新 JSON 字段均有旧版默认；debug/release 各 12 项 JVM、lint、构建和稳定签名通过。
-- [ ] AC18-05 `PENDING`：公开 v0.3.2 Release 下载、摘要、版本和同证书复验通过。
+- [x] AC18-05 `PASS`：公开 v0.3.2 Release 为 11,437,471 字节，SHA-256 `bdda44e1...9b010`、versionCode 8、包名和同证书复验通过。
 - [ ] AC18-06 `BLOCKED`：真实平板布局、播放、重启持久化和 v0.3.1→v0.3.2 覆盖升级通过。
 
 ## 安全检查、限制与交接
 
 教学资源进入 APK，首版无需网络和儿童账号追踪。播放器不会在关闭对话框后继续播放。真机缺失时，Stage 18 最终保持 `BLOCKED`，不能以构建或 JVM 测试冒充实际播放与平板可用性。
+
+## 交付
+
+- Stage 17 Spec commit：`85f14a6`。
+- Stage 18 实现 commit：`3f9228b`。
+- GitHub Actions：`32944254891`，4 分 39 秒成功。
+- Release：[v0.3.2](https://github.com/Workworks/family-growth/releases/tag/v0.3.2)。
+- APK：`dist/family-growth-0.3.2.apk`；SHA-256 `bdda44e1952aeed7f2d196cc1a9ffab36fd188106b3be61bc1cefeb13a19b010`。
+- 结构化证据：`docs/evidence/stage-18/acceptance.json`。

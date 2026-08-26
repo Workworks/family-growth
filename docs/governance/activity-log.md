@@ -111,3 +111,5 @@
 | 9 | 18 | 用户反馈双视角排版、奖励浏览和教学视频任务 | 登记 REQ-026–028/P0 与 BUG-003；Stage 18 暂时抢占 Stage 17 代码实施。教学内容限定原创离线、无广告/推荐/自动播放，观看 90% 只提交任务并由家长审核发奖 | `design/38-child-reward-video-interaction.md`、`stages/stage-18-report.md` |
 | 10 | 17/18 | 按 Stage 保存 Spec 并完成 Android 实现 | Stage 17 Spec 以 `85f14a6` 独立提交；Stage 18 完成双段视角、奖励详情/兴趣、三段原创本地视频、真实播放累计和视频任务审核闭环 | Stage 17 commit、Stage 18 Android 代码 |
 | 11 | 18 | 执行 Android 离线与稳定签名门禁 | clean 后 debug/release 各 12 项 JVM、lint、assemble 共 113 个任务通过；APK 为 0.3.2/versionCode 8、三段 raw 视频资源和既有 release 证书 | 待写入 Stage 18 evidence |
+| 12 | 18 | 发布并复验 v0.3.2 | workflow `32944254891` 用时 4m39s 成功；远端 APK 11,437,471 字节、SHA-256 `bdda44e1...9b010`、versionCode 8、包名和稳定证书通过，远端资产覆盖本地 dist | `evidence/stage-18/acceptance.json`、v0.3.2 Release |
+| 13 | 18/17 | 收敛状态并恢复后端主线 | Stage 18 可离线工程已完成，仅真实平板交互/覆盖升级阻塞；Stage 17 恢复为 Agent 下一主线，未丢失任何 Stage 17 待办 | current/TODO/BLOCKERS、Stage 17/18 |

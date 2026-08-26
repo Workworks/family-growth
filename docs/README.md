@@ -130,7 +130,7 @@
 - [Stage 15](evidence/stage-15/acceptance.json)
 - [Stage 16](evidence/stage-16/acceptance.json)
 - Stage 17 尚在 Spec/实现阶段，未执行门禁前不登记虚假成功证据。
-- Stage 18 证据将在本 Stage 门禁执行后创建，未运行前不登记虚假成功链接。
+- [Stage 18](evidence/stage-18/acceptance.json)
 
 ## 目录约定
 
