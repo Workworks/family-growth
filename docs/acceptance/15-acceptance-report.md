@@ -20,9 +20,10 @@ Stage 3–7/9 已交付 PostgreSQL 生产闭环，Stage 8 API/Android 可离线�
 | Stage 3–10 生产服务端闭环 | `PASS（Stage 3–7/9 自动化）；Stage 8/10 真机阻塞` | [Stage 路线图](../stages/stage-roadmap.md) |
 | GitHub 三版 Release/digest/同签名 | `PASS（远端）` | [Stage 15](../stages/stage-15-report.md) |
 | 3 岁起儿童端三入口/单任务/简化财商 | `PASS（实现/自动化）` | [Stage 15](../stages/stage-15-report.md) |
+| 全面教学任务体系 | `NOT_STARTED（仅通用任务与 3 个视频样例）` | [教学与项目剩余清单](../requirements/teaching-and-project-backlog.md) |
 | 儿童端平板触控/TalkBack/字体放大 | `BLOCKED` | [Stage 15](../stages/stage-15-report.md) |
-| GitHub Release 真机覆盖升级 | `BLOCKED` | [Stage 14](../stages/stage-14-report.md) |
+| GitHub Release 真机覆盖升级 | `PASS（v0.3.3→v0.3.4）；旧数据逐项盘点仍未完成` | [Stage 19](../stages/stage-19-report.md) |
 | 生产 TLS/凭据 fail-closed、备份恢复 | `PASS` | [Stage 10](../stages/stage-10-report.md) |
 | V1 端到端总验收 | `IN_PROGRESS（自动化通过，真机阻塞，深度缺口已列明）` | [Stage 10](../stages/stage-10-report.md) |
 
-完整 V1 只有在 Stage 8/10 真机回放，以及 AC-V1-11/13/17/19 的生产深度缺口解除后才能标记完成。
+完整 V1 仍需 Stage 8/10 真机回放、AC-V1-13/17 的数据权利与防沉迷深度、旧数据逐项保留验收；REQ-030 新增的全面教学体系属于下一产品主线，不能由现有三个视频样例代替。

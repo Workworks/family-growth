@@ -124,3 +124,4 @@
 | 22 | 17 | 封堵冻结余额旁路 | 钱包返回 total/reserved/available；家长负调账、Money→Coin、储蓄转入和模拟基金买入统一在 wallet 行锁下检查 available，数据库继续强制 reserved 不超过总额 | JdbcStage3/5/6/7Store、Stage17ApiTest |
 | 23 | 17 | 完成 H2/PostgreSQL 16.15 门禁 | H2 全量 14 个领域、18 个 Boot（5 个 PG 条件跳过）；临时 localhost PostgreSQL 16.15 上 V1–V8、35 表、14+18 测试零失败/零跳过，并发批准/支出、PAID 重放和冲突报价幂等键通过，容器已清理 | Stage17 tests、PostgresSchemaValidationTest、Stage 17 evidence |
 | 24 | 17 | 加固并发幂等与跨端兼容并提交 | 规则、报价、申请在 family 行锁内二次核对幂等载荷，避免竞态误重放；Android 旧字段名解析对新增 reserved/available 字段保持兼容，JVM/lint/debug 构建通过；实现以 `1c630d7` 提交 | `JdbcStage17Store`、`Stage17ConcurrencyTest`、Stage 17 evidence |
+| 25 | 待立项 | 审计全面教学与全部剩余事项 | 用户指出当前不足以支撑全面教学；代码核对确认仅有基础任务闭环和 3 个内置短视频。登记 REQ-030/P0，按教学核心、原始产品深度、外部真机验收列出 T-01–22、P-01–21、E-01–06，并建议 Stage 20–24 分步实施 | `requirements/teaching-and-project-backlog.md`、TODO/current/验收报告 |

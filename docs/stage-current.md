@@ -52,7 +52,9 @@ Stage 18 已完成可离线工程、稳定签名和公开 v0.3.2：孩子在“�
 
 Stage 19 已发布 v0.3.3 修复基线和 v0.3.4 热更新目标。v0.3.3 使用 Android DownloadManager，排队/连接/暂停/下载/校验分阶段，45 秒无新字节切换官方 Asset API，下载后仍校验精确大小和 SHA-256。用户已确认 v0.3.3→v0.3.4 可正常更新，Stage 19/BUG-004 关闭；旧数据逐项盘点仍归 Stage 11/14，随后转入并完成 Stage 17。
 
-Stage 17 已完成 V8 冻结余额、版本化规则、十分钟报价、REQUESTED/APPROVED/PAID/REJECTED/CANCELLED 状态机和全局 Money 可用额保护。H2 与 PostgreSQL 16.15 的 14 个领域、18 个后端/API/并发测试通过；Android 兼容门禁通过，LIM-012 解除。当前没有不依赖外部条件的已立项 Stage；下一生产候选 LIM-013 涉及儿童数据删除/审计保留决策，需先定策略。
+Stage 17 已完成 V8 冻结余额、版本化规则、十分钟报价、REQUESTED/APPROVED/PAID/REJECTED/CANCELLED 状态机和全局 Money 可用额保护。H2 与 PostgreSQL 16.15 的 14 个领域、18 个后端/API/并发测试通过；Android 兼容门禁通过，LIM-012 解除。Stage 17 收口时尚无不依赖外部条件的已立项 Stage，LIM-013 是当时的下一生产候选。
+
+用户随后明确指出当前版本不足以支撑全面教学任务。REQ-030 已按 P0 登记：真实代码目前只有基础 Plan/Goal/Task、扁平 Android 任务和 3 个内置 18 秒视频，没有课程/课节/活动/题库/评估/掌握度/内容发布或完整生产同步。建议下一主线从 Stage 20 Spec 开始；全量教学、产品深度和外部验收缺口见 `requirements/teaching-and-project-backlog.md`。
 
 ## 关键决策快照
 
@@ -64,3 +66,4 @@ Stage 17 已完成 V8 冻结余额、版本化规则、十分钟报价、REQUEST
 - 默认零钱回收比例 1:1；家长可配置透明手续费，但平台不作为真实金融中间商收款。
 - 所有用户需求与建议必须追加登记到 `docs/requirements/requirement-ledger.md`，按 P0–P3 和固定状态长期追踪，不依赖会话记忆。
 - 儿童端从 3 岁起，3–5 岁默认亲子共用；儿童最佳利益高于留存、时长、奖励和金融功能完整度，一级导航最多三个且禁止操纵性参与机制。
+- 全面教学是 REQ-030 起的下一产品主线；课程扩展不得突破三入口、亲子共用、低刺激、隐私最小化和不以屏幕时长为成功指标的最高准则。

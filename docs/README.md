@@ -10,7 +10,7 @@
 | 作为 Agent 接手 | [AGENTS](../AGENTS.md) → [工程规范](codex-skills.md) → [当前阶段](stage-current.md) → [TODO](TODO.md) → [Spec 指南](development/33-spec-driven-development.md) |
 | 知道做到哪、还差什么 | [当前阶段](stage-current.md) → [Stage 路线图](stages/stage-roadmap.md) → [TODO](TODO.md) |
 | 知道什么被阻塞 | [阻塞与限制清单](BLOCKERS.md) → [已知限制](acceptance/16-known-limitations.md) |
-| 查全部需求与建议 | [需求账本](requirements/requirement-ledger.md) → [登记规则](requirements/README.md) |
+| 查全部需求与建议 | [需求账本](requirements/requirement-ledger.md) → [教学与项目剩余清单](requirements/teaching-and-project-backlog.md) → [登记规则](requirements/README.md) |
 | 运行或开发项目 | [本地开发](development/17-local-development.md) → [开发指南](development/11-development-guide.md) → [测试计划](development/12-test-plan.md) |
 | 开发 Android | [Android 开发](development/34-android-development.md) → [Android UI 设计](design/06-android-ui-design.md) |
 | 调用当前 API | [API 文档](reference/09-api-documentation.md) → [OpenAPI](openapi.yaml) |
@@ -106,7 +106,7 @@
 ## 治理、需求、缺陷与调研
 
 - [治理入口](governance/README.md) · [行为日志](governance/activity-log.md)
-- [需求规则](requirements/README.md) · [需求账本](requirements/requirement-ledger.md)
+- [需求规则](requirements/README.md) · [需求账本](requirements/requirement-ledger.md) · [教学与项目剩余清单](requirements/teaching-and-project-backlog.md)
 - [Bug](bug/bugList.md) · [AQ](aq/aq.md) · [BLOCKERS](BLOCKERS.md)
 - [调研索引](research/README.md)
 
@@ -130,7 +130,7 @@
 - [Stage 14](evidence/stage-14/acceptance.json)
 - [Stage 15](evidence/stage-15/acceptance.json)
 - [Stage 16](evidence/stage-16/acceptance.json)
-- Stage 17 尚在 Spec/实现阶段，未执行门禁前不登记虚假成功证据。
+- [Stage 17](evidence/stage-17/acceptance.json)
 - [Stage 18](evidence/stage-18/acceptance.json)
 - [Stage 19](evidence/stage-19/acceptance.json)
 
