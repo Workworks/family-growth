@@ -1,0 +1,49 @@
+{
+  "capturedAt": "2026-08-26T08:45:00+08:00",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+  "shellType": "PowerShell",
+  "passed": false,
+  "summary": "Stage 10 offline production, restore, full regression and signed APK gates passed; GitHub Release is pending the Stage commit/tag and physical-tablet acceptance is blocked.",
+  "environment": {
+    "java": "17.0.8",
+    "postgres": "16.15",
+    "docker": "29.6.1",
+    "androidVersionName": "0.3.0",
+    "androidVersionCode": 6
+  },
+  "commands": [
+    { "command": "mvn production guard test; docker compose config", "exitCode": 0, "passed": true, "result": "Empty password, H2 and disabled TLS fail closed; explicit PostgreSQL/TLS config and Compose render pass." },
+    { "command": "isolated Compose PostgreSQL; Backup-FamilyGrowth.ps1; Restore-FamilyGrowth.ps1", "exitCode": 0, "passed": true, "result": "2,245-byte custom dump restored to a new database; Flyway marker=1 and recovery probe matched; temporary backup, container, network and volume removed." },
+    { "command": ".\\mvnw.cmd -pl family-growth-boot -am test", "exitCode": 0, "passed": true, "result": "H2: 12 domain and 13 Boot tests, with 2 PostgreSQL-only skips." },
+    { "command": "isolated PostgreSQL 16.15 on localhost; set test datasource; .\\mvnw.cmd -pl family-growth-boot -am test", "exitCode": 0, "passed": true, "result": "PostgreSQL: 12 domain and 13 Boot/API tests passed without skips; test container removed." },
+    { "command": "docker build --file deploy/Dockerfile --tag family-growth-stage10:test .; inspect image", "exitCode": 0, "passed": true, "result": "Multi-stage image built; runtime user=familygrowth, prod entrypoint and 8443 exposure verified; test tag removed." },
+    { "command": "load private recovery labels into process environment; gradlew clean testReleaseUnitTest lintRelease assembleRelease", "exitCode": 0, "passed": true, "result": "16 release JVM tests, release lint and signed build passed after stopping a Windows daemon that had locked the first clean attempt." },
+    { "command": "gradlew testDebugUnitTest lintDebug assembleDebug", "exitCode": 0, "passed": true, "result": "16 debug JVM tests, debug lint and build passed." },
+    { "command": "apksigner verify; aapt dump badging; SHA-256", "exitCode": 0, "passed": true, "result": "APK Signature Scheme v2, established release certificate, com.familygrowth.android, 0.3.0/versionCode 6 and local digest passed." },
+    { "command": "physical tablet first install, rotation, TalkBack, service E2E and v0.2.2 to v0.3.0 update", "shellType": "NOT_RUN", "exitCode": null, "passed": false, "result": "BLOCKED - no usable Android tablet/emulator or device-reachable family service." }
+  ],
+  "artifacts": {
+    "apk": {
+      "path": "dist/family-growth-0.3.0.apk",
+      "bytes": 11210187,
+      "sha256": "c92dbcff3c8542f5d893f86548d250dd9b2b0b0eeb89b6050d569341f3662e17",
+      "applicationId": "com.familygrowth.android",
+      "versionName": "0.3.0",
+      "versionCode": 6,
+      "certificateSha256": "9179a5da2973e8ff9115edd1fb74e21ad70d9540c1d33203c9af442106d2eacb"
+    },
+    "githubRelease": { "status": "PENDING_TAG", "tag": "v0.3.0" }
+  },
+  "acceptance": {
+    "AC10-01": "PASS",
+    "AC10-02": "PASS",
+    "AC10-03": "IN_PROGRESS - local artifact passed; remote release pending",
+    "AC10-04": "PASS for implemented automation; production-depth gaps remain explicit",
+    "AC10-05": "BLOCKED physical device"
+  },
+  "blockers": [
+    "Android tablet/emulator and device-reachable HTTPS service are required for runtime acceptance.",
+    "Server-side frozen withdrawal, self-service child export/delete and schedule/temporary-override audit remain partial V1 depth."
+  ],
+  "security": { "productionTlsRequired": true, "productionPostgresRequired": true, "secretsInEvidence": false, "realFinance": false }
+}

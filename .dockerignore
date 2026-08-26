@@ -1,0 +1,15 @@
+.git
+.github
+.gradle
+.kotlin
+**/build
+**/target
+dist
+docs/evidence/**/raw
+.env
+.env.*
+!deploy/.env.example
+*.jks
+*.keystore
+local.properties
+*.log

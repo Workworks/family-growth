@@ -84,6 +84,20 @@
 
 推进方：用户提供设备/可访问服务；Agent 回放并留证。
 
+### Stage 10：V1 发布、部署与总验收
+
+状态：`IN_PROGRESS`　文档：[Stage 10](stages/stage-10-report.md)
+
+已完成：生产 PostgreSQL/TLS fail-closed、Docker 部署包、隔离备份恢复、H2/PostgreSQL 16.15 全量回归、Docker 镜像门禁、debug/release 和本地稳定签名 0.3.0 APK。
+
+当前 Agent 可继续：提交 Stage 10、发布 v0.3.0 GitHub Release 并下载复验。
+
+外部缺少：Android 平板上的首装、服务连接、横屏/TalkBack、重启持久化和 v0.2.2→v0.3.0 同签名覆盖升级。
+
+产品深度限制：服务端冻结式零钱回收、家长自助儿童数据导出/删除、禁用时段和临时放行审计未在本次粗粒度 V1 工程中实现，AC-V1-11/13/17/19 保持 PARTIAL。
+
+推进方：Agent 完成 Release；用户提供设备/可访问 HTTPS 家庭服务后完成运行态回放；深度限制需后续明确继续建设。
+
 ## 2. 工程未完成
 
 ### Stage 15：3 岁起儿童端发展适龄改造

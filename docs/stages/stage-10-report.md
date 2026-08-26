@@ -21,20 +21,37 @@
 
 | ID | 状态 | 内容 |
 | --- | --- | --- |
-| WP10-1 | 待开始 | 部署配置、备份恢复和运维门禁 |
-| WP10-2 | 待开始 | 全量后端/数据库/Android 自动化与 E2E |
-| WP10-3 | 待开始 | 稳定签名 APK、GitHub Release 与下载复验 |
-| WP10-4 | 待开始 | 真机首装、覆盖升级、数据保留、横屏/无障碍 |
-| WP10-5 | 待开始 | AC-V1-01–19 总矩阵和已知限制收口 |
+| WP10-1 | 已完成 | prod 强制 PostgreSQL/非空凭据/TLS；Compose、非 root 镜像、备份和只恢复到新隔离库 |
+| WP10-2 | 已完成 | 全量 H2/PostgreSQL 16.15/Android 自动化、Docker 镜像和跨域 E2E |
+| WP10-3 | 进行中 | 本地稳定签名 0.3.0 APK 已验证；等待 Stage commit/tag 后创建 GitHub Release 并下载复验 |
+| WP10-4 | 阻塞 | 真机首装、覆盖升级、数据保留、横屏/无障碍缺设备和可访问家庭服务 |
+| WP10-5 | 已完成 | AC-V1-01–19 总矩阵逐项回链；未达到生产闭环的条目明确保持 PARTIAL/BLOCKED |
+
+## 部署、发布与文档变化
+
+- 新增 `prod` profile 与启动 guard：只接受 PostgreSQL、非空数据库用户名/密码、启用 TLS 及 `file:/classpath:` keystore；测试证明空密码、H2 和禁用 TLS 均拒绝。
+- 新增 Dockerfile/Compose：PostgreSQL 不映射宿主端口，应用以非 root、只读根文件系统和 `no-new-privileges` 运行；`.dockerignore` 排除 Git、构建、APK、env 和 keystore。
+- 新增 PowerShell 备份/恢复工具。恢复目标只允许新建 `family_growth_restore_*`；已存在目标不覆盖。隔离演练恢复 Flyway 标记与探针记录后清理全部临时资源。
+- Android 版本提升到 0.3.0/versionCode 6；本地 APK 的包名、v2 稳定签名证书、大小和 SHA-256 已验证。GitHub Release 远端结果在发布后回填。
+- 数据最小化与保留基线已明确；自动清理和家长自助导出/删除尚未实现，不能将 AC-V1-13 标记为完整通过。
+
+## 验证方式
+
+| ID | 环境 | 结果 | 证据 |
+| --- | --- | --- | --- |
+| V10-01 | H2 / PostgreSQL 16.15 | H2 12 领域 + 13 Boot（2 个 PG 环境跳过）；PG 12 + 13 全通过 | `evidence/stage-10/acceptance.json` |
+| V10-02 | Docker Compose / pg_dump | Compose config、非 root 镜像、2,245 字节备份、隔离恢复与清理通过 | `evidence/stage-10/acceptance.json` |
+| V10-03 | Android release | debug 16 JVM/lint/build；release 16 JVM/lint/build；0.3.0 v2 稳定签名通过 | `evidence/stage-10/acceptance.json` |
+| V10-04 | Android 设备 | 未运行：无可用平板/模拟器和可访问服务 | `BLOCKERS.md` |
 
 ## 完成标准
 
-- [ ] AC10-01 H2 隔离、PostgreSQL 目标库、文档/JSON/OpenAPI 门禁通过。
-- [ ] AC10-02 生产配置 fail-closed，备份/恢复在隔离库可回放。
-- [ ] AC10-03 debug/release、稳定签名、版本、包名、digest 和 GitHub Release 通过。
-- [ ] AC10-04 AC-V1-02–19 自动化可覆盖部分全部通过且证据逐项可追。
-- [ ] AC10-05 真机首装、横屏、TalkBack、重启持久化和同签名覆盖升级通过；缺设备时 Stage 必须 BLOCKED。
+- [x] AC10-01 `PASS`：H2/PostgreSQL 目标库、文档/JSON/OpenAPI 门禁通过。
+- [x] AC10-02 `PASS`：生产配置 fail-closed；备份/恢复在新隔离库真实回放并清理资源。
+- [ ] AC10-03 `IN_PROGRESS`：debug/release、本地稳定签名、版本、包名和 SHA-256 通过；待 GitHub Release/digest 下载复验。
+- [x] AC10-04 `PASS（已实现自动化范围）`：AC-V1 矩阵逐项回链；AC-V1-11/13/17/19 的生产深度缺口未伪装为通过，保留为 PARTIAL。
+- [ ] AC10-05 `BLOCKED`：真机首装、横屏、TalkBack、重启持久化和同签名覆盖升级缺 Android 设备。
 
 ## 安全检查、已知限制与交接
 
-Stage 10 只有在真实设备与目标部署环境完成最终回放后才能 `COMPLETED`；Agent 可先完成全部离线工程和 Release，外部阻塞单独列明。
+Stage 10 可离线工程已收口到发布步骤；只有在 GitHub Release 复验、真实设备与目标部署环境完成最终回放后才能 `COMPLETED`。AC-V1-11/13/17/19 当前分别只有本机零钱回收、PIN/最小日志、App 内分钟限制和透明费用基础实现；服务端冻结式兑现、自助数据权利、禁用时段/临时放行审计属于明确未完成深度，不得对外宣称完整生产能力。

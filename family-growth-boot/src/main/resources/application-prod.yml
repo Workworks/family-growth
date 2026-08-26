@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: ${FAMILY_GROWTH_DB_URL}
+    username: ${FAMILY_GROWTH_DB_USER}
+    password: ${FAMILY_GROWTH_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+server:
+  address: ${FAMILY_GROWTH_BIND_ADDRESS:0.0.0.0}
+  port: ${FAMILY_GROWTH_PORT:8443}
+  ssl:
+    enabled: true
+    key-store: ${FAMILY_GROWTH_TLS_KEYSTORE}
+    key-store-password: ${FAMILY_GROWTH_TLS_KEYSTORE_PASSWORD}
+    key-store-type: ${FAMILY_GROWTH_TLS_KEYSTORE_TYPE:PKCS12}
+    key-alias: ${FAMILY_GROWTH_TLS_KEY_ALIAS:family-growth}
+management:
+  endpoint:
+    health:
+      show-details: never
+  endpoints:
+    web:
+      exposure:
+        include: health,info

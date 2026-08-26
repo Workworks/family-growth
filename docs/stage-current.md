@@ -15,7 +15,7 @@
 | 7 | 6 | 纯模拟基金 | `COMPLETED` | H2/PostgreSQL NAV、费用、并发、持仓与 P&L 门禁通过 |
 | 8 | 7 | Android 生产接入 | `BLOCKED` | 代码/JVM/lint/build 通过；需平板回放真实登录同步与无障碍 |
 | 9 | 8 | 跨域闭环与报告 | `COMPLETED` | H2/PostgreSQL 使用事件、事实报告、权限和 Android 重试门禁通过 |
-| 10 | 9 | V1 发布、部署与总验收 | `IN_PROGRESS` | 完成生产配置、备份恢复、稳定签名 0.3.0 Release 和离线总验收 |
+| 10 | 9 | V1 发布、部署与总验收 | `IN_PROGRESS` | 本地部署/恢复/签名门禁已过；提交并发布 v0.3.0 后转真机阻塞 |
 | 11 | 计划外 | GitHub Release APK 热更新与当前版本交付 | `BLOCKED` | v0.2.0/0.2.1/0.2.2 同签名 Release 已完成；只需 Android 设备回放 App 内覆盖升级 |
 | 12 | 计划外 | 参考仓库文档治理与 Agent 启动协议对齐 | `COMPLETED` | 后续每次对话持续执行 AGENTS Step 1–6 和需求永久登记 |
 | 13 | 计划外 | Stage 2–11 基础体验宽度与 Android 前端完善 | `BLOCKED` | 代码、自动化和 0.2.0 APK 已交付；需 Android 真机/平板回放交互、计时与重启持久化 |

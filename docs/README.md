@@ -54,6 +54,7 @@
 - [14 故障排查](operations/14-troubleshooting.md)
 - [19 密码与密钥](operations/19-password-and-secrets.md)
 - [22 本地部署](operations/22-local-deployment.md)
+- [23 儿童数据保留、导出与恢复边界](operations/23-data-retention-and-recovery.md)
 
 ## 使用手册 · `manuals/`
 
@@ -116,6 +117,7 @@
 - [Stage 7](evidence/stage-7/acceptance.json)
 - [Stage 8](evidence/stage-8/acceptance.json)
 - [Stage 9](evidence/stage-9/acceptance.json)
+- [Stage 10](evidence/stage-10/acceptance.json)
 - [Stage 11](evidence/stage-11/acceptance.json)
 - [Stage 12](evidence/stage-12/acceptance.json)
 - [Stage 13](evidence/stage-13/acceptance.json)

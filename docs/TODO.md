@@ -11,7 +11,7 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P0 | 10 | `IN_PROGRESS` | 完成部署/恢复、离线总门禁、稳定签名 0.3.0 APK 与 GitHub Release；真机项留阻塞 | Agent | Stage 10 Spec/证据/commit/Release |
+| P0 | 10 | `IN_PROGRESS` | 提交并发布 v0.3.0，下载复验 digest/签名；随后把真机项转外部阻塞 | Agent | Stage 10 Spec/证据/commit/Release |
 | P0 | 8 | `BLOCKED` | 平板回放生产登录同步、孩子提交、家长确认、旋转和无障碍；代码/JVM/lint/build 已过 | 用户提供设备；Agent 回放 | Stage 8 真机证据 |
 | P0 | 15 | `BLOCKED` | 用 Android 平板回放三入口、单任务、TalkBack、字体放大和温和限时退出 | 用户提供设备；Agent 回放 | Stage 15 真机证据 |
 | P0 | 14 | `BLOCKED` | 用 Android 真机/平板安装 0.2.1 release，通过 App 更新至 0.2.2 并验证数据保留/失败路径 | 用户提供设备；Agent 回放 | Stage 14/15 真机证据 |

@@ -89,3 +89,7 @@
 | 81 | 9 | 完成 App 内使用与家庭报告域 | 新增 V7 UsagePolicy/Event、家庭时区今日摘要、家长月报和 Wallet/Ledger 对账；不采集其他 App 或儿童通信 | Stage 9 代码/OpenAPI |
 | 82 | 9 | 完成 Android 同步可靠性收口 | 断网时复用 UsageEvent 幂等键，刷新失败保留最后成功快照；当前进程终止前的待上传事件不承诺恢复并登记 LIM-011 | Android remote/core、已知限制 |
 | 83 | 9/10 | PostgreSQL 收口并启动 Stage 10 | H2 23 项、PostgreSQL 16.15 23 项、Android 16 项 JVM + lint/build 全部通过；隔离容器已移除 | `evidence/stage-9/acceptance.json` |
+| 84 | 10 | 完成生产部署 fail-closed | 新增 prod PostgreSQL/非空凭据/TLS guard、非 root 只读 Compose 镜像和 secret 排除；H2/空密码/禁用 TLS 反向测试通过 | Stage 10 boot/deploy |
+| 85 | 10 | 完成真实备份恢复演练 | custom dump 恢复到新 `family_growth_restore_*` 数据库，Flyway 标记和探针一致；临时文件、容器、网络和卷精确清理 | `evidence/stage-10/acceptance.json` |
+| 86 | 10 | 完成全量离线与 0.3.0 本地发布门禁 | H2/PG 各 25 项、Android debug/release 各 16 项、Docker build、稳定 v2 证书、包名/versionCode/SHA-256 通过 | `evidence/stage-10/acceptance.json` |
+| 87 | 10 | 明确总验收未满足项 | 真机运行/覆盖升级外部阻塞；服务端兑现、自助数据权利、禁用时段/放行审计保持 PARTIAL，未用本机实现冒充生产能力 | Stage 10、LIM-012/013 |

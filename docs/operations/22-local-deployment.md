@@ -7,7 +7,7 @@
 .\mvnw.cmd -pl family-growth-boot -am spring-boot:run
 ```
 
-目标数据库部署应使用 PostgreSQL；连接配置通过环境变量提供，不提交密码。当前 API 无生产认证，只用于受控开发环境。
+开发/测试仍使用 PostgreSQL；连接配置通过环境变量提供，不提交密码。生产必须激活 `prod` profile，并使用 [部署指南](10-deployment-guide.md)要求的 TLS、非空凭据和备份门禁。
 
 ## Android
 
@@ -16,4 +16,4 @@ cd family-growth-android
 .\gradlew.bat testDebugUnitTest lintDebug assembleDebug
 ```
 
-将 APK 安装到与后端网络可达的 Android 平板。实际后端地址配置、TLS 和家庭首次初始化仍属于后续部署 Stage。
+将 APK 安装到与后端网络可达且信任服务证书的 Android 平板。release 构建禁止明文 HTTP；debug 仅允许 loopback/私网字面地址用于开发。
