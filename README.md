@@ -1,6 +1,6 @@
 # Family Growth
 
-儿童成长培养与家庭财商教育平台。Stage 3–7/9 已交付 PostgreSQL 生产闭环，Stage 10 已完成 TLS/凭据 fail-closed、备份恢复和本地稳定签名 0.3.0；Android 真机覆盖升级验收仍待完成。
+儿童成长培养与家庭财商教育平台。Stage 3–7/9 已交付 PostgreSQL 生产闭环，Stage 10 已完成 TLS/凭据 fail-closed、备份恢复和公开稳定签名 v0.3.0；Android 真机覆盖升级验收仍待完成。
 
 快速入口：
 
@@ -20,4 +20,4 @@ cd family-growth-android
 .\gradlew.bat testDebugUnitTest lintDebug assembleDebug
 ```
 
-当前本地稳定包见 `dist/family-growth-0.3.0.apk`；v0.3.0 GitHub Release 会在 Stage 10 commit/tag 后创建。0.2.0–0.3.0 使用同一专用 release 证书；没有可用 Android 设备时，仍不得描述为已完成真机覆盖升级或 V1 总验收。
+当前稳定包见 `dist/family-growth-0.3.0.apk`，公开发布于 [GitHub Release v0.3.0](https://github.com/Workworks/family-growth/releases/tag/v0.3.0)。0.2.0–0.3.0 使用同一专用 release 证书；没有可用 Android 设备时，仍不得描述为已完成真机覆盖升级或 V1 总验收。

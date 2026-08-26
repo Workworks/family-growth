@@ -86,17 +86,15 @@
 
 ### Stage 10：V1 发布、部署与总验收
 
-状态：`IN_PROGRESS`　文档：[Stage 10](stages/stage-10-report.md)
+状态：`BLOCKED`　文档：[Stage 10](stages/stage-10-report.md)
 
-已完成：生产 PostgreSQL/TLS fail-closed、Docker 部署包、隔离备份恢复、H2/PostgreSQL 16.15 全量回归、Docker 镜像门禁、debug/release 和本地稳定签名 0.3.0 APK。
-
-当前 Agent 可继续：提交 Stage 10、发布 v0.3.0 GitHub Release 并下载复验。
+已完成：生产 PostgreSQL/TLS fail-closed、Docker 部署包、隔离备份恢复、H2/PostgreSQL 16.15 全量回归、Docker 镜像门禁、debug/release、本地稳定签名和公开 v0.3.0 GitHub Release 下载复验。
 
 外部缺少：Android 平板上的首装、服务连接、横屏/TalkBack、重启持久化和 v0.2.2→v0.3.0 同签名覆盖升级。
 
 产品深度限制：服务端冻结式零钱回收、家长自助儿童数据导出/删除、禁用时段和临时放行审计未在本次粗粒度 V1 工程中实现，AC-V1-11/13/17/19 保持 PARTIAL。
 
-推进方：Agent 完成 Release；用户提供设备/可访问 HTTPS 家庭服务后完成运行态回放；深度限制需后续明确继续建设。
+推进方：用户提供设备/可访问 HTTPS 家庭服务后由 Agent 完成运行态回放；深度限制需后续明确继续建设。
 
 ## 2. 工程未完成
 
@@ -114,13 +112,13 @@
 
 ### Stage 3–10：V1 生产服务端深度业务
 
-状态：Stage 3–7/9 `COMPLETED`，Stage 8 `BLOCKED`，Stage 10 `IN_PROGRESS`　文档：[Stage 路线图](stages/stage-roadmap.md)
+状态：Stage 3–7/9 `COMPLETED`，Stage 8/10 `BLOCKED`　文档：[Stage 路线图](stages/stage-roadmap.md)
 
-生产认证、任务审核、Wallet/Ledger、兑换、商店/储蓄/愿望、纯模拟基金和跨域报告已完成；剩余工程范围是 Stage 10 部署、恢复、发布和总验收。
+生产认证、任务审核、Wallet/Ledger、兑换、商店/储蓄/愿望、纯模拟基金、跨域报告、Stage 10 部署/恢复/发布均已完成自动化范围；剩余是 Stage 8/10 真机总验收和 LIM-012/013 深度能力。
 
-当前推进：REQ-020/REQ-022 已启动 Stage 3–10；Stage 3–7/9 在 PostgreSQL 通过；Stage 8 API/Android 离线门禁已过，缺平板真实登录/同步/写入回放；Stage 10 正在推进。
+当前结论：REQ-020/REQ-022 已推进 Stage 3–10；Stage 3–7/9 在 PostgreSQL 通过；Stage 8/10 可离线工程与 Release 已过，缺平板真实登录/同步/总链路和覆盖升级回放。
 
-解除方式：按 Stage 3→10 的 Spec 顺序继续工程开发；每个 Stage 仅在前序门禁通过后进入 `IN_PROGRESS`。
+解除方式：提供 Android 平板与可访问 HTTPS 服务完成运行态回放；若要解除 LIM-012/013，需明确启动服务端兑现、数据权利和完整时段/放行审计的后续工程。
 
 推进方：Agent；涉及产品默认值、部署宿主和真实设备时由用户确认或提供条件。
 

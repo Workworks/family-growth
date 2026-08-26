@@ -93,3 +93,5 @@
 | 85 | 10 | 完成真实备份恢复演练 | custom dump 恢复到新 `family_growth_restore_*` 数据库，Flyway 标记和探针一致；临时文件、容器、网络和卷精确清理 | `evidence/stage-10/acceptance.json` |
 | 86 | 10 | 完成全量离线与 0.3.0 本地发布门禁 | H2/PG 各 25 项、Android debug/release 各 16 项、Docker build、稳定 v2 证书、包名/versionCode/SHA-256 通过 | `evidence/stage-10/acceptance.json` |
 | 87 | 10 | 明确总验收未满足项 | 真机运行/覆盖升级外部阻塞；服务端兑现、自助数据权利、禁用时段/放行审计保持 PARTIAL，未用本机实现冒充生产能力 | Stage 10、LIM-012/013 |
+| 88 | 10 | 发布 v0.3.0 稳定 APK | Stage commit `90de7df` 和 tag 推送；workflow `32916602740` 用时 4m17s 全部成功并创建公开 Release | Stage 10 evidence、v0.3.0 Release |
+| 89 | 10 | 下载复验并转外部阻塞 | 远端 APK versionCode 6、0.3.0、11,210,187 字节、GitHub digest 和既有 release 证书通过，覆盖本地 dist；Stage 10 仅剩真机/目标服务回放 | `evidence/stage-10/acceptance.json` |
