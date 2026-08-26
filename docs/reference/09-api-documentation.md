@@ -22,7 +22,7 @@
 | POST | `/families/{familyId}/goals/{goalId}/tasks` | PARENT | 创建学习/成长任务 |
 | POST | `/families/{familyId}/children/{childId}/tasks/{taskId}/completions` | CHILD 本人 | 提交 TaskCompletion，必须有 `Idempotency-Key` |
 | POST | `/families/{familyId}/completions/{completionId}/review` | PARENT | 批准/拒绝并原子发放 XP/Coin/Money，必须有 `Idempotency-Key` |
-| GET | `/families/{familyId}/children/{childId}/wallet` | PARENT/CHILD 本人 | 查询 Money/Coin 当前余额 |
+| GET | `/families/{familyId}/children/{childId}/wallet` | PARENT/CHILD 本人 | 查询 Money 总额、冻结额、可用额和 Coin 当前余额 |
 | GET | `/families/{familyId}/children/{childId}/ledger?limit=50` | PARENT/CHILD 本人 | 查询最近不可变 Money/Coin 流水 |
 | POST | `/families/{familyId}/children/{childId}/wallet/adjustments` | PARENT | 带原因和幂等键执行 Money/Coin 正负调账，禁止负余额 |
 | GET | `/families/{familyId}/children/{childId}/wallet/reconciliation` | PARENT | 汇总 Ledger delta 并与 Wallet 对账 |
@@ -44,6 +44,14 @@
 | POST | `/families/{familyId}/children/{childId}/funds/{fundId}/trade-previews` | PARENT/适龄 CHILD 本人 | 预览 NAV、费用、净额和份额；3–5 岁 CHILD 会话拒绝 |
 | POST | `/families/{familyId}/fund-trade-previews/{previewId}/confirm` | PARENT/适龄 CHILD 本人 | 幂等确认，NAV/规则漂移返回 409 |
 | GET | `/families/{familyId}/children/{childId}/funds/{fundId}/position` | PARENT/CHILD 本人 | 返回份额、加权成本、市值和已实现/未实现损益 |
+| POST | `/families/{familyId}/withdrawal-rules` | PARENT | 幂等创建版本化线下兑现比例、比例费与固定费；默认 1:1、零费用 |
+| GET | `/families/{familyId}/withdrawal-rules/active` | PARENT/CHILD | 查询家庭当前零钱回收规则 |
+| POST | `/families/{familyId}/children/{childId}/withdrawal-quotes` | PARENT/CHILD 本人 | 幂等生成十分钟有效的 Money、比例、gross、fee、net 与线下声明快照 |
+| GET/POST | `/families/{familyId}/children/{childId}/withdrawal-requests` | PARENT/CHILD 本人 | 查询或基于未过期报价幂等提交申请；提交不扣账、不冻结 |
+| POST | `/families/{familyId}/withdrawal-requests/{requestId}/approve` | PARENT | 幂等批准并冻结 Money，其他支出不能穿透冻结额 |
+| POST | `/families/{familyId}/withdrawal-requests/{requestId}/reject` | PARENT | 幂等拒绝，不扣账 |
+| POST | `/families/{familyId}/withdrawal-requests/{requestId}/cancel` | REQUESTED 本人/PARENT；APPROVED 仅 PARENT | 取消待审或释放已批准冻结额 |
+| POST | `/families/{familyId}/withdrawal-requests/{requestId}/paid` | PARENT | 确认已线下支付；原子减少总额/冻结额并追加 WITHDRAWAL Money 流水 |
 | GET | `/families/{familyId}/children/{childId}/sync` | PARENT/CHILD 本人 | Android 聚合同步任务/最新 Completion、钱包和今日审核摘要 |
 | GET/PUT | `/families/{familyId}/children/{childId}/usage-policy` | PARENT/CHILD 本人 / PARENT | 查询或配置家庭时区、每日和单次 App 内时长上限；缺省为 Asia/Shanghai 20/10 分钟 |
 | POST | `/families/{familyId}/children/{childId}/usage-events` | PARENT/CHILD 本人 | 幂等记录本 App 的活跃/学习分钟；只接受最近 31 天且不超过未来 5 分钟的事件 |
@@ -51,6 +59,8 @@
 | GET | `/families/{familyId}/children/{childId}/reports/monthly` | PARENT | 从 Usage/Completion/Ledger/Saving/Fund 事实表聚合月度成长和财商报告 |
 
 批准审核会锁定 Completion 与 Wallet；Coin/Money 流水先追加，再在同一事务更新余额和 Completion。重复提交返回首次结果；重复/冲突审核返回 409，不能重复发奖。XP 的奖励事实保存在 Completion 快照并更新 `child_progress`。
+
+零钱回收状态机为 `REQUESTED → APPROVED → PAID`、`REQUESTED → REJECTED/CANCELLED`、`APPROVED → CANCELLED`。`availableMoney = moneyBalance - reservedMoney`；家长调账、Money→Coin、储蓄转入和模拟基金买入都必须检查可用额。APPROVED 只冻结，PAID 才按申请 Money 扣账；手续费只影响家庭约定的线下净到账，并以不可变快照和流水原因透明保存。
 
 月度报告不保存第二份余额：Money/Coin 收支来自不可变 Ledger，压岁钱、兑换费、储蓄和模拟基金分别来自业务事实表；`walletLedgerBalanced` 直接比较 Wallet 与全量流水。CHILD 会话不能读取月度财务报告，也不能读取其他孩子的今日摘要。
 

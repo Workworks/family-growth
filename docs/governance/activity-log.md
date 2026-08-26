@@ -119,3 +119,8 @@
 | 17 | 19 | 准备独立热更新验证目标 | v0.3.3 保留为必须手动安装一次的修复基线；仅递增版本为 v0.3.4/versionCode 10，供新版客户端真实检查、下载和覆盖升级 | Stage 19 |
 | 18 | 19 | 发布并复验两版更新测试链 | v0.3.3 workflow `32949154719` 4m16s 成功，远端 SHA-256 `9dbb1e46...38b85`；v0.3.4 workflow `32949579505` 4m28s 成功，latest SHA-256 `a0e359fa...0bc3e`；两版同证书 | `evidence/stage-19/acceptance.json` |
 | 19 | 19/17 | 收敛 Stage 19 并恢复 Stage 17 | 可离线修复、两版 Release 和远端复验完成；必须由用户手动安装 v0.3.3 后更新 v0.3.4，故 BUG-004/Stage 19 保持设备阻塞；Stage 17 再次恢复 | current/TODO/BLOCKERS、Stage 17/19 |
+| 20 | 19/17 | 用户确认热更新恢复并继续下一任务 | 用户反馈 v0.3.3→v0.3.4 已可正常更新；关闭 REQ-029/BUG-004 和 Stage 19，数据保留逐项盘点仍归 Stage 11/14；继续 Stage 17 服务端零钱回收 | Stage 19 evidence、current/TODO、Stage 17 |
+| 21 | 17 | 完成 V8 与零钱回收生产状态机 | 新增 wallet reserved 约束、版本化规则、十分钟报价、申请/动作表；REQUESTED→APPROVED 冻结，PAID 原子扣总额/冻结额并写流水，拒绝/撤销不扣账 | V8、Stage17 domain/application/infrastructure/web |
+| 22 | 17 | 封堵冻结余额旁路 | 钱包返回 total/reserved/available；家长负调账、Money→Coin、储蓄转入和模拟基金买入统一在 wallet 行锁下检查 available，数据库继续强制 reserved 不超过总额 | JdbcStage3/5/6/7Store、Stage17ApiTest |
+| 23 | 17 | 完成 H2/PostgreSQL 16.15 门禁 | H2 全量 14 个领域、18 个 Boot（5 个 PG 条件跳过）；临时 localhost PostgreSQL 16.15 上 V1–V8、35 表、14+18 测试零失败/零跳过，并发批准/支出、PAID 重放和冲突报价幂等键通过，容器已清理 | Stage17 tests、PostgresSchemaValidationTest、Stage 17 evidence |
+| 24 | 17 | 加固并发幂等与跨端兼容并提交 | 规则、报价、申请在 family 行锁内二次核对幂等载荷，避免竞态误重放；Android 旧字段名解析对新增 reserved/available 字段保持兼容，JVM/lint/debug 构建通过；实现以 `1c630d7` 提交 | `JdbcStage17Store`、`Stage17ConcurrencyTest`、Stage 17 evidence |

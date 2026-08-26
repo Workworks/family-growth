@@ -22,9 +22,9 @@
 | 14 | 计划外 | 公开 GitHub 仓库、分阶段提交与 Release 更新链 | `BLOCKED` | 三版同签名 Release 与 digest 已验证；只需 Android 设备回放覆盖升级/数据保留 |
 | 15 | 计划外 | 3 岁起儿童端发展适龄改造 | `BLOCKED` | 代码/自动化/稳定签名包通过；需平板触控、TalkBack、字体放大和限时退出回放 |
 | 16 | 计划外 | 儿童舒适品牌图标与 v0.3.1 交付 | `BLOCKED` | 更新修复、图标和 v0.3.1 Release 已过；需平板验证桌面蒙版与实际更新 |
-| 17 | V1 深度 | 服务端零钱回收与冻结式兑现闭环 | `IN_PROGRESS` | Stage 19 可离线修复已交付；恢复 V8 迁移、状态机、available 保护和 PostgreSQL 门禁 |
+| 17 | V1 深度 | 服务端零钱回收与冻结式兑现闭环 | `COMPLETED` | V8、规则/报价/状态机、全局 available 保护和 PostgreSQL 并发门禁已通过 |
 | 18 | V1 Android | 双视角排版、奖励浏览与教学视频任务 | `BLOCKED` | 离线代码与 v0.3.2 已交付；用户用 v0.3.3→v0.3.4 链同时测试布局、播放和持久化 |
-| 19 | 发布可靠性 | GitHub Release 下载 0% 真机修复 | `BLOCKED` | 手动安装 v0.3.3 后，应用内更新至 v0.3.4并反馈显示阶段/结果 |
+| 19 | 发布可靠性 | GitHub Release 下载 0% 真机修复 | `COMPLETED` | 用户确认 v0.3.3→v0.3.4 可正常更新；BUG-004 已关闭 |
 
 Stage 2 的代码、PostgreSQL 和自动化门禁已交付，debug APK 已生成；Android 安装启动因本机 Emulator 37.1.11 在 ADB 可用前退出而阻塞。未完成运行态验收前不得把 APK 描述为已安装可用。
 
@@ -50,7 +50,9 @@ Stage 18 已完成可离线工程、稳定签名和公开 v0.3.2：孩子在“�
 
 用户真机随后确认 v0.3.1 下载 v0.3.2 仍长期停在“下载并校验 0%”。REQ-029/BUG-004 启动 Stage 19 并再次抢占 Stage 17：旧客户端只在首批字节后更新 UI且允许首读阻塞 120 秒；新版将由 Android 系统下载、显示真实阶段并在首字节卡顿后切换同 Release 的官方 Asset API，所有校验继续 fail-closed。
 
-Stage 19 已发布 v0.3.3 修复基线和 v0.3.4 热更新目标。v0.3.3 使用 Android DownloadManager，排队/连接/暂停/下载/校验分阶段，45 秒无新字节切换官方 Asset API，下载后仍校验精确大小和 SHA-256。旧 v0.3.1 无法远程获得新代码，必须手动覆盖一次 v0.3.3；真机验证前 Stage 19/BUG-004 保持阻塞，Agent 主线恢复 Stage 17。
+Stage 19 已发布 v0.3.3 修复基线和 v0.3.4 热更新目标。v0.3.3 使用 Android DownloadManager，排队/连接/暂停/下载/校验分阶段，45 秒无新字节切换官方 Asset API，下载后仍校验精确大小和 SHA-256。用户已确认 v0.3.3→v0.3.4 可正常更新，Stage 19/BUG-004 关闭；旧数据逐项盘点仍归 Stage 11/14，随后转入并完成 Stage 17。
+
+Stage 17 已完成 V8 冻结余额、版本化规则、十分钟报价、REQUESTED/APPROVED/PAID/REJECTED/CANCELLED 状态机和全局 Money 可用额保护。H2 与 PostgreSQL 16.15 的 14 个领域、18 个后端/API/并发测试通过；Android 兼容门禁通过，LIM-012 解除。当前没有不依赖外部条件的已立项 Stage；下一生产候选 LIM-013 涉及儿童数据删除/审计保留决策，需先定策略。
 
 ## 关键决策快照
 

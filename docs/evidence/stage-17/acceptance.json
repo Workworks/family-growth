@@ -1,0 +1,70 @@
+{
+  "capturedAt": "2026-08-26T23:08:15+08:00",
+  "stage": 17,
+  "status": "COMPLETED",
+  "passed": true,
+  "implementationCommit": "1c630d7",
+  "workingDirectory": "C:/Users/70649/Desktop/aiWork/studyApp",
+  "shellType": "PowerShell",
+  "summary": "Versioned offline-withdrawal rules, ten-minute transparent quotes, REQUESTED/APPROVED/PAID/REJECTED/CANCELLED transitions, wallet reservations, global available-Money protection and idempotent PostgreSQL concurrency passed.",
+  "environment": {
+    "java": "17.0.8",
+    "h2": "2.3.232 in PostgreSQL mode",
+    "postgres": "16.15",
+    "postgresImage": "postgres:16.15-alpine",
+    "postgresContainerLifecycle": "isolated random-name container bound to an ephemeral 127.0.0.1 port; container removed in finally"
+  },
+  "commands": [
+    {
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am -DskipTests compile",
+      "exitCode": 0,
+      "passed": true,
+      "result": "All six Maven reactor modules compiled after the Stage 17 domain, application, infrastructure and web additions."
+    },
+    {
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am \"-Dtest=Stage17ModelsTest,Stage17ApiTest\" \"-Dsurefire.failIfNoSpecifiedTests=false\" test",
+      "exitCode": 0,
+      "passed": true,
+      "result": "2 domain quote tests and 2 H2 API tests passed, including fees, states, RBAC, idempotency, ledger and reserved-Money protection across adjustment, exchange, saving and simulated fund paths."
+    },
+    {
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am test",
+      "exitCode": 0,
+      "passed": true,
+      "result": "H2 full regression passed: 14 domain tests and 18 Boot tests; 5 PostgreSQL-only tests were conditionally skipped as designed. Flyway V1-V8 and Hibernate validate passed."
+    },
+    {
+      "command": "start isolated localhost PostgreSQL 16.15 container; export test datasource only for the process; .\\mvnw.cmd -pl family-growth-boot -am test; remove exact container in finally",
+      "exitCode": 0,
+      "passed": true,
+      "result": "PostgreSQL full regression passed with 14 domain and 18 Boot/API/concurrency tests, zero failures/errors/skips; 8 migrations and 35 production tables validated. Approval/debit, PAID replay and conflicting quote-idempotency races passed. The temporary container was removed."
+    },
+    {
+      "command": ".\\gradlew.bat testDebugUnitTest lintDebug assembleDebug",
+      "workingDirectory": "C:/Users/70649/Desktop/aiWork/studyApp/family-growth-android",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Android JVM tests, debug lint and debug assembly passed; the existing field-name JSON parser remains compatible with additional reservedMoney and availableMoney response fields."
+    },
+    {
+      "command": "parse all docs/evidence JSON; parse docs/openapi.yaml; .\\scripts\\Test-DocumentationLinks.ps1; scan secret-token patterns; git diff --check",
+      "exitCode": 0,
+      "passed": true,
+      "result": "All evidence JSON parsed, OpenAPI 3.1 parsed with 45 paths, 82 Markdown files/81 indexed documents passed local-link validation, the secret-token pattern scan found no matches, and git diff whitespace validation passed."
+    }
+  ],
+  "acceptance": {
+    "AC17-01": "PASS - default 1:1 zero-fee rule and parent-created immutable versions produce exact fixed/proportional-fee quotes for ten minutes.",
+    "AC17-02": "PASS - state transitions, parent/child role rules, own-child scope, cross-family 404 and invalid-transition 409 gates passed.",
+    "AC17-03": "PASS - approval reserves without debit; available Money protects adjustment, exchange, saving deposit and fund buy; cancel releases; PAID debits balance and reservation atomically.",
+    "AC17-04": "PASS - gross/rate/fixed/percentage fee/net snapshots are immutable; concurrent PAID replay creates exactly one Money ledger debit and a conflicting concurrent quote payload is rejected under the database lock.",
+    "AC17-05": "PASS - H2/PostgreSQL 16.15 full regressions, V1-V8 schema, Hibernate validate and concurrency gates passed."
+  },
+  "security": {
+    "realPaymentIntegration": false,
+    "childCanApproveOrMarkPaid": false,
+    "earlyChildComplexUiAdded": false,
+    "feesTransparent": true,
+    "secretsInEvidence": false
+  }
+}

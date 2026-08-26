@@ -25,10 +25,10 @@ erDiagram
 | 成长 | `growth_plan`, `growth_goal`, `growth_task`, `task_completion`, `growth_milestone`, `artifact` | 完成提交带状态机与审核人 |
 | 学习/使用 | `usage_policy`, `usage_session`, `parent_time_override` | App 内前台/学习时长；规则版本与家长临时放行审计 |
 | 奖励 | `reward_rule`, `reward_budget`, `reward_product`, `reward_order` | 规则快照、订单状态机、库存/启用校验 |
-| 账本 | `wallet`, `ledger_entry`, `gift_money`, `exchange_rule`, `exchange_order` | wallet 每 child 唯一；业务引用唯一；流水追加式 |
+| 账本 | `wallet`, `ledger_entry`, `gift_money`, `exchange_rule`, `exchange_order` | wallet 每 child 唯一；Money 总额/冻结额受约束；业务引用唯一；流水追加式 |
 | 储蓄 | `saving_account`, `saving_transaction`, `saving_interest_rule`, `wish` | 转入/转出关联 Ledger；利率规则版本化 |
 | 投资 | `virtual_fund`, `virtual_fund_nav`, `fund_fee_rule`, `fund_order`, `fund_position` | NAV 日期唯一；订单幂等；持仓唯一 |
-| 零钱回收 | `withdraw_rule`, `withdraw_request` | 默认回收比例 1:1；REQUESTED→APPROVED/REJECTED→PAID；PAID 才扣账 |
+| 零钱回收 | `withdrawal_rule`, `withdrawal_quote`, `withdrawal_request`, `withdrawal_action` | 默认 1:1；十分钟报价与费用快照；APPROVED 冻结、PAID 扣账；动作幂等 |
 | 报告 | 优先查询/投影，不建可变余额事实表 | 月报可重算，必要快照在后续 Stage 决定 |
 
 ## 数值、ID 与审计
@@ -44,6 +44,6 @@ erDiagram
 - TaskCompletion：`SUBMITTED → APPROVED | REJECTED`，审核结果不可重复发奖。
 - RewardOrder：`CREATED → APPROVED | REJECTED | CANCELED → FULFILLED`。
 - FundOrder：`PREVIEWED → CONFIRMED → EXECUTED | REJECTED | CANCELED`；预览有短时效和规则版本。
-- WithdrawRequest：`REQUESTED → APPROVED | REJECTED | CANCELED → PAID`。
+- WithdrawalRequest：`REQUESTED → APPROVED → PAID`；`REQUESTED → REJECTED | CANCELLED`；`APPROVED → CANCELLED`。
 
 所有建表只能通过新增 Flyway migration；已执行迁移不修改，JPA 使用 `ddl-auto=validate`。

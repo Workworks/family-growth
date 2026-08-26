@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: Family Growth API
-  version: 0.9.0
-  description: Stage 3–9 生产认证、成长任务、家庭账本、纯模拟基金、Android 同步与家庭报告 API。
+  version: 1.0.0
+  description: Stage 3–9 与 Stage 17 生产认证、成长任务、家庭账本、纯模拟基金、冻结式零钱回收、Android 同步与家庭报告 API。
 servers:
   - url: /api/v1
 security:
@@ -502,6 +502,61 @@ paths:
       operationId: getFundPosition
       parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { name: fundId, in: path, required: true, schema: { type: string, format: uuid } } ]
       responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/withdrawal-rules:
+    post:
+      operationId: createWithdrawalRule
+      description: Parent-only versioned offline-payout rule. This API never transfers real funds.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/WithdrawalRuleRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/withdrawal-rules/active:
+    get:
+      operationId: getActiveWithdrawalRule
+      description: Returns the active family rule; the system default is 1 Money to CNY 1 with zero fee.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/children/{childId}/withdrawal-quotes:
+    post:
+      operationId: createWithdrawalQuote
+      description: Creates a ten-minute transparent gross/fee/net quote for an offline family payout.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/WithdrawalQuoteRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/withdrawal-requests:
+    get:
+      operationId: listWithdrawalRequests
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      operationId: submitWithdrawalRequest
+      description: Submits an unexpired quote without changing or reserving the wallet balance.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/WithdrawalCreateRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/withdrawal-requests/{requestId}/approve:
+    post:
+      operationId: approveWithdrawalRequest
+      description: Parent-only transition that reserves Money but does not debit it.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { name: requestId, in: path, required: true, schema: { type: string, format: uuid } }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/withdrawal-requests/{requestId}/reject:
+    post:
+      operationId: rejectWithdrawalRequest
+      description: Parent-only rejection; no Money is reserved or debited.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { name: requestId, in: path, required: true, schema: { type: string, format: uuid } }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/withdrawal-requests/{requestId}/cancel:
+    post:
+      operationId: cancelWithdrawalRequest
+      description: A child may cancel their REQUESTED item; only a parent may release an APPROVED reservation.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { name: requestId, in: path, required: true, schema: { type: string, format: uuid } }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/withdrawal-requests/{requestId}/paid:
+    post:
+      operationId: markWithdrawalPaid
+      description: Parent-only confirmation after the offline payout; atomically debits balance and reservation and appends an immutable Money ledger entry.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { name: requestId, in: path, required: true, schema: { type: string, format: uuid } }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
   /families/{familyId}/children/{childId}/sync:
     get:
       operationId: syncChildWorkspace
@@ -812,6 +867,23 @@ components:
       properties:
         side: { type: string, enum: [BUY, SELL] }
         inputAmount: { type: number, minimum: 0.00000001 }
+    WithdrawalRuleRequest:
+      type: object
+      required: [payoutRate, feeRate, fixedFee]
+      properties:
+        payoutRate: { type: number, minimum: 0.000001, multipleOf: 0.000001, description: CNY gross payout per Money }
+        feeRate: { type: number, minimum: 0, exclusiveMaximum: 1, multipleOf: 0.000001 }
+        fixedFee: { type: number, minimum: 0, multipleOf: 0.01 }
+    WithdrawalQuoteRequest:
+      type: object
+      required: [moneyAmount]
+      properties:
+        moneyAmount: { type: number, minimum: 0.01, maximum: 100000, multipleOf: 0.01 }
+    WithdrawalCreateRequest:
+      type: object
+      required: [quoteId]
+      properties:
+        quoteId: { type: string, format: uuid }
     UsagePolicyRequest:
       type: object
       required: [zoneId, dailyLimitMinutes, sessionLimitMinutes]

@@ -1,11 +1,11 @@
 {
   "capturedAt": "2026-08-26T16:54:20+08:00",
   "stage": 19,
-  "status": "BLOCKED",
-  "passed": false,
+  "status": "COMPLETED",
+  "passed": true,
   "workingDirectory": "C:/Users/70649/Desktop/aiWork/studyApp",
   "shellType": "PowerShell",
-  "summary": "System DownloadManager update flow, explicit connection phases, official GitHub Asset API fallback, stable v0.3.3 repair baseline and v0.3.4 verification target passed offline and remote gates; the user device upgrade remains required.",
+  "summary": "System DownloadManager update flow, explicit connection phases, official GitHub Asset API fallback, stable v0.3.3 repair baseline and v0.3.4 verification target passed offline and remote gates; the user confirmed that the device can now update normally.",
   "checks": [
     {
       "command": "curl GitHub release asset API with application/octet-stream",
@@ -42,6 +42,12 @@
       "exitCode": 0,
       "passed": true,
       "result": "v0.3.4 workflow succeeded in 4m28s; latest APK is 11,437,475 bytes, SHA-256 a0e359fa...0bc3e, versionCode 10 and the stable certificate."
+    },
+    {
+      "command": "user device acceptance: install v0.3.3 and use the in-app updater for v0.3.4",
+      "exitCode": 0,
+      "passed": true,
+      "result": "On 2026-08-26 the user reported that updating now works normally. Detailed local-data inventory was not separately reported and remains tracked by Stage 11/14."
     }
   ],
   "artifacts": {
@@ -58,7 +64,5 @@
       "releaseUrl": "https://github.com/Workworks/family-growth/releases/tag/v0.3.4"
     }
   },
-  "blocked": [
-    "The installed v0.3.1 client cannot receive downloader code remotely. The user must manually install v0.3.3 once, then use its in-app updater to install v0.3.4 and report the displayed phase/result and data retention."
-  ]
+  "blocked": []
 }

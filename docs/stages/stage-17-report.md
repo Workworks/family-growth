@@ -1,6 +1,6 @@
 # Stage 17：服务端零钱回收与冻结式兑现闭环
 
-状态：`IN_PROGRESS`
+状态：`COMPLETED`
 
 日期：2026-08-26
 
@@ -28,10 +28,10 @@
 
 | ID | 状态 | 内容 |
 | --- | --- | --- |
-| WP17-1 | 进行中 | Spec、需求/限制回链与 V8 迁移 |
-| WP17-2 | 未开始 | 领域报价、Store/Service 状态机和全局 Money 可用余额保护 |
-| WP17-3 | 未开始 | REST API、OpenAPI、权限/幂等/费用明细 |
-| WP17-4 | 未开始 | H2/PostgreSQL 16 并发与全量回归、证据和 Stage commit |
+| WP17-1 | 已完成 | Spec、需求/限制回链与 V8 迁移 |
+| WP17-2 | 已完成 | 领域报价、Store/Service 状态机和全局 Money 可用余额保护 |
+| WP17-3 | 已完成 | REST API、OpenAPI、权限/幂等/费用明细 |
+| WP17-4 | 已完成 | H2/PostgreSQL 16.15 并发与全量回归、证据和 Stage 交付 |
 
 ## 验证方式
 
@@ -45,14 +45,23 @@
 
 ## 完成标准
 
-- [ ] AC17-01 `PENDING`：版本化规则和默认 1:1、透明报价与十分钟过期实现。
-- [ ] AC17-02 `PENDING`：REQUESTED/APPROVED/PAID/REJECTED/CANCELLED 状态机、RBAC 和对象权限实现。
-- [ ] AC17-03 `PENDING`：reserved/available 约束覆盖所有 Money 支出，拒绝/撤销释放、PAID 原子扣账。
-- [ ] AC17-04 `PENDING`：手续费/gross/net 不可变明细和 Money Ledger 可对账，重复请求不重复扣款。
-- [ ] AC17-05 `PENDING`：H2/PostgreSQL 16、并发、权限、幂等、OpenAPI 和文档门禁通过。
+- [x] AC17-01 `PASS`：版本化规则、默认 1:1/零费用、固定+比例费、舍入、透明十分钟报价实现并通过向量测试。
+- [x] AC17-02 `PASS`：REQUESTED/APPROVED/PAID/REJECTED/CANCELLED 状态机、PARENT/CHILD RBAC、本人/跨家庭对象权限和 401/403/404/409 通过。
+- [x] AC17-03 `PASS`：V8 强制 `0 <= reserved <= balance`；调账、Money→Coin、储蓄转入和基金买入均检查 available；撤销释放、PAID 原子扣总额/冻结额。
+- [x] AC17-04 `PASS`：申请保存 ratio/gross/fixed/rate fee/net 不可变快照；PAID 追加唯一 Money Ledger；相同幂等键并发重放只扣一次。
+- [x] AC17-05 `PASS`：H2 与 PostgreSQL 16.15 全量回归、并发、Flyway V1–V8、35 表、Hibernate validate、OpenAPI 和文档门禁通过。
 
 ## 安全检查、限制与交接
 
 Stage 17 不实现真实支付。线下是否已给孩子现金只能由家长显式确认 `PAID`；系统不通过定位、消息或设备数据推断。Android 复杂界面不在本 Stage，3–5 岁儿童仍只看到“请家长一起”等简化路径。
 
-2026-08-26 优先级说明：REQ-026–028 曾暂时抢占代码实施；Stage 18 已交付。真机暴露 BUG-004 后 Stage 19 再次抢占；其可离线修复和两版测试链现已交付并转设备阻塞，Stage 17 恢复为 Agent 主线。Spec 与待办全程保留。
+2026-08-26 优先级说明：REQ-026–028 曾暂时抢占代码实施；Stage 18 已交付。真机暴露 BUG-004 后 Stage 19 再次抢占并已取得真机成功反馈。Stage 17 随后恢复并完成，Spec 与待办全程未丢失。
+
+## 交付
+
+- 领域/应用：`Stage17Models`、`Stage17Store`、`Stage17Service`。
+- 数据/基础设施：Flyway `V8__stage17_withdrawal_reservation.sql`、`JdbcStage17Store`，以及 Stage 3/5/6/7 所有 Money 支出路径的 reserved/available 保护。
+- API：规则、有效规则、报价、申请列表/提交、approve/reject/cancel/paid；每个写操作要求 `Idempotency-Key`。
+- 验证：H2 全量 14 个领域 + 18 个后端测试（5 个 PostgreSQL 条件测试按设计跳过）；PostgreSQL 16.15 同样 14 + 18，零失败、零错误、零跳过；Android JVM、lint、debug 构建通过。
+- 结构化证据：`docs/evidence/stage-17/acceptance.json`。
+- 实现提交：`1c630d7 feat(stage-17): complete reserved withdrawal backend`。
