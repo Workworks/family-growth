@@ -1,6 +1,12 @@
 package com.familygrowth.android.update
 
 import java.io.File
+import java.io.IOException
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.URI
+import java.net.UnknownHostException
+import javax.net.ssl.SSLException
 
 data class SemanticVersion(val major: Int, val minor: Int, val patch: Int) : Comparable<SemanticVersion> {
     override fun compareTo(other: SemanticVersion): Int =
@@ -48,6 +54,34 @@ private val sha256DigestPattern = Regex("^sha256:[0-9a-fA-F]{64}$")
 private val githubRepositoryPattern = Regex("^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 
 fun isValidGitHubRepository(value: String): Boolean = githubRepositoryPattern.matches(value)
+
+fun isTrustedGitHubAssetRedirect(uri: URI): Boolean {
+    val host = uri.host.orEmpty().lowercase()
+    val trustedHost = host == "github.com" || host.endsWith(".githubusercontent.com")
+    return uri.scheme.equals("https", ignoreCase = true) && trustedHost
+}
+
+fun downloadFailureMessage(exception: Throwable, attempts: Int): String = when (exception) {
+    is SocketTimeoutException -> "GitHub APK 下载超时，已自动重试 $attempts 次，请检查网络后重试"
+    is UnknownHostException, is ConnectException -> "无法连接 GitHub APK 下载服务，已自动重试 $attempts 次，请检查网络或 DNS"
+    is SSLException -> "无法建立安全的 GitHub APK 下载连接，请检查设备时间、证书和网络"
+    else -> "GitHub APK 下载中断，已自动重试 $attempts 次，请检查存储空间和网络"
+}
+
+@Throws(IOException::class)
+fun <T> retryIo(attempts: Int, onRetry: (Int) -> Unit = {}, block: (Int) -> T): T {
+    require(attempts > 0) { "attempts must be positive" }
+    var lastFailure: IOException? = null
+    repeat(attempts) { attempt ->
+        try {
+            return block(attempt + 1)
+        } catch (exception: IOException) {
+            lastFailure = exception
+            if (attempt < attempts - 1) onRetry(attempt + 2)
+        }
+    }
+    throw lastFailure ?: IOException("download failed")
+}
 
 fun selectReleaseAsset(version: SemanticVersion, repository: String, assets: List<ReleaseAsset>): ReleaseAsset {
     val expectedName = "family-growth-$version.apk"

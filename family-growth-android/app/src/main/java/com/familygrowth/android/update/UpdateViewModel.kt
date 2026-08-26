@@ -1,6 +1,8 @@
 package com.familygrowth.android.update
 
 import android.app.Application
+import android.os.Handler
+import android.os.Looper
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class UpdateViewModel(application: Application) : AndroidViewModel(application) {
+    private val mainHandler = Handler(Looper.getMainLooper())
     private val repository = BuildConfig.GITHUB_REPOSITORY.trim()
     private val client = repository.takeIf(::isValidGitHubRepository)?.let {
         runCatching { GitHubReleaseClient(it) }.getOrNull()
@@ -47,7 +50,11 @@ class UpdateViewModel(application: Application) : AndroidViewModel(application) 
             runCatching {
                 withContext(Dispatchers.IO) {
                     updateClient.download(getApplication(), update) { percent ->
-                        state = UpdateUiState.Downloading(update, percent)
+                        mainHandler.post {
+                            if (state is UpdateUiState.Downloading) {
+                                state = UpdateUiState.Downloading(update, percent)
+                            }
+                        }
                     }
                 }
             }.onSuccess { file ->

@@ -95,3 +95,13 @@
 | 87 | 10 | 明确总验收未满足项 | 真机运行/覆盖升级外部阻塞；服务端兑现、自助数据权利、禁用时段/放行审计保持 PARTIAL，未用本机实现冒充生产能力 | Stage 10、LIM-012/013 |
 | 88 | 10 | 发布 v0.3.0 稳定 APK | Stage commit `90de7df` 和 tag 推送；workflow `32916602740` 用时 4m17s 全部成功并创建公开 Release | Stage 10 evidence、v0.3.0 Release |
 | 89 | 10 | 下载复验并转外部阻塞 | 远端 APK versionCode 6、0.3.0、11,210,187 字节、GitHub digest 和既有 release 证书通过，覆盖本地 dist；Stage 10 仅剩真机/目标服务回放 | `evidence/stage-10/acceptance.json` |
+
+## 2026-08-26
+
+| 时间/顺序 | Stage | 行为 | 结果/决策 | 文档或证据 |
+| --- | ---: | --- | --- | --- |
+| 1 | 16 | 用户要求继续下一阶段并设计儿童舒适 App 图标 | 登记 REQ-023/P0；Stage 16 限定为低刺激品牌图标、Android 全形态 Launcher 资源和稳定 v0.3.1，真实平板视觉继续独立验收 | `design/37-child-comfort-brand-icon.md`、`stages/stage-16-report.md` |
+| 2 | 16 | 用户报告应用内更新提示“APK 下载或校验失败” | 登记 REQ-024/BUG-002，暂停图标接入并先修更新主链；真实 v0.3.0 资产 URL、大小、digest 和 CDN 重定向当前有效，修复聚焦弱网重试、超时、进度线程和错误分类，不放宽安全校验 | `bug/bugList.md`、Stage 16 |
+| 3 | 16 | 完成 BUG-002 离线修复 | 下载改为 30 秒连接、120 秒读取、最多 3 次 IO 重试、identity 传输、进度节流/主线程发布和分类错误；验证错误立即失败，来源/大小/SHA-256 未放宽 | Android `update/`、`UpdateModelsTest` |
+| 4 | 16 | 使用 imagegen 生成儿童舒适图标 | 生成透明“圆角书本托起新芽”母版；项目脚本缩入 adaptive 60% 安全区并派生五档 legacy、round、adaptive 与 monochrome 资源 | `branding/`、`scripts/generate_android_icons.py`、图标预览 |
+| 5 | 16 | 执行 Android 全量和稳定签名门禁 | 112 项任务通过；首次稳定签名 clean 被 Windows lint-cache 锁阻断，正常停止 Gradle daemon 后重跑 61 项成功；19 项 release JVM、lint、v2 签名、v0.3.1/versionCode 7 和图标资源通过 | `evidence/stage-16/acceptance.json` |

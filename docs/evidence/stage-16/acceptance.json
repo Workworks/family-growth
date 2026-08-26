@@ -1,0 +1,73 @@
+{
+  "capturedAt": "2026-08-26T10:19:04+08:00",
+  "stage": 16,
+  "status": "IN_PROGRESS",
+  "passed": false,
+  "workingDirectory": "C:/Users/70649/Desktop/aiWork/studyApp",
+  "shellType": "PowerShell",
+  "summary": "BUG-002 offline fix, child-comfort launcher assets, Android gates and local stable signing passed; public v0.3.1 release is pending and physical-tablet verification is blocked.",
+  "checks": [
+    {
+      "command": "gh api releases/latest; curl -L headers for v0.3.0 asset",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Release metadata reported 11,210,187 bytes and sha256:7a8ccf...8c7e; GitHub redirected over HTTPS to release-assets.githubusercontent.com and returned HTTP 200 with matching Content-Length."
+    },
+    {
+      "command": ".\\gradlew.bat testDebugUnitTest --tests com.familygrowth.android.update.UpdateModelsTest",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Update model tests passed, including trusted redirect hosts, timeout/DNS classification, transient IO retry success, and immediate fail-closed validation error."
+    },
+    {
+      "command": "built-in image generation; python scripts/generate_android_icons.py",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Generated a transparent book-and-sprout source and deterministic 1024px safe-zone master, 5 density pairs, adaptive/round and monochrome resources."
+    },
+    {
+      "command": ".\\gradlew.bat clean testDebugUnitTest lintDebug assembleDebug testReleaseUnitTest lintRelease assembleRelease",
+      "exitCode": 0,
+      "passed": true,
+      "result": "112 Android tasks succeeded; debug/release unit tests, lint, resource linking and both APK builds passed."
+    },
+    {
+      "command": "load private recovery labels; gradlew clean testReleaseUnitTest lintRelease assembleRelease --no-daemon",
+      "exitCode": 1,
+      "passed": false,
+      "result": "First signed gate stopped at clean because a previous Windows Gradle daemon held lint-cache jars; no compilation or secret output occurred."
+    },
+    {
+      "command": ".\\gradlew.bat --stop; repeat private signed release gate",
+      "exitCode": 0,
+      "passed": true,
+      "result": "61 tasks succeeded after the daemon stopped; 19 release JVM tests, lint and stable signed APK passed."
+    },
+    {
+      "command": "apksigner verify --verbose --print-certs; aapt dump badging; aapt2 dump resources",
+      "exitCode": 0,
+      "passed": true,
+      "result": "APK v2 signature valid; applicationId com.familygrowth.android, versionName 0.3.1, versionCode 7, certificate SHA-256 9179a5da...2eacb, adaptive/round/monochrome resources present."
+    }
+  ],
+  "artifacts": {
+    "generatedSource": {
+      "path": "family-growth-android/branding/family-growth-icon-generated-source.png",
+      "bytes": 463845,
+      "sha256": "234b07e50378e05184765cc11e0895bd6394a0ce0f2422d1118538c93834ea13"
+    },
+    "safeZoneMaster": {
+      "path": "family-growth-android/branding/family-growth-icon-foreground-1024.png",
+      "bytes": 171623,
+      "sha256": "f9083dd4f548104d29d4bf6cfc6db5f542419a113a0dcc0f8c98cbcc37e2f778"
+    },
+    "localApk": {
+      "path": "dist/family-growth-0.3.1.apk",
+      "bytes": 11366435,
+      "sha256": "909b235bf0c8a452ca5ce80c5028fa7122efd8da5f0305fd81f65c638abab4cb"
+    }
+  },
+  "blocked": [
+    "Physical tablet is unavailable for launcher-mask, wallpaper contrast, actual in-app download, installer confirmation, and v0.3.0 to v0.3.1 data-retention verification."
+  ]
+}

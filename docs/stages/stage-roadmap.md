@@ -17,6 +17,7 @@
 | 13 | 计划外 | Stage 2–11 基础体验宽度与 Android 前端完善 | `BLOCKED` |
 | 14 | 计划外 | 公开 GitHub 仓库、分阶段提交与 Release 更新链 | `BLOCKED` |
 | 15 | 计划外 | 3 岁起儿童端发展适龄改造 | `BLOCKED` |
+| 16 | 计划外 | 儿童舒适品牌图标与 v0.3.1 交付 | `IN_PROGRESS` |
 
 Stage 11 是用户直接提出的发布能力，编号不代表业务交付顺序；它不改变 Stage 2 的 Android 运行态阻塞，也不代表 Stage 3–10 已启动或完成。
 
@@ -29,3 +30,5 @@ Stage 14 将 GitHub Release 热更新提升为 P0，负责公开仓库、分 Sta
 REQ-020/REQ-022 已连续推进 Stage 3–10。Stage 3–7、9 已在 PostgreSQL 通过；Stage 8 可离线实现完成但真机阻塞，Stage 10 的部署、恢复、自动化和 v0.3.0 Release 已通过，仅最终设备/目标服务验收阻塞。
 
 Stage 15 来自 REQ-021 的最高行为准则，优先于普通功能迭代。儿童端可离线代码/自动化已收敛，仅真实平板验收阻塞；Stage 5 因而恢复推进，儿童门禁继续约束其后所有界面和功能。
+
+Stage 16 来自 REQ-023，延续儿童最佳利益与 GitHub Release P0 约束；先完成低刺激 Launcher 品牌、Android 全形态资源和稳定 v0.3.1，真机桌面视觉与覆盖升级单独保留阻塞。
