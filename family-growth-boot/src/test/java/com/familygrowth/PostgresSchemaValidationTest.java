@@ -27,9 +27,10 @@ class PostgresSchemaValidationTest {
                 "'parent_pin_credential','auth_session','child_progress','wallet','task_completion'," +
                 "'ledger_entry','idempotency_operation','gift_money','exchange_rule','exchange_preview','exchange_order'," +
                 "'reward_product','reward_order','saving_account','saving_transaction','wish','wish_allocation'," +
-                "'virtual_fund','fund_nav','fund_fee_rule','fund_trade_preview','fund_position','fund_trade_order')",
+                "'virtual_fund','fund_nav','fund_fee_rule','fund_trade_preview','fund_position','fund_trade_order'," +
+                "'usage_policy','usage_event')",
             Integer.class);
-        assertThat(successfulMigrations).isEqualTo(6);
-        assertThat(productionTables).isEqualTo(29);
+        assertThat(successfulMigrations).isEqualTo(7);
+        assertThat(productionTables).isEqualTo(31);
     }
 }

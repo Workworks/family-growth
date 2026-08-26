@@ -1,6 +1,6 @@
 # Stage 9：跨域闭环、使用统计与家庭报告
 
-状态：`IN_PROGRESS`
+状态：`COMPLETED`
 
 产品 Phase：8　需求：REQ-001、REQ-002、REQ-003、REQ-006、REQ-022
 
@@ -21,19 +21,35 @@
 
 | ID | 状态 | 内容 |
 | --- | --- | --- |
-| WP9-1 | 待开始 | 使用策略、事件与今日汇总 |
-| WP9-2 | 待开始 | 月度成长/财商报告和对账 |
-| WP9-3 | 待开始 | Android 同步快照、断网重试和认证过期 |
-| WP9-4 | 待开始 | 跨域 H2/PostgreSQL E2E 与权限反向 |
+| WP9-1 | 已完成 | UsagePolicy、UsageEvent 幂等记录与家庭时区今日汇总 |
+| WP9-2 | 已完成 | 从 Usage/Completion/Ledger/Saving/Fund 事实表聚合月度报告和钱包对账 |
+| WP9-3 | 已完成 | Android 保留最后成功快照，使用事件失败后复用幂等键重试，401 清理会话 |
+| WP9-4 | 已完成 | H2/PostgreSQL 16.15 跨域 E2E、权限反向和全量回归 |
+
+## 数据、API、Android 与文档变化
+
+- Flyway V7 新增 `usage_policy`、`usage_event`、家庭/幂等唯一约束和孩子时间索引；数据库时间保持 UTC，汇总边界按策略 `ZoneId` 计算。
+- 新增策略查询/家长配置、App 内使用事件、今日摘要和家长月报 API；未配置时使用儿童安全默认 `Asia/Shanghai` 每日 20 分钟、单次 10 分钟。
+- 月报不保存可漂移副本：Money/Coin 收支来自 Ledger，礼金、兑换费用、储蓄、基金订单/持仓来自各自事实表，并返回 Wallet/Ledger 对账结果。
+- CHILD 只能查询本人策略和今日摘要；完整财务月报仅 PARENT。Android 只上传本 App 的活跃分钟，不采集其他 App、通信或系统行为。
+- Android 内存队列在同一进程断网重试时保持事件 UUID；刷新失败不覆盖最后成功快照。进程被系统终止后的待上传分钟不承诺恢复，见已知限制。
+
+## 验证方式
+
+| ID | 环境 | 结果 | 证据 |
+| --- | --- | --- | --- |
+| V9-01 | H2 PostgreSQL mode | 领域 12 项、Boot/API 11 项通过；PostgreSQL 专属 2 项按环境跳过 | `evidence/stage-9/acceptance.json` |
+| V9-02 | PostgreSQL 16.15 | V1–V7、31 张生产表、23 项全量测试、跨域报告与权限反向通过 | `evidence/stage-9/acceptance.json` |
+| V9-03 | Android JVM/lint/build | 16 项 JVM、lintDebug、debug/release 构建通过 | `evidence/stage-9/acceptance.json` |
 
 ## 完成标准
 
-- [ ] AC9-01 使用事件幂等，今日 App/学习分钟与明细一致。
-- [ ] AC9-02 报告的收入、支出、储蓄、基金市值/损益和费用可追到事实表。
-- [ ] AC9-03 CHILD 不能读取完整财务报告或他人 childId。
-- [ ] AC9-04 任务→奖励→兑换/储蓄/基金→报告 E2E 在 PostgreSQL 通过。
-- [ ] AC9-05 Android 同步失败不覆盖最后成功快照、不重复账本写入。
+- [x] AC9-01 `PASS`：同键同载荷返回首次事件，载荷变化返回 409；今日 App/学习分钟与两条事实一致。
+- [x] AC9-02 `PASS`：测试链取得 120.00 Money 收入、30.00 支出、10.00 储蓄和 0.10 基金费用并通过流水对账。
+- [x] AC9-03 `PASS`：CHILD 月报 403，其他家庭访问今日摘要 404。
+- [x] AC9-04 `PASS`：任务→奖励→礼金→兑换→储蓄→模拟基金→月报在 PostgreSQL 16.15 通过。
+- [x] AC9-05 `PASS`：Android JVM 证明重试复用调用方幂等键；代码门禁保证刷新失败保留 `Connected` 快照，使用事件不修改 Ledger。
 
 ## 安全检查、已知限制与交接
 
-使用统计是儿童敏感资料，最小采集且不可用于操纵留存；导出/删除保留策略在 Stage 10 总验收前明确。
+使用统计是儿童敏感资料，最小采集且不可用于操纵留存；当前只保留业务所需的分钟事件。导出/删除和正式保留期限由 Stage 10 部署/隐私总验收明确。

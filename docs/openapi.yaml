@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
   title: Family Growth API
-  version: 0.8.0
-  description: Stage 3–8 生产认证、成长任务、家庭账本、纯模拟基金与 Android 同步 API。
+  version: 0.9.0
+  description: Stage 3–9 生产认证、成长任务、家庭账本、纯模拟基金、Android 同步与家庭报告 API。
 servers:
   - url: /api/v1
 security:
@@ -508,6 +508,41 @@ paths:
       description: Returns the authorized child task states, latest completion ids, wallet and daily review summary for the Android client.
       parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
       responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/children/{childId}/usage-policy:
+    get:
+      operationId: getUsagePolicy
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' } }
+    put:
+      operationId: configureUsagePolicy
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UsagePolicyRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/children/{childId}/usage-events:
+    post:
+      operationId: recordUsageEvent
+      description: Records only this App's active or learning minutes. Replays require the same payload and Idempotency-Key.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UsageEventRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/reports/today:
+    get:
+      operationId: getTodayReport
+      description: Child sessions can read only their own age-appropriate today summary.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - { name: date, in: query, required: false, schema: { type: string, format: date } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/children/{childId}/reports/monthly:
+    get:
+      operationId: getMonthlyFamilyReport
+      description: Parent-only report aggregated from usage, completion, ledger, saving and simulated-fund fact tables.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - { name: month, in: query, required: false, schema: { type: string, pattern: '^\d{4}-\d{2}$' } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
 components:
   securitySchemes:
     bearerAuth:
@@ -777,6 +812,20 @@ components:
       properties:
         side: { type: string, enum: [BUY, SELL] }
         inputAmount: { type: number, minimum: 0.00000001 }
+    UsagePolicyRequest:
+      type: object
+      required: [zoneId, dailyLimitMinutes, sessionLimitMinutes]
+      properties:
+        zoneId: { type: string, minLength: 1, maxLength: 60, example: Asia/Shanghai }
+        dailyLimitMinutes: { type: integer, minimum: 10, maximum: 480 }
+        sessionLimitMinutes: { type: integer, minimum: 5, maximum: 240 }
+    UsageEventRequest:
+      type: object
+      required: [type, minutes, occurredAt]
+      properties:
+        type: { type: string, enum: [APP_ACTIVE, LEARNING] }
+        minutes: { type: integer, minimum: 1, maximum: 60 }
+        occurredAt: { type: string, format: date-time }
     ApiError:
       type: object
       required: [code, message]

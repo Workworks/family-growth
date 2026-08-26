@@ -4,6 +4,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Test
 import java.math.BigDecimal
+import java.time.Instant
 
 class RemoteFamilyRepositoryTest {
     @Test fun urlPolicyAllowsHttpsAndDevelopmentPrivateHttpOnly() {
@@ -26,13 +27,25 @@ class RemoteFamilyRepositoryTest {
         assertFalse(repository.hasSession())
     }
 
+    @Test fun usageRetryKeepsCallerIdempotencyKey() = runBlocking {
+        val transport = FakeTransport()
+        val repository = RemoteFamilyRepository(transport, MemorySessionStore(), false)
+        assertTrue(repository.connect("https://family.example", FAMILY, PARENT, CHILD, "123456") is RemoteResult.Ok)
+        val occurredAt = Instant.parse("2026-08-25T10:00:00Z")
+        assertTrue(repository.recordUsage("stable-event-key", occurredAt) is RemoteResult.Ok)
+        assertTrue(repository.recordUsage("stable-event-key", occurredAt) is RemoteResult.Ok)
+        assertEquals(listOf("stable-event-key", "stable-event-key"), transport.usageKeys)
+    }
+
     private class FakeTransport : FamilyApiTransport {
         var expire = false
+        val usageKeys = mutableListOf<String>()
         override suspend fun login(base:String,family:String,parent:String,pin:String)=RemoteResult.Ok("parent-token")
         override suspend fun childSession(base:String,parentToken:String,child:String)=RemoteResult.Ok("child-token")
         override suspend fun snapshot(base:String,token:String,family:String,child:String):RemoteResult<RemoteSnapshot> = if(expire) RemoteResult.Unauthorized else RemoteResult.Ok(RemoteSnapshot(family,child,"小树",BigDecimal("12.00"),30,emptyList(),0,0))
         override suspend fun submit(base:String,childToken:String,family:String,child:String,task:String,key:String)=RemoteResult.Ok(Unit)
         override suspend fun review(base:String,parentToken:String,family:String,completion:String,key:String)=RemoteResult.Ok(Unit)
+        override suspend fun usage(base:String,childToken:String,family:String,child:String,key:String,occurredAt:Instant):RemoteResult<Unit>{usageKeys += key;return RemoteResult.Ok(Unit)}
     }
     companion object {
         const val FAMILY="11111111-1111-1111-1111-111111111111"

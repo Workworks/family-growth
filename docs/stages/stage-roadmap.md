@@ -10,8 +10,8 @@
 | 6 | 5 | RewardShop、Saving 与 Wish | `COMPLETED` |
 | 7 | 6 | VirtualFund、NAV、订单、持仓与费用 | `COMPLETED` |
 | 8 | 7 | Android 家长端/孩子端核心页面 | `BLOCKED` |
-| 9 | 8 | 跨域业务闭环与报告 | `IN_PROGRESS` |
-| 10 | 9 | APK 构建、安装与 V1 总验收 | `NOT_STARTED` |
+| 9 | 8 | 跨域业务闭环与报告 | `COMPLETED` |
+| 10 | 9 | APK 构建、安装与 V1 总验收 | `IN_PROGRESS` |
 | 11 | 计划外 | GitHub Release APK 热更新与当前版本交付 | `BLOCKED` |
 | 12 | 计划外 | 参考仓库文档治理与 Agent 启动协议对齐 | `COMPLETED` |
 | 13 | 计划外 | Stage 2–11 基础体验宽度与 Android 前端完善 | `BLOCKED` |
@@ -26,6 +26,6 @@ Stage 13 按用户最新优先级已交付 Stage 2–11 的 Android 本地基础
 
 Stage 14 将 GitHub Release 热更新提升为 P0，负责公开仓库、分 Stage Git 历史、稳定签名 Release 和真实远端更新契约；它延续 Stage 11，但不以仓库创建替代真机覆盖升级。
 
-REQ-020/REQ-022 已恢复并连续推进 Stage 3–10。Stage 3–7 已在 PostgreSQL 通过；Stage 8 可离线实现完成但真机阻塞，Stage 9 继续建设跨域报告，Stage 10 最终汇总外部验收缺口。
+REQ-020/REQ-022 已恢复并连续推进 Stage 3–10。Stage 3–7、9 已在 PostgreSQL 通过；Stage 8 可离线实现完成但真机阻塞，Stage 10 正在收口部署、发布与最终外部验收缺口。
 
 Stage 15 来自 REQ-021 的最高行为准则，优先于普通功能迭代。儿童端可离线代码/自动化已收敛，仅真实平板验收阻塞；Stage 5 因而恢复推进，儿童门禁继续约束其后所有界面和功能。

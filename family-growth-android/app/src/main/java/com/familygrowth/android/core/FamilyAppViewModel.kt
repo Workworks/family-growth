@@ -12,11 +12,15 @@ import com.familygrowth.android.remote.*
 import kotlinx.coroutines.launch
 import org.mindrot.jbcrypt.BCrypt
 import java.math.BigDecimal
+import java.time.Instant
+import java.util.UUID
 
 class FamilyAppViewModel(application: Application) : AndroidViewModel(application) {
     private val store = LocalFamilyStore(application)
     private val remote = RemoteFamilyRepository(HttpFamilyApiTransport(), MemorySessionStore(), BuildConfig.DEBUG)
     private var remoteCompletionByTask: Map<String, String> = emptyMap()
+    private val pendingUsage = mutableListOf<PendingUsage>()
+    private var usageFlushRunning = false
 
     var state by mutableStateOf(FamilyLocalState())
         private set
@@ -71,6 +75,10 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         if (mode != AppMode.CHILD || isChildLocked) return
         sessionUsedMinutes += 1
         mutate { LocalFamilyEngine.recordUsageMinute(it) }
+        if (remote.hasSession()) {
+            pendingUsage += PendingUsage(UUID.randomUUID().toString(), Instant.now())
+            flushUsage()
+        }
     }
 
     fun addTask(title: String, minutes: Int, rewardMoney: BigDecimal, coin: Int, xp: Int) =
@@ -105,8 +113,12 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch { handleRemote(remote.connect(baseUrl, familyId, parentId, childId, pin), "已连接并同步家庭服务") }
     }
     fun refreshService() {
-        connectionState = ConnectionState.Connecting
-        viewModelScope.launch { handleRemote(remote.refresh(), "已同步最新数据") }
+        if (connectionState !is ConnectionState.Connected) connectionState = ConnectionState.Connecting
+        viewModelScope.launch {
+            val result = remote.refresh()
+            handleRemote(result, "已同步最新数据")
+            if (result is RemoteResult.Ok) flushUsageNow()
+        }
     }
     fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); connectionState = ConnectionState.Disconnected; message = "已断开；服务端 Token 已从内存清除" }
 
@@ -127,7 +139,29 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
                 message = success
             }
             RemoteResult.Unauthorized -> { remoteCompletionByTask = emptyMap(); connectionState = ConnectionState.Expired; message = "登录已过期，请由家长重新连接" }
-            is RemoteResult.Failure -> { connectionState = ConnectionState.Error(result.message); message = result.message }
+            is RemoteResult.Failure -> { if (connectionState !is ConnectionState.Connected) connectionState = ConnectionState.Error(result.message); message = result.message }
+        }
+    }
+
+    private fun flushUsage() {
+        if (usageFlushRunning) return
+        viewModelScope.launch { flushUsageNow() }
+    }
+
+    private suspend fun flushUsageNow() {
+        if (usageFlushRunning) return
+        usageFlushRunning = true
+        try {
+            while (pendingUsage.isNotEmpty() && remote.hasSession()) {
+                val event = pendingUsage.first()
+                when (val result = remote.recordUsage(event.key, event.occurredAt)) {
+                    is RemoteResult.Ok -> pendingUsage.removeAt(0)
+                    RemoteResult.Unauthorized -> { handleRemote(RemoteResult.Unauthorized, ""); return }
+                    is RemoteResult.Failure -> { message = result.message; return }
+                }
+            }
+        } finally {
+            usageFlushRunning = false
         }
     }
 
@@ -143,4 +177,5 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private fun fail(text: String): Boolean { message = text; return false }
+    private data class PendingUsage(val key: String, val occurredAt: Instant)
 }

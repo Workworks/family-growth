@@ -1,6 +1,6 @@
 # 阻塞与限制清单
 
-记录所有未达到 `COMPLETED` 的 Stage 及其缺少条件。**最后更新：2026-08-25。**
+记录所有未达到 `COMPLETED` 的 Stage 及其缺少条件。**最后更新：2026-08-26。**
 
 本清单区分两类：
 
@@ -100,11 +100,11 @@
 
 ### Stage 3–10：V1 生产服务端深度业务
 
-状态：Stage 3–7 `COMPLETED`，Stage 8 `BLOCKED`，Stage 9 `IN_PROGRESS`，Stage 10 `NOT_STARTED`　文档：[Stage 路线图](stages/stage-roadmap.md)
+状态：Stage 3–7/9 `COMPLETED`，Stage 8 `BLOCKED`，Stage 10 `IN_PROGRESS`　文档：[Stage 路线图](stages/stage-roadmap.md)
 
-Stage 13 已提供这些领域的 Android 本机基础体验，但尚未建设生产级服务端任务完成域、事务 Wallet/Ledger、认证/RBAC、多端同步、复杂配置、跨域报告和 V1 端到端总验收。
+生产认证、任务审核、Wallet/Ledger、兑换、商店/储蓄/愿望、纯模拟基金和跨域报告已完成；剩余工程范围是 Stage 10 部署、恢复、发布和总验收。
 
-当前推进：REQ-020/REQ-022 已启动 Stage 3–10；Stage 3–7 在 PostgreSQL 通过；Stage 8 API/Android 离线门禁已过，缺平板真实登录/同步/写入回放；Stage 9 正在推进。
+当前推进：REQ-020/REQ-022 已启动 Stage 3–10；Stage 3–7/9 在 PostgreSQL 通过；Stage 8 API/Android 离线门禁已过，缺平板真实登录/同步/写入回放；Stage 10 正在推进。
 
 解除方式：按 Stage 3→10 的 Spec 顺序继续工程开发；每个 Stage 仅在前序门禁通过后进入 `IN_PROGRESS`。
 

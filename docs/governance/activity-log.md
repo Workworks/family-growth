@@ -86,3 +86,6 @@
 | 78 | 7/8 | PostgreSQL 收口并启动 Stage 8 | H2/PostgreSQL 16.15 V1–V6、并发确认、NAV/规则漂移、超卖和账本门禁通过；测试容器已移除 | `evidence/stage-7/acceptance.json` |
 | 79 | 8 | 完成 Android 生产接入可离线工作包 | 新增 HTTPS/开发私网 URL 策略、内存父/子 Token、401 清理、登录同步卡、任务提交/家长确认和后端 RBAC sync snapshot | Stage 8 Android/后端/OpenAPI |
 | 80 | 8/9 | 收口离线门禁并转 Stage 9 | JVM、MockMvc、lintDebug、debug/release build 通过；无平板故 Stage 8 保持 BLOCKED，Stage 9 可离线推进 | `evidence/stage-8/acceptance.json` |
+| 81 | 9 | 完成 App 内使用与家庭报告域 | 新增 V7 UsagePolicy/Event、家庭时区今日摘要、家长月报和 Wallet/Ledger 对账；不采集其他 App 或儿童通信 | Stage 9 代码/OpenAPI |
+| 82 | 9 | 完成 Android 同步可靠性收口 | 断网时复用 UsageEvent 幂等键，刷新失败保留最后成功快照；当前进程终止前的待上传事件不承诺恢复并登记 LIM-011 | Android remote/core、已知限制 |
+| 83 | 9/10 | PostgreSQL 收口并启动 Stage 10 | H2 23 项、PostgreSQL 16.15 23 项、Android 16 项 JVM + lint/build 全部通过；隔离容器已移除 | `evidence/stage-9/acceptance.json` |

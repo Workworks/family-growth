@@ -1,6 +1,6 @@
 # Stage 10：V1 发布、部署与总验收
 
-状态：`NOT_STARTED`
+状态：`IN_PROGRESS`
 
 产品 Phase：9　需求：REQ-001–009、REQ-013、REQ-018、REQ-021、REQ-022
 

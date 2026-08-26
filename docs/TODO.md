@@ -1,6 +1,6 @@
 # 待办执行账本
 
-**最后更新：2026-08-25。**
+**最后更新：2026-08-26。**
 
 本文件只维护**尚未完成且可以继续执行的事项**，按优先级和推进责任排序。历史交付查看 [Stage 路线图](stages/stage-roadmap.md)和各 Stage 报告；缺陷查看 [bugList](bug/bugList.md)；问题查看 [AQ](aq/aq.md)；外部阻塞的详细解除条件查看 [BLOCKERS](BLOCKERS.md)。
 
@@ -11,7 +11,7 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P0 | 9 | `IN_PROGRESS` | 完成使用策略/事件、跨域家庭报告、E2E 和 PostgreSQL 门禁 | Agent | Stage 9 Spec/证据/commit |
+| P0 | 10 | `IN_PROGRESS` | 完成部署/恢复、离线总门禁、稳定签名 0.3.0 APK 与 GitHub Release；真机项留阻塞 | Agent | Stage 10 Spec/证据/commit/Release |
 | P0 | 8 | `BLOCKED` | 平板回放生产登录同步、孩子提交、家长确认、旋转和无障碍；代码/JVM/lint/build 已过 | 用户提供设备；Agent 回放 | Stage 8 真机证据 |
 | P0 | 15 | `BLOCKED` | 用 Android 平板回放三入口、单任务、TalkBack、字体放大和温和限时退出 | 用户提供设备；Agent 回放 | Stage 15 真机证据 |
 | P0 | 14 | `BLOCKED` | 用 Android 真机/平板安装 0.2.1 release，通过 App 更新至 0.2.2 并验证数据保留/失败路径 | 用户提供设备；Agent 回放 | Stage 14/15 真机证据 |
@@ -23,8 +23,7 @@
 
 | 顺序 | Stage | 主题 | 前置条件 |
 | ---: | ---: | --- | --- |
-| 1 | 9 | 跨域报告 | Stage 8 可离线实现已完成，当前推进 |
-| 2 | 10 | V1 总验收 | 需要 Stage 9 完成；真机项依赖 Android 设备 |
+| 1 | 10 | V1 总验收 | Stage 9 已完成；Agent 推进离线工程和 Release，真机项依赖 Android 设备 |
 
 ## 3. 只能由外部条件解除
 

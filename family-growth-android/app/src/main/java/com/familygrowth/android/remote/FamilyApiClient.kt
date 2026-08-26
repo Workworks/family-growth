@@ -5,6 +5,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
+import java.time.Instant
 import java.util.UUID
 
 interface FamilyApiTransport{
@@ -13,6 +14,7 @@ interface FamilyApiTransport{
  suspend fun snapshot(base:String,token:String,family:String,child:String):RemoteResult<RemoteSnapshot>
  suspend fun submit(base:String,childToken:String,family:String,child:String,task:String,key:String):RemoteResult<Unit>
  suspend fun review(base:String,parentToken:String,family:String,completion:String,key:String):RemoteResult<Unit>
+ suspend fun usage(base:String,childToken:String,family:String,child:String,key:String,occurredAt:Instant):RemoteResult<Unit>
 }
 
 class HttpFamilyApiTransport:FamilyApiTransport{
@@ -21,6 +23,7 @@ class HttpFamilyApiTransport:FamilyApiTransport{
  override suspend fun snapshot(base:String,token:String,family:String,child:String)=request(base,"/api/v1/families/$family/children/$child/sync","GET",token,null){root->val d=root.getJSONObject("data");val w=d.getJSONObject("wallet");val a=d.getJSONArray("tasks");RemoteSnapshot(d.getString("familyId"),d.getString("childId"),d.getString("childName"),w.getString("moneyBalance").toBigDecimal(),w.getInt("coinBalance"),buildList{for(i in 0 until a.length()){val t=a.getJSONObject(i);add(RemoteTask(t.getString("id"),t.getString("title"),t.getInt("expectedMinutes"),t.getString("status"),if(t.isNull("latestCompletionId"))null else t.getString("latestCompletionId"))) }},d.getInt("pendingReviews"),d.getInt("approvedToday"))}
  override suspend fun submit(base:String,childToken:String,family:String,child:String,task:String,key:String)=request(base,"/api/v1/families/$family/children/$child/tasks/$task/completions","POST",childToken,JSONObject().put("evidenceNote","在孩子端确认完成"),key){Unit}
  override suspend fun review(base:String,parentToken:String,family:String,completion:String,key:String)=request(base,"/api/v1/families/$family/completions/$completion/review","POST",parentToken,JSONObject().put("approved",true).put("xpReward",10).put("coinReward",10).put("moneyReward",0).put("reviewNote","家长端确认"),key){Unit}
+ override suspend fun usage(base:String,childToken:String,family:String,child:String,key:String,occurredAt:Instant)=request(base,"/api/v1/families/$family/children/$child/usage-events","POST",childToken,JSONObject().put("type","APP_ACTIVE").put("minutes",1).put("occurredAt",occurredAt.toString()),key){Unit}
  private suspend fun <T> request(base:String,path:String,method:String,token:String?,body:JSONObject?,key:String?=null,decode:(JSONObject)->T):RemoteResult<T> = withContext(Dispatchers.IO){
   try{val connection=(URL(base+path).openConnection() as HttpURLConnection).apply{requestMethod=method;connectTimeout=8_000;readTimeout=10_000;setRequestProperty("Accept","application/json");if(token!=null)setRequestProperty("Authorization","Bearer $token");if(key!=null)setRequestProperty("Idempotency-Key",key);if(body!=null){doOutput=true;setRequestProperty("Content-Type","application/json");outputStream.use{it.write(body.toString().toByteArray(Charsets.UTF_8))}}};val code=connection.responseCode;if(code==401){connection.disconnect();return@withContext RemoteResult.Unauthorized};val stream=if(code in 200..299)connection.inputStream else connection.errorStream;val text=stream?.bufferedReader()?.use{it.readText()}.orEmpty();connection.disconnect();if(code !in 200..299)return@withContext RemoteResult.Failure(if(code==403)"当前角色无权执行" else if(code==409)"数据已变化，请刷新后重试" else "服务请求失败（$code）");RemoteResult.Ok(decode(JSONObject(text)))}catch(_:Exception){RemoteResult.Failure("无法连接家庭服务，请检查地址、证书和网络")}
  }
@@ -31,6 +34,7 @@ class RemoteFamilyRepository(private val transport:FamilyApiTransport,private va
  suspend fun refresh():RemoteResult<RemoteSnapshot>{val s=sessions.get()?:return RemoteResult.Failure("尚未连接家庭服务");return when(val r=transport.snapshot(s.baseUrl,s.parentToken,s.familyId,s.childId)){RemoteResult.Unauthorized->expired();else->r}}
  suspend fun submitTask(taskId:String):RemoteResult<RemoteSnapshot>{val s=sessions.get()?:return RemoteResult.Failure("尚未连接家庭服务");return when(val r=transport.submit(s.baseUrl,s.childToken,s.familyId,s.childId,taskId,UUID.randomUUID().toString())){is RemoteResult.Ok->refresh();RemoteResult.Unauthorized->expired();is RemoteResult.Failure->r}}
  suspend fun approveTask(completionId:String):RemoteResult<RemoteSnapshot>{val s=sessions.get()?:return RemoteResult.Failure("尚未连接家庭服务");return when(val r=transport.review(s.baseUrl,s.parentToken,s.familyId,completionId,UUID.randomUUID().toString())){is RemoteResult.Ok->refresh();RemoteResult.Unauthorized->expired();is RemoteResult.Failure->r}}
+ suspend fun recordUsage(key:String,occurredAt:Instant):RemoteResult<Unit>{val s=sessions.get()?:return RemoteResult.Failure("尚未连接家庭服务");return when(val r=transport.usage(s.baseUrl,s.childToken,s.familyId,s.childId,key,occurredAt)){RemoteResult.Unauthorized->expired();else->r}}
  fun disconnect(){sessions.clear()} fun hasSession()=sessions.get()!=null
  private fun <T> expired():RemoteResult<T>{sessions.clear();return RemoteResult.Unauthorized}
 }

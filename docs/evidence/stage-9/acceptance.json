@@ -1,0 +1,53 @@
+{
+  "capturedAt": "2026-08-26T08:24:00+08:00",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+  "shellType": "PowerShell",
+  "passed": true,
+  "summary": "Stage 9 usage policy/events, authorized today/monthly reports, cross-domain fact aggregation and Android retry/snapshot behavior passed H2, PostgreSQL 16.15 and Android offline gates.",
+  "environment": {
+    "java": "17.0.8",
+    "postgres": "16.15",
+    "postgresImage": "postgres:16.15-alpine",
+    "containerLifecycle": "isolated localhost port 55439; exact container inspected, stopped and removed after the gate"
+  },
+  "commands": [
+    {
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am test",
+      "exitCode": 0,
+      "passed": true,
+      "result": "H2 full regression: 12 domain tests and 11 Boot tests with 2 PostgreSQL-only skips; Flyway V1-V7 passed."
+    },
+    {
+      "command": "start isolated PostgreSQL 16.15 container; set test datasource environment; .\\mvnw.cmd -pl family-growth-boot -am test",
+      "exitCode": 0,
+      "passed": true,
+      "result": "PostgreSQL V1-V7, Hibernate validate, 31 production tables, 12 domain and 11 Boot/API tests passed with no skips."
+    },
+    {
+      "command": ".\\gradlew.bat testDebugUnitTest lintDebug assembleDebug assembleRelease",
+      "workingDirectory": "family-growth-android",
+      "exitCode": 0,
+      "passed": true,
+      "result": "16 Android JVM tests, debug lint and debug/release APK builds passed."
+    },
+    {
+      "command": ".\\scripts\\Test-DocumentationLinks.ps1; parse all evidence JSON; parse docs/openapi.yaml",
+      "exitCode": 0,
+      "passed": true,
+      "result": "75 Markdown files, 74 indexed documents, 14 evidence JSON files and OpenAPI 0.9.0 with 37 paths passed."
+    }
+  ],
+  "acceptance": {
+    "AC9-01": "PASS - usage event replay is idempotent; changed payload conflicts; today minutes match facts.",
+    "AC9-02": "PASS - ledger, gift, exchange, saving and simulated-fund facts aggregate into an auditable report.",
+    "AC9-03": "PASS - child monthly report is forbidden and cross-family today access is hidden as 404.",
+    "AC9-04": "PASS - task through reward, exchange, saving, fund and report E2E passed PostgreSQL 16.15.",
+    "AC9-05": "PASS - Android retry keeps the event key and failed refresh preserves the last Connected snapshot."
+  },
+  "security": {
+    "collectsOtherApps": false,
+    "childFullFinancialReportAllowed": false,
+    "reportDerivedFromFacts": true,
+    "secretsInEvidence": false
+  }
+}

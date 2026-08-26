@@ -1,6 +1,6 @@
 # 当前阶段
 
-最后更新：2026-08-25。
+最后更新：2026-08-26。
 
 ## 当前主线
 
@@ -14,7 +14,8 @@
 | 6 | 5 | RewardShop、Saving 与 Wish | `COMPLETED` | H2/PostgreSQL 订单、储蓄守恒、愿望和并发门禁通过 |
 | 7 | 6 | 纯模拟基金 | `COMPLETED` | H2/PostgreSQL NAV、费用、并发、持仓与 P&L 门禁通过 |
 | 8 | 7 | Android 生产接入 | `BLOCKED` | 代码/JVM/lint/build 通过；需平板回放真实登录同步与无障碍 |
-| 9 | 8 | 跨域闭环与报告 | `IN_PROGRESS` | 建设使用事件、策略和家庭聚合报告 |
+| 9 | 8 | 跨域闭环与报告 | `COMPLETED` | H2/PostgreSQL 使用事件、事实报告、权限和 Android 重试门禁通过 |
+| 10 | 9 | V1 发布、部署与总验收 | `IN_PROGRESS` | 完成生产配置、备份恢复、稳定签名 0.3.0 Release 和离线总验收 |
 | 11 | 计划外 | GitHub Release APK 热更新与当前版本交付 | `BLOCKED` | v0.2.0/0.2.1/0.2.2 同签名 Release 已完成；只需 Android 设备回放 App 内覆盖升级 |
 | 12 | 计划外 | 参考仓库文档治理与 Agent 启动协议对齐 | `COMPLETED` | 后续每次对话持续执行 AGENTS Step 1–6 和需求永久登记 |
 | 13 | 计划外 | Stage 2–11 基础体验宽度与 Android 前端完善 | `BLOCKED` | 代码、自动化和 0.2.0 APK 已交付；需 Android 真机/平板回放交互、计时与重启持久化 |
@@ -31,9 +32,9 @@ Stage 13 的可离线工程工作已收口：Android 本地基础体验覆盖任
 
 Stage 14 已完成公开仓库、分阶段提交、main 推送、稳定签名备份/Secrets 和 Android 更新源绑定；Stage 15 又发布 v0.2.2。latest API、digest、版本和三版同证书下载复验均通过。只缺 Android 真机/平板覆盖升级与数据保留，因此保持 `BLOCKED`。
 
-REQ-020/REQ-022 已恢复 Stage 3–10 生产闭环。Stage 3–7 后端已完成；Stage 8 生产接入的可离线门禁已过但真机阻塞，Stage 9 继续可独立验证的跨域报告工作。
+REQ-020/REQ-022 已恢复 Stage 3–10 生产闭环。Stage 3–7、9 后端已完成；Stage 8 生产接入的可离线门禁已过但真机阻塞，Stage 10 正在收口部署、发布和总验收。
 
-REQ-021 将“儿童最佳利益、3 岁起、极简低刺激、无操纵设计”提升为最高产品行为准则。Stage 15 可离线代码、13 项 JVM 测试、lint、debug/release 构建和稳定签名 0.2.2 APK 已通过；真实平板验收阻塞。Stage 9 现在是 Agent 主线。
+REQ-021 将“儿童最佳利益、3 岁起、极简低刺激、无操纵设计”提升为最高产品行为准则。Stage 15 可离线代码、13 项 JVM 测试、lint、debug/release 构建和稳定签名 0.2.2 APK 已通过；真实平板验收阻塞。Stage 10 现在是 Agent 主线。
 
 ## 关键决策快照
 
