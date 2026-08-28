@@ -136,9 +136,11 @@
 
 ### Stage 21：共用课程、活动与学习证据引擎
 
-状态：`BLOCKED`　文档：[Stage 21](stages/stage-21-report.md)
+状态：`IN_PROGRESS`　文档：[Stage 21](stages/stage-21-report.md)
 
 已完成：孩子“我的任务/自主学习”、五级教材选择、受限官方 WebView、家长免费来源/动态栏目/儿童无 URL 投影、不可变课程版本、九类活动、题目/答案隔离、Assignment/Attempt/Completion/MasteryEvidence、生产 API 和 Android 学习路径均已通过离线门禁。V12 进一步完成 Android Keystore 加密 outbox、重建待登录恢复、401 保留、409 显式合并和家长“一课一活动”可视化建课/发布/分配。
+
+当前工作：按 REQ-040 发布 v0.3.5/11，并验证 GitHub Release digest、包名、版本与既有稳定证书；远端发布完成后本 Stage 仍会因下述设备条件恢复为 `BLOCKED`。
 
 外部验收：需要可访问家庭服务和目标平板验证 AndroidKeyStore 写前保存、杀进程/断网、重新登录、401/409 和队列清空；同时回放真实免费来源的栏目兼容、官方平台加载/播放/返回、横竖屏、TalkBack 与家长/孩子 E2E。公共 DNS 预检必须配合部署侧出站防火墙/代理阻断内网和云元数据。若未来要求抽取视频直链、离线缓存、改编页面或自动回传完成证据，还需要平台许可或官方 SDK/API。
 

@@ -1,10 +1,10 @@
 # Stage 21：共用课程、活动与学习证据引擎
 
-状态：`BLOCKED`
+状态：`IN_PROGRESS`
 
 产品 Phase：全面教学核心
 
-需求：REQ-021、REQ-028、REQ-030、REQ-031、REQ-033、REQ-034、REQ-035、REQ-036、REQ-037、REQ-038、REQ-039
+需求：REQ-021、REQ-028、REQ-030、REQ-031、REQ-033、REQ-034、REQ-035、REQ-036、REQ-037、REQ-038、REQ-039、REQ-040
 
 ## 目标与非目标
 
@@ -40,6 +40,7 @@
 | WP21-5B | 离线完成 | V12：Android Keystore 加密学习 outbox、重启后待登录恢复、401 保留、409 显式刷新合并，以及家长“一课一活动”建课/发布/分配工作台 |
 | WP21-5A | 离线完成 | V10 家长免费教育来源、受控 HTML 栏目发现、批准/撤回、儿童安全投影与 Android 来源书架；真实来源/平板回放待外部条件 |
 | WP21-6 | 外部阻塞 | V12 H2、Android 双变体和契约门禁已通过；仅余真实公共来源与目标平板密钥库/杀进程/无障碍/E2E 回放 |
+| WP21-7 | 进行中 | v0.3.5/11 稳定发布：版本递增、发布前门禁、阶段提交、tag workflow、远端 APK digest/包名/版本/同证书复验和文档证据 |
 
 ### V11 当前实施切片
 
@@ -87,6 +88,7 @@ V12 完成判定：纯 JVM 队列重建/顺序/幂等/冲突合并测试；HTTP 
 | V21-04B | Java/H2/PostgreSQL/Android | 公共 HTTPS URL 策略、栏目发现上限/同源过滤、家长 RBAC、刷新/批准/撤回、失败保留快照、家长来源书架和儿童无 URL 投影 | SSRF 反向向量、栏目替换事务、动态 UI 状态和两变体门禁通过 | Stage 21 evidence |
 | V21-05 | Android 平板 + 测试服务 | 四学段读取同一引擎不同投影，完成选择/视频/亲子/线下活动，断网重启恢复，家长复做/确认 | 真实 UI、网络、持久化、无障碍和 E2E 通过 | Stage 21 evidence/设备阻塞 |
 | V21-06 | 通用 | diff、secret、Markdown 链接、证据 JSON、OpenAPI | 治理与机器契约一致 | Stage 21 evidence |
+| V21-07 | GitHub Actions/Release | 递增 v0.3.5/11，推送 commit/tag，等待 workflow，下载公开 APK 并检查 digest、包名、版本和证书 | Release 为 latest；资产不可变、版本递增且与 v0.3.4 同一稳定证书 | Stage 21 evidence/Release URL |
 
 ## 完成标准
 
@@ -100,6 +102,7 @@ V12 完成判定：纯 JVM 队列重建/顺序/幂等/冲突合并测试；HTTP 
 - [x] AC21-04B：`PASS_OFFLINE` — 家长可配置、刷新、批准和撤回免费教育来源；服务端安全发现同源栏目并动态替换快照，成功刷新回到待批准、失败保留旧快照；儿童只见匹配学段的已批准栏目标签且不含 URL。真实公共站点兼容和目标平板交互仍归 AC21-06。
 - [x] AC21-05：`PASS_OFFLINE` — V12 H2 全量 46 项（6 项 PostgreSQL 条件跳过），新增课程版本读取权限测试通过；V11 PostgreSQL 16.15 全量 46 项零失败/零跳过、V1–V11/55 表基线未发生 schema 变化；Android debug/release 各 40 项、两变体 lint/assemble 和 OpenAPI/文档门禁通过。
 - [ ] AC21-06：`BLOCKED` — 目标平板上的 AndroidKeyStore 队列、杀进程恢复、断网/401/409、多活动交互、TalkBack、横竖屏和家长/孩子端到端需要真实设备和可访问测试服务。
+- [ ] AC21-07：`IN_PROGRESS` — v0.3.5/11 必须通过 release JVM/lint/assemble，tag 与 versionName 一致；公开资产须有 GitHub `sha256:` digest、正确包名/版本并与 v0.3.4 使用同一稳定证书。真机覆盖升级仍归 AC21-06/Stage 11/14。
 
 ## 安全检查、已知限制与交接
 

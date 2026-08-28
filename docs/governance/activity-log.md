@@ -147,3 +147,4 @@
 | 45 | 21 | 收紧写入幂等回放 | Attempt、Submit、Review 在资源进入后续状态后仍先按幂等键和载荷校验回放，不因当前状态门禁误报冲突；API 测试覆盖提交后 Attempt/Submit 重放和完成后 Review 重放，全量 H2 46 项复跑通过 | `Stage21TeachingService`、`Stage21TeachingApiTest` |
 | 46 | 21 | 用户要求进行下一步 | 登记 REQ-039/P0 并启动 V12；实现前固化 Android Keystore 加密 outbox、重启/401/409 恢复和家长“一课一活动”建课/发布/分配的边界、验证方式与 AC21-04C/04D，不扩大为完整内容运营 | 需求账本、Stage 21 V12 Spec、TODO/current |
 | 47 | 21 | 完成 V12 移动可靠性与家长备课夹 | 学习 Attempt/Submit/Review 改为先用 Android Keystore AES/GCM 加密落盘并持久保存幂等键；网络/401 保留、409 刷新显式合并，清理失败即停；家长端按“写一课→发布→布置”连接真实 API，0–2 岁禁用儿童课程且写动作防重复。H2 46 项（6 项 PG 条件跳过）、Android 两变体各 40 项、lint/assemble 通过 | V12 code/tests、Stage 21 report/evidence、OpenAPI/手册 |
+| 48 | 21 | 用户要求本次完成后发布新版本 | 登记 REQ-040/P0；以 v0.3.4/10 为基线制定 v0.3.5/11 发布切片，复用既有稳定签名和 tag workflow，要求远端 digest、包名、版本、证书全部复验且不冒充真机覆盖升级 | 需求账本、Stage 21 WP21-7/V21-07/AC21-07、发布手册 |
