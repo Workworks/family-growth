@@ -75,6 +75,12 @@ class Stage21TeachingController {
         @RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE) Actor actor, @PathVariable UUID familyId
     ) { return ApiResponse.ok(service.courses(actor, familyId)); }
 
+    @GetMapping("/teaching/course-versions/{versionId}")
+    ApiResponse<CourseVersion> courseVersion(
+        @RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE) Actor actor,
+        @PathVariable UUID familyId, @PathVariable UUID versionId
+    ) { return ApiResponse.ok(service.courseVersion(actor, familyId, versionId)); }
+
     @PostMapping("/children/{childId}/learning/assignments")
     @ResponseStatus(HttpStatus.CREATED)
     ApiResponse<LearningAssignment> assign(

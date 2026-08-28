@@ -18,9 +18,12 @@ import java.util.UUID
 class FamilyAppViewModel(application: Application) : AndroidViewModel(application) {
     private val store = LocalFamilyStore(application)
     private val remote = RemoteFamilyRepository(HttpFamilyApiTransport(), MemorySessionStore(), BuildConfig.DEBUG)
+    private val learningOutbox = LearningOutbox(EncryptedLearningOutboxStore(application))
     private var remoteCompletionByTask: Map<String, String> = emptyMap()
     private val pendingUsage = mutableListOf<PendingUsage>()
     private var usageFlushRunning = false
+    private var learningFlushRunning = false
+    private var teachingActionRunningInternal = false
 
     var state by mutableStateOf(FamilyLocalState())
         private set
@@ -42,12 +45,19 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     var learningAssignments by mutableStateOf<List<RemoteLearningAssignment>>(emptyList())
         private set
+    var teachingCourses by mutableStateOf<List<RemoteCourseSummary>>(emptyList())
+        private set
+    var pendingLearningActions by mutableStateOf(learningOutbox.snapshot())
+        private set
+    var teachingActionRunning by mutableStateOf(false)
+        private set
 
     val isChildLocked: Boolean get() = mode == AppMode.CHILD &&
         (state.usage.usedMinutes >= state.usage.dailyLimitMinutes || sessionUsedMinutes >= state.usage.sessionLimitMinutes)
 
     init {
         store.load().onSuccess { state = it }.onFailure { message = "本地数据读取失败，已进入空白安全状态" }
+        learningOutbox.initializationError?.let { message = "加密学习记录无法读取，请由家长检查应用数据" }
     }
 
     fun selectSection(value: AppSection) {
@@ -152,39 +162,57 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     fun withdrawEducationSource(id: String) = changeEducationSource(id, "withdraw", "来源已撤回，不再显示给孩子")
     fun requestParentForResource() { message = "这个栏目需要家长一起打开" }
     fun attemptLearningActivity(assignmentId: String, activityId: String, response: String) {
-        viewModelScope.launch {
-            when (val result = remote.learningAttempt(assignmentId, activityId, response)) {
-                is RemoteResult.Ok -> { replaceLearning(result.value); message = if (result.value.activities.firstOrNull { it.id == activityId }?.checkedCorrect == false) "再看一看，可以慢慢试" else "这一步记下了" }
-                RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
-                is RemoteResult.Failure -> message = result.message
-            }
-        }
+        enqueueLearning(LearningActionType.ATTEMPT, assignmentId, activityId=activityId, response=response)
     }
     fun completeLearningVideo(assignmentId: String, activityId: String, playedSeconds: Int, durationSeconds: Int) {
-        viewModelScope.launch {
-            when (val result = remote.learningAttempt(assignmentId, activityId, "VIEWED", playedSeconds, durationSeconds)) {
-                is RemoteResult.Ok -> { replaceLearning(result.value); message = "这段已经看完，记下的是观看，不代表全部学会" }
-                RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
-                is RemoteResult.Failure -> message = result.message
-            }
-        }
+        enqueueLearning(LearningActionType.ATTEMPT, assignmentId, activityId=activityId, response="VIEWED",
+            playedSeconds=playedSeconds, durationSeconds=durationSeconds)
     }
     fun submitLearningAssignment(assignmentId: String, version: Long) {
+        enqueueLearning(LearningActionType.SUBMIT, assignmentId, expectedVersion=version)
+    }
+    fun reviewLearningAssignment(assignmentId: String, approve: Boolean, note: String, version: Long) {
+        enqueueLearning(LearningActionType.REVIEW, assignmentId, expectedVersion=version,
+            decision=if (approve) "APPROVE" else "REWORK", note=note)
+    }
+    fun retryLearningSync() { viewModelScope.launch { reconcileAndFlushLearning() } }
+    fun discardLearningAction(key: String) {
+        learningOutbox.remove(key).onSuccess { updateLearningOutbox(); message = "这条本地操作已由家长移除" }
+            .onFailure { message = it.message ?: "本地学习记录无法更新" }
+    }
+    fun createTeachingCourse(courseTitle:String, lessonTitle:String, lessonSummary:String, activityType:String,
+                             activityTitle:String, instruction:String, contentRef:String?) {
+        val stage = state.experience.effectiveStage
+        if (stage == SchoolStage.PARENT_ONLY) return failUnit("0–2 岁仅由家长记录成长，不创建儿童课程")
+        if (teachingActionRunningInternal) return
+        if (courseTitle.isBlank() || lessonTitle.isBlank() || lessonSummary.isBlank() || activityTitle.isBlank() || instruction.isBlank())
+            return failUnit("请完整填写课程、课节和活动")
+        updateTeachingActionState(true)
         viewModelScope.launch {
-            when (val result = remote.learningSubmit(assignmentId, version)) {
-                is RemoteResult.Ok -> { replaceLearning(result.value); message = "已经交给家长看了" }
-                RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
-                is RemoteResult.Failure -> { message = result.message; syncLearningAssignments() }
+            try {
+                when (val result = remote.createTeachingCourse(stage.name, "FAMILY", courseTitle.trim(), lessonTitle.trim(),
+                    lessonSummary.trim(), activityType, activityTitle.trim(), instruction.trim(), contentRef)) {
+                    is RemoteResult.Ok -> { message = "课程草稿已保存"; syncTeachingCourses() }
+                    RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+                    is RemoteResult.Failure -> message = result.message
+                }
+            } finally {
+                updateTeachingActionState(false)
             }
         }
     }
-    fun reviewLearningAssignment(assignmentId: String, approve: Boolean, note: String, version: Long) {
-        viewModelScope.launch {
-            when (val result = remote.learningReview(assignmentId, if (approve) "APPROVE" else "REWORK", note, version)) {
-                is RemoteResult.Ok -> { replaceLearning(result.value); message = if (approve) "已确认孩子的努力" else "已温和地告诉孩子再试哪一步" }
-                RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
-                is RemoteResult.Failure -> { message = result.message; syncLearningAssignments() }
-            }
+    fun publishTeachingCourse(versionId:String) = runTeachingAction {
+        when (val result=remote.publishTeachingVersion(versionId)) {
+            is RemoteResult.Ok -> { message="课程已发布，可以布置给孩子"; syncTeachingCourses() }
+            RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+            is RemoteResult.Failure -> message=result.message
+        }
+    }
+    fun assignTeachingCourse(versionId:String) = runTeachingAction {
+        when (val result=remote.assignTeachingVersion(versionId)) {
+            is RemoteResult.Ok -> { replaceLearning(result.value); message="课节已布置给孩子"; syncTeachingCourses() }
+            RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+            is RemoteResult.Failure -> message=result.message
         }
     }
     fun clearMessage() { message = null }
@@ -195,7 +223,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             val result = remote.connect(baseUrl, familyId, parentId, childId, pin)
             handleRemote(result, "已连接并同步家庭服务")
-            if (result is RemoteResult.Ok) syncEducationResources()
+            if (result is RemoteResult.Ok) { syncEducationResources(); reconcileAndFlushLearning(refreshFirst=false) }
         }
     }
     fun refreshService() {
@@ -203,10 +231,10 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             val result = remote.refresh()
             handleRemote(result, "已同步最新数据")
-            if (result is RemoteResult.Ok) { syncEducationResources(); flushUsageNow() }
+            if (result is RemoteResult.Ok) { syncEducationResources(); reconcileAndFlushLearning(refreshFirst=false); flushUsageNow() }
         }
     }
-    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); connectionState = ConnectionState.Disconnected; message = "已断开；服务端 Token 已从内存清除" }
+    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); teachingCourses = emptyList(); connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
 
     private fun changeEducationSource(id: String, action: String, success: String) {
         viewModelScope.launch {
@@ -224,6 +252,101 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         }
     }
 
+    private fun enqueueLearning(type:LearningActionType, assignmentId:String, activityId:String="", response:String="",
+                                playedSeconds:Int?=null, durationSeconds:Int?=null, expectedVersion:Long?=null,
+                                decision:String="", note:String="") {
+        val scope = remote.learningScope() ?: return failUnit("请家长先连接家庭服务")
+        val action = PendingLearningAction(familyId=scope.first, childId=scope.second, type=type,
+            assignmentId=assignmentId, activityId=activityId, responseText=response,
+            playedSeconds=playedSeconds, durationSeconds=durationSeconds, expectedVersion=expectedVersion,
+            decision=decision, note=note)
+        learningOutbox.enqueue(action).onSuccess {
+            updateLearningOutbox()
+            message = "这一步已安全保存，正在同步"
+            flushLearningOutbox()
+        }.onFailure { message = it.message ?: "学习记录无法安全保存" }
+    }
+
+    private fun updateLearningOutbox() { pendingLearningActions = learningOutbox.snapshot() }
+
+    private fun flushLearningOutbox() {
+        if (learningFlushRunning) return
+        viewModelScope.launch { flushLearningOutboxNow() }
+    }
+
+    private suspend fun flushLearningOutboxNow() {
+        if (learningFlushRunning) return
+        learningFlushRunning = true
+        try {
+            while (remote.hasSession()) {
+                val scope = remote.learningScope() ?: return
+                val action = learningOutbox.snapshot().firstOrNull {
+                    it.state == LearningActionState.PENDING && it.familyId == scope.first && it.childId == scope.second
+                } ?: return
+                when (val result = remote.executeLearning(action)) {
+                    is RemoteResult.Ok -> {
+                        val removed = learningOutbox.remove(action.idempotencyKey)
+                        if (removed.isFailure) {
+                            message = removed.exceptionOrNull()?.message ?: "同步成功，但本地队列无法安全更新"
+                            updateLearningOutbox()
+                            return
+                        }
+                        updateLearningOutbox()
+                        replaceLearning(result.value)
+                        message = when {
+                            action.type == LearningActionType.REVIEW && action.decision == "APPROVE" -> "已确认孩子的努力"
+                            action.type == LearningActionType.REVIEW -> "已温和地告诉孩子再试哪一步"
+                            action.type == LearningActionType.SUBMIT -> "已经交给家长看了"
+                            result.value.activities.firstOrNull { it.id == action.activityId }?.checkedCorrect == false -> "再看一看，可以慢慢试"
+                            action.responseText == "VIEWED" -> "已记录观看；这不代表全部学会"
+                            else -> "这一步已经同步"
+                        }
+                    }
+                    RemoteResult.Unauthorized -> {
+                        handleRemote(RemoteResult.Unauthorized, "")
+                        updateLearningOutbox()
+                        return
+                    }
+                    is RemoteResult.Failure -> {
+                        val needsReview = result.kind != RemoteFailureKind.RETRYABLE
+                        val marked = learningOutbox.markFailure(action.idempotencyKey, result.message, needsReview)
+                        if (marked.isFailure) {
+                            message = marked.exceptionOrNull()?.message ?: "本地学习记录无法安全更新"
+                            updateLearningOutbox()
+                            return
+                        }
+                        updateLearningOutbox()
+                        if (result.kind == RemoteFailureKind.CONFLICT && syncLearningAssignments()) {
+                            val reconciliation = learningOutbox.reconcile(learningAssignments)
+                            if (reconciliation.isFailure) {
+                                message = reconciliation.exceptionOrNull()?.message ?: "本地学习记录无法安全合并"
+                                updateLearningOutbox()
+                                return
+                            }
+                            updateLearningOutbox()
+                            val reconciled = learningOutbox.snapshot().firstOrNull { it.idempotencyKey == action.idempotencyKey }
+                            if (reconciled == null || reconciled.state == LearningActionState.PENDING) continue
+                        }
+                        message = if (needsReview) "有一条学习记录需要家长刷新处理" else "网络暂不可用，这一步已加密保留"
+                        return
+                    }
+                }
+            }
+        } finally { learningFlushRunning = false }
+    }
+
+    private suspend fun reconcileAndFlushLearning(refreshFirst:Boolean=true) {
+        if (refreshFirst && !syncLearningAssignments()) return
+        val reconciliation = learningOutbox.reconcile(learningAssignments)
+        if (reconciliation.isFailure) {
+            message = reconciliation.exceptionOrNull()?.message ?: "本地学习记录无法安全合并"
+            updateLearningOutbox()
+            return
+        }
+        updateLearningOutbox()
+        flushLearningOutboxNow()
+    }
+
     private suspend fun syncEducationResources() {
         when (val sources = remote.educationSources()) {
             is RemoteResult.Ok -> educationSources = sources.value
@@ -236,14 +359,36 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             is RemoteResult.Failure -> message = catalog.message
         }
         syncLearningAssignments()
+        syncTeachingCourses()
     }
 
-    private suspend fun syncLearningAssignments() {
-        when (val result = remote.learningAssignments()) {
-            is RemoteResult.Ok -> learningAssignments = result.value
+    private suspend fun syncLearningAssignments():Boolean {
+        return when (val result = remote.learningAssignments()) {
+            is RemoteResult.Ok -> { learningAssignments = result.value; true }
+            RemoteResult.Unauthorized -> { handleRemote(RemoteResult.Unauthorized, ""); false }
+            is RemoteResult.Failure -> { message = result.message; false }
+        }
+    }
+
+    private suspend fun syncTeachingCourses() {
+        when (val result = remote.teachingCourses()) {
+            is RemoteResult.Ok -> teachingCourses = result.value
             RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
             is RemoteResult.Failure -> message = result.message
         }
+    }
+
+    private fun runTeachingAction(block: suspend () -> Unit) {
+        if (teachingActionRunningInternal) return
+        updateTeachingActionState(true)
+        viewModelScope.launch {
+            try { block() } finally { updateTeachingActionState(false) }
+        }
+    }
+
+    private fun updateTeachingActionState(running:Boolean) {
+        teachingActionRunningInternal = running
+        teachingActionRunning = running
     }
 
     private fun replaceLearning(updated: RemoteLearningAssignment) {

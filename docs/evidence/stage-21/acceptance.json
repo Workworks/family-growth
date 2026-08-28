@@ -1,14 +1,14 @@
 {
   "stage": 21,
-  "status": "IN_PROGRESS",
+  "status": "BLOCKED",
   "passed": false,
-  "capturedAt": "2026-08-28T19:10:00+08:00",
-  "command": "Stage 21 V10/V11 backend, PostgreSQL 16.15, Android and governance gates; see checks",
+  "capturedAt": "2026-08-29T00:15:08+08:00",
+  "command": "Stage 21 V12 H2 backend, Android debug/release JVM/lint/assemble and governance gates; see checks",
   "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
   "shellType": "PowerShell",
   "exitCode": 0,
-  "scope": "REQ-034 through REQ-038: official autonomous learning, configurable education sources, immutable teaching versions, nine activities and learning evidence vertical slices",
-  "summary": "V11 now provides immutable Course/Version/Unit/Lesson/Activity content, nine explicit activity rules, server-only answer keys, assignment/attempt/completion/evidence facts, rework and optimistic concurrency. Android renders a single-lesson learning path in the existing child navigation, records bundled video VIEWED only after 90% actual playback, submits activities and lets parents approve or request rework. Persistent outbox/process-restart recovery, dedicated 401/409 UX, parent visual course authoring, real public-site compatibility and target-tablet runtime remain unfinished, so Stage 21 stays IN_PROGRESS.",
+  "scope": "REQ-034 through REQ-039: official autonomous learning, configurable education sources, immutable teaching versions, nine activities/evidence, encrypted Android outbox and minimal parent authoring",
+  "summary": "V12 adds a write-before-send Android learning outbox encrypted with an Android Keystore AES/GCM key, preserves original idempotency keys across reconstruction, retains actions on network/401, and exposes explicit refresh/reconcile handling for 409 or permanent conflicts. The parent Family Teaching Folder creates one real DRAFT course/lesson/activity, publishes it, reads the immutable version tree and assigns its first lesson. H2 and Android two-variant gates pass. Real AndroidKeyStore, process kill, network loss, public-site and tablet accessibility/E2E still require a target device and reachable service, so Stage 21 is BLOCKED rather than complete.",
   "checks": [
     {
       "id": "V21-01-domain",
@@ -19,7 +19,7 @@
     {
       "id": "V21-02-api",
       "passed": true,
-      "result": "Stage21TeachingApiTest creates and replays a nested draft, publishes it, creates a separate V2 draft, assigns one lesson, hides answer keys from the child, records all nine activity types, rejects incomplete evidence, rejects immediate resubmission after REWORK_REQUIRED, accepts resubmission only after a fresh Attempt, and completes only after parent confirmation. Attempt, submit and review idempotency replays also remain successful after the assignment has advanced to a later state. Parent/child RBAC and cross-family hiding pass."
+      "result": "Stage21TeachingApiTest creates and replays a nested draft, publishes it, creates a separate V2 draft, assigns one lesson, hides answer keys from the child, records all nine activity types, rejects incomplete evidence, enforces rework freshness and parent confirmation, and validates idempotent replays. V12 additionally proves a parent can read one immutable course-version lesson tree while child access is 403 and cross-family access is hidden as 404. The targeted API test and the H2 full regression exited 0."
     },
     {
       "id": "V21-03-postgres",
@@ -31,7 +31,19 @@
       "id": "V21-04-android",
       "passed": true,
       "command": ".\\gradlew.bat :app:testDebugUnitTest :app:testReleaseUnitTest; .\\gradlew.bat :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease",
-      "result": "Both commands exited 0. Debug and release each passed 31 JVM tests; both variants compiled, linted and assembled. LearningAssignmentModelsTest covers VIEWED/CHECKED/PARENT_CONFIRMED readiness and submit states. LearningPathUi keeps the existing three child destinations, exposes one current lesson and one primary action, moves ordinary tasks to 'later' while a lesson is active, fails closed for unknown contentRef, and counts actual VideoView playback before remote VIEWED submission."
+      "result": "The combined debug/release JVM, lint and assemble command exited 0. After adding explicit corrupt-ciphertext and failed-durable-write guards, debug and release each passed 40 JVM tests with zero failures/errors/skips; the prior 111-task lint/assemble command remained successful. Existing learning path constraints remain intact. V12 tests cover deterministic queue encoding/reconstruction, original idempotency-key retention, payload dedupe, 100-item fail-closed limit, retryable versus review state, version refresh/already-achieved conflict reconciliation, HTTP failure classification, parent-token authoring and version-detail-before-assignment sequencing."
+    },
+    {
+      "id": "V21-04C-encrypted-outbox",
+      "passed": true,
+      "command": ".\\gradlew.bat :app:testDebugUnitTest :app:testReleaseUnitTest :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease",
+      "result": "PASS_OFFLINE: EncryptedLearningOutboxStore commits AES/GCM ciphertext before network send with a 256-bit AndroidKeyStore key alias. The serialized model contains only family/child scope, minimal action data, persisted idempotency key and recovery metadata; no PIN or token field exists. Store/load corruption and queue capacity fail closed. Actual hardware/software Keystore and process-kill replay remain V21-06 device work."
+    },
+    {
+      "id": "V21-04D-parent-authoring",
+      "passed": true,
+      "command": ".\\mvnw.cmd --% -pl family-growth-boot -am -Dtest=Stage21TeachingApiTest -Dsurefire.failIfNoSpecifiedTests=false test; Android combined gate",
+      "result": "PASS_OFFLINE: the parent UI follows Write one lesson -> Publish -> Assign against production repository methods, blocks duplicate writes, prevents child-course creation in PARENT_ONLY, and leaves published versions read-only. Repository/API tests prove parent tokens, course-version detail lookup and real current-child assignment. This is intentionally one lesson/one activity, not a full course editor."
     },
     {
       "id": "V21-04A-official-source",
@@ -46,12 +58,12 @@
     {
       "id": "V21-05-contract",
       "passed": true,
-      "result": "OpenAPI 3.1 documents course creation/versioning/publish, assignment, attempt, submit and review and parsed successfully with 63 paths. V11 stores twelve new teaching/evidence tables, write-only answer keys and idempotent actions. The documentation link gate passed across 86 Markdown files/85 indexed documents, all evidence JSON parsed, and git diff --check returned exit 0."
+      "result": "OpenAPI 3.1 now also documents parent-only immutable course-version detail read and parsed with 64 paths. The Markdown gate passed for 86 files/85 indexed documents, all 21 evidence JSON files parsed, and git diff --check exited 0. V12 adds no database migration and preserves the V1-V11/55-table PostgreSQL baseline."
     },
     {
       "id": "V21-06-device-and-recovery",
       "passed": false,
-      "result": "BLOCKED/PARTIAL: no target tablet or device-reachable service was available. Persistent Android outbox, process-restart recovery and dedicated 401/409 reconciliation UI are not yet implemented; official page playback, real public source discovery, rotation and TalkBack also remain runtime work."
+      "result": "BLOCKED: no target tablet or device-reachable service was available. The V12 code and JVM tests do not substitute for AndroidKeyStore encryption, force-stop/process-kill reconstruction, real network loss/401/409, official page playback, public-source discovery, rotation, TalkBack or parent/child E2E on the target tablet."
     }
   ],
   "security": {
@@ -63,11 +75,15 @@
     "learningCompletionChangesMoneyOrCoin": false,
     "unknownBundledContentRefPlays": false,
     "extractsOrTranscodesThirdPartyMedia": false,
-    "customSourceChildReceivesUrl": false
+    "customSourceChildReceivesUrl": false,
+    "outboxContainsPinOrTokenField": false,
+    "outboxUsesOriginalIdempotencyKey": true,
+    "offlineOutboxCanCreateMasteryOrReward": false,
+    "parentOnlyModeCanCreateChildCourse": false
   },
   "remaining": [
-    "Implement persistent Android learning outbox, process-restart recovery and explicit 401/409 refresh/retry states.",
-    "Add parent Android visual authoring and assignment screens over the production V11 API; current authoring is API-first.",
+    "Run AndroidKeyStore write-before-send, force-stop/process-kill reconstruction, same-scope login, network loss, 401 retention, 409 reconcile and queue-clear scenarios on the target tablet.",
+    "Expand the intentionally minimal one-lesson/one-activity parent folder only in a separately specified teaching-workbench stage.",
     "Run representative parent-approved public education sites through the deployed service and keep deployment-level outbound firewall/proxy controls.",
     "Run official autonomous learning and V11 multi-activity flows on the target tablet with rotation, TalkBack, playback, network loss and restart evidence.",
     "Build sufficient stage-specific curriculum and content in Stages 22-25; V11 is a shared engine vertical slice, not a complete teaching library."

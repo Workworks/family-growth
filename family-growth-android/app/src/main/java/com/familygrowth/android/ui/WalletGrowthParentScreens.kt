@@ -473,6 +473,7 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
         }
         item { ServiceConnectionCard(viewModel) { showConnection = true } }
         item { ChildExperienceCard(viewModel) { showExperience = true } }
+        item { ParentTeachingStudio(viewModel) }
         item { EducationResourceShelfCard(viewModel) { showEducationSource = true } }
         item {
             BoxWithConstraints {

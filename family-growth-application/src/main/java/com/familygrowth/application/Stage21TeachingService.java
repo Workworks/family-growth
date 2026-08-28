@@ -87,6 +87,12 @@ public class Stage21TeachingService {
         return store.courses(familyId);
     }
 
+    @Transactional(readOnly = true)
+    public CourseVersion courseVersion(Actor actor, UUID familyId, UUID versionId) {
+        auth.requireParent(actor, familyId);
+        return version(familyId, versionId);
+    }
+
     public LearningAssignment assign(Actor actor, UUID familyId, UUID childId, UUID versionId,
                                      UUID lessonId, String rawKey) {
         auth.requireParent(actor, familyId);

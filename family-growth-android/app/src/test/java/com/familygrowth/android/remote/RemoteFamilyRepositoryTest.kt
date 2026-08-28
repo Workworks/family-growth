@@ -59,12 +59,40 @@ class RemoteFamilyRepositoryTest {
         assertEquals(listOf("create", "refresh", "child-catalog"), transport.resourceCalls)
     }
 
+    @Test fun learningOutboxExecutionKeepsOriginalKeyAndClassifiesConflicts() = runBlocking {
+        val transport = FakeTransport()
+        val repository = RemoteFamilyRepository(transport, MemorySessionStore(), false)
+        assertTrue(repository.connect("https://family.example", FAMILY, PARENT, CHILD, "123456") is RemoteResult.Ok)
+        val action = PendingLearningAction(idempotencyKey="persisted-key", familyId=FAMILY, childId=CHILD,
+            type=LearningActionType.ATTEMPT, assignmentId="assignment", activityId="activity", responseText="完成")
+        assertTrue(repository.executeLearning(action) is RemoteResult.Ok)
+        assertEquals("persisted-key", transport.learningKey)
+        assertEquals("child-token", transport.learningToken)
+        assertEquals(RemoteFailureKind.CONFLICT, remoteFailureForStatus(409).kind)
+        assertEquals(RemoteFailureKind.RETRYABLE, remoteFailureForStatus(429).kind)
+        assertEquals(RemoteFailureKind.RETRYABLE, remoteFailureForStatus(503).kind)
+        assertEquals(RemoteFailureKind.PERMANENT, remoteFailureForStatus(400).kind)
+    }
+
+    @Test fun parentTeachingStudioUsesParentTokenAndResolvesLessonBeforeAssignment() = runBlocking {
+        val transport = FakeTransport()
+        val repository = RemoteFamilyRepository(transport, MemorySessionStore(), false)
+        assertTrue(repository.connect("https://family.example", FAMILY, PARENT, CHILD, "123456") is RemoteResult.Ok)
+        assertTrue(repository.createTeachingCourse("PRIMARY","FAMILY","自然课","找叶子","去户外观察","OFFLINE_PRACTICE","找一找","找到三种叶子",null) is RemoteResult.Ok)
+        assertTrue(repository.publishTeachingVersion("version") is RemoteResult.Ok)
+        assertTrue(repository.assignTeachingVersion("version") is RemoteResult.Ok)
+        assertEquals(listOf("create:parent-token","publish:parent-token","detail:parent-token","assign:parent-token"), transport.teachingCalls)
+    }
+
     private class FakeTransport : FamilyApiTransport {
         var expire = false
         val usageKeys = mutableListOf<String>()
         var updatedStage: SchoolStage? = null
         var updatedHaptics = true
         val resourceCalls = mutableListOf<String>()
+        var learningKey = ""
+        var learningToken = ""
+        val teachingCalls = mutableListOf<String>()
         override suspend fun login(base:String,family:String,parent:String,pin:String)=RemoteResult.Ok("parent-token")
         override suspend fun childSession(base:String,parentToken:String,child:String)=RemoteResult.Ok("child-token")
         override suspend fun snapshot(base:String,token:String,family:String,child:String):RemoteResult<RemoteSnapshot> = if(expire) RemoteResult.Unauthorized else RemoteResult.Ok(RemoteSnapshot(family,child,"小树",BigDecimal("12.00"),30,emptyList(),0,0))
@@ -74,9 +102,16 @@ class RemoteFamilyRepositoryTest {
         override suspend fun createEducationSource(base:String,token:String,family:String,title:String,sourceUrl:String,stages:List<SchoolStage>,usageNote:String,key:String):RemoteResult<RemoteEducationSource>{resourceCalls += "create";return RemoteResult.Ok(RemoteEducationSource("source-1",title,sourceUrl,stages.map{it.name},usageNote,"DRAFT","NEVER","",null,emptyList()))}
         override suspend fun educationSourceAction(base:String,token:String,family:String,source:String,action:String,key:String):RemoteResult<RemoteEducationSource>{resourceCalls += action;return RemoteResult.Ok(RemoteEducationSource(source,"公益课堂","https://learn.example.org",listOf("PRIMARY"),"免费浏览","DRAFT","READY","",null,emptyList()))}
         override suspend fun childEducationCatalog(base:String,token:String,family:String,child:String):RemoteResult<List<RemoteChildEducationSource>>{resourceCalls += "child-catalog";return RemoteResult.Ok(emptyList())}
+        override suspend fun learningAttempt(base:String,token:String,family:String,child:String,assignment:String,activity:String,response:String,playedSeconds:Int?,durationSeconds:Int?,key:String):RemoteResult<RemoteLearningAssignment>{learningKey=key;learningToken=token;return RemoteResult.Ok(learningAssignment())}
+        override suspend fun createTeachingCourse(base:String,token:String,family:String,stage:String,subject:String,courseTitle:String,lessonTitle:String,lessonSummary:String,activityType:String,activityTitle:String,instruction:String,contentRef:String?,key:String):RemoteResult<RemoteTeachingVersion>{teachingCalls += "create:$token";return RemoteResult.Ok(version("DRAFT"))}
+        override suspend fun publishTeachingVersion(base:String,token:String,family:String,version:String,key:String):RemoteResult<RemoteTeachingVersion>{teachingCalls += "publish:$token";return RemoteResult.Ok(version("PUBLISHED"))}
+        override suspend fun teachingVersion(base:String,token:String,family:String,version:String):RemoteResult<RemoteTeachingVersion>{teachingCalls += "detail:$token";return RemoteResult.Ok(version("PUBLISHED"))}
+        override suspend fun assignTeachingLesson(base:String,token:String,family:String,child:String,version:String,lesson:String,key:String):RemoteResult<RemoteLearningAssignment>{teachingCalls += "assign:$token";return RemoteResult.Ok(learningAssignment())}
         override suspend fun submit(base:String,childToken:String,family:String,child:String,task:String,key:String)=RemoteResult.Ok(Unit)
         override suspend fun review(base:String,parentToken:String,family:String,completion:String,key:String)=RemoteResult.Ok(Unit)
         override suspend fun usage(base:String,childToken:String,family:String,child:String,key:String,occurredAt:Instant):RemoteResult<Unit>{usageKeys += key;return RemoteResult.Ok(Unit)}
+        private fun version(status:String)=RemoteTeachingVersion("course","version","自然课","PRIMARY","FAMILY",1,status,listOf("lesson"))
+        private fun learningAssignment()=RemoteLearningAssignment("assignment","自然课","家庭学习夹","找叶子","去户外观察","PRIMARY","FAMILY","ASSIGNED",0,emptyList(),"")
     }
     companion object {
         const val FAMILY="11111111-1111-1111-1111-111111111111"

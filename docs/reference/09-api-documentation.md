@@ -70,6 +70,7 @@
 | GET | `/families/{familyId}/children/{childId}/education-resource-catalog` | PARENT/CHILD 本人 | 只返回匹配有效学段的已批准来源名/栏目名/同步时间，不返回任何 URL 或使用说明；幼儿园为空 |
 | GET/POST | `/families/{familyId}/teaching/courses` | PARENT | 查询课程版本或原子创建 Course 与首个嵌套 DRAFT；活动答案键仅写入服务端 |
 | POST | `/families/{familyId}/teaching/courses/{courseId}/versions` | PARENT | 创建新 DRAFT 版本；不原地修改已发布内容 |
+| GET | `/families/{familyId}/teaching/course-versions/{versionId}` | PARENT | 读取一个不可变课程版本的课节树，供家长端选择并布置；CHILD 禁止读取 |
 | POST | `/families/{familyId}/teaching/course-versions/{versionId}/publish` | PARENT | 幂等发布课程版本并记录发布人/时间，发布后没有内容修改 API |
 | GET/POST | `/families/{familyId}/children/{childId}/learning/assignments` | PARENT/CHILD 本人 / PARENT | 查询本人适龄已发布课节，或由家长分配一个课节；孩子响应不含答案键和权利依据 |
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/activities/{activityId}/attempts` | CHILD 本人 | 幂等记录活动尝试；视频须报告至少 90% 实际播放计数，客观题由服务端判定，现实活动只记 ATTEMPTED |

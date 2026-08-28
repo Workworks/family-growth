@@ -16,10 +16,13 @@ data class RemoteLearningActivity(val id:String,val type:String,val title:String
 data class RemoteLearningAssignment(val id:String,val courseTitle:String,val unitTitle:String,val lessonTitle:String,val lessonSummary:String,val schoolStage:String,val subjectCode:String,val status:String,val version:Long,val activities:List<RemoteLearningActivity>,val reviewNote:String) {
  fun canSubmit():Boolean = status=="IN_PROGRESS" && activities.isNotEmpty() && activities.all(RemoteLearningActivity::childReady)
 }
+data class RemoteCourseSummary(val courseId:String,val title:String,val schoolStage:String,val subjectCode:String,val versionId:String,val versionNumber:Int,val status:String,val lessonCount:Int)
+data class RemoteTeachingVersion(val courseId:String,val versionId:String,val title:String,val schoolStage:String,val subjectCode:String,val versionNumber:Int,val status:String,val lessonIds:List<String>)
 data class RemoteSnapshot(val familyId:String,val childId:String,val childName:String,val money:BigDecimal,val coin:Int,val tasks:List<RemoteTask>,val pendingReviews:Int,val approvedToday:Int,val experience:RemoteExperienceProfile?=null)
 data class RemoteSession(val baseUrl:String,val familyId:String,val parentId:String,val childId:String,val parentToken:String,val childToken:String)
 sealed interface ConnectionState{data object Disconnected:ConnectionState;data object Connecting:ConnectionState;data class Connected(val snapshot:RemoteSnapshot):ConnectionState;data class Error(val message:String):ConnectionState;data object Expired:ConnectionState}
-sealed interface RemoteResult<out T>{data class Ok<T>(val value:T):RemoteResult<T>;data object Unauthorized:RemoteResult<Nothing>;data class Failure(val message:String):RemoteResult<Nothing>}
+enum class RemoteFailureKind { RETRYABLE, CONFLICT, PERMANENT }
+sealed interface RemoteResult<out T>{data class Ok<T>(val value:T):RemoteResult<T>;data object Unauthorized:RemoteResult<Nothing>;data class Failure(val message:String,val kind:RemoteFailureKind=RemoteFailureKind.PERMANENT):RemoteResult<Nothing>}
 
 object ServiceUrlPolicy{
  fun normalize(raw:String,allowPrivateHttp:Boolean):Result<String> = runCatching{

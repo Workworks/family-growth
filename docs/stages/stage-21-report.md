@@ -1,10 +1,10 @@
 # Stage 21：共用课程、活动与学习证据引擎
 
-状态：`IN_PROGRESS`
+状态：`BLOCKED`
 
 产品 Phase：全面教学核心
 
-需求：REQ-021、REQ-028、REQ-030、REQ-031、REQ-033、REQ-034、REQ-035、REQ-036、REQ-037、REQ-038
+需求：REQ-021、REQ-028、REQ-030、REQ-031、REQ-033、REQ-034、REQ-035、REQ-036、REQ-037、REQ-038、REQ-039
 
 ## 目标与非目标
 
@@ -36,9 +36,10 @@
 | WP21-2 | 离线完成 | Course/Unit/Lesson/Activity、九类活动、内容版本、发布与权利依据领域模型 |
 | WP21-3 | 离线完成 | Assignment/Attempt/Completion/MasteryEvidence 状态机、幂等、复做与权限服务 |
 | WP21-4 | 离线完成 | V11 JDBC Store、生产 REST API、OpenAPI 与 H2/PostgreSQL 权限/并发测试 |
-| WP21-5 | 进行中 | Android 已有自主学习选择台、动态学习路径、九类活动投影、安装包视频 90% 实际播放、孩子提交和家长审核；持久化 outbox、进程重启、显式 401/409 冲突恢复和家长可视化课程编辑待建设 |
+| WP21-5 | 离线完成 | Android 已有自主学习选择台、动态学习路径、九类活动投影、安装包视频 90% 实际播放、孩子提交和家长审核；V12 已补持久化 outbox、401/409 恢复和家长可视化建课纵切 |
+| WP21-5B | 离线完成 | V12：Android Keystore 加密学习 outbox、重启后待登录恢复、401 保留、409 显式刷新合并，以及家长“一课一活动”建课/发布/分配工作台 |
 | WP21-5A | 离线完成 | V10 家长免费教育来源、受控 HTML 栏目发现、批准/撤回、儿童安全投影与 Android 来源书架；真实来源/平板回放待外部条件 |
-| WP21-6 | 进行中 | V11 H2/PostgreSQL、Android 双变体和契约门禁已通过；Stage commit/push 与平板/E2E 限制继续回填 |
+| WP21-6 | 外部阻塞 | V12 H2、Android 双变体和契约门禁已通过；仅余真实公共来源与目标平板密钥库/杀进程/无障碍/E2E 回放 |
 
 ### V11 当前实施切片
 
@@ -51,6 +52,19 @@ V11 以一条可验收的生产纵切完成共用引擎，不在本轮提前制�
 5. Android 只在现有“学习”入口增加服务端“学习路径条”，不新增一级导航。存在进行中课节时，普通家庭任务只进入“后来再做”，儿童端同一时刻只有一个主要行动；目标平板、离线 outbox 与完整冲突 UI继续按真实状态保留在 AC21-04/06。
 
 V11 完成判定必须同时包含：领域状态向量、MockMvc 权限/幂等/答案隐藏测试、PostgreSQL V1–V11 schema validate、Android 两变体解析/渲染/构建，以及可解析 OpenAPI/证据；任一未运行项不标记通过。
+
+### V12 当前实施切片
+
+V12 只补足 V11 已暴露的移动端可靠性和最小家长操作入口，不扩大为完整内容运营系统：
+
+1. 每个 Attempt/Submit/Review 在发出前先以同一幂等键写入 Android Keystore AES/GCM 加密 outbox；只保存家庭/孩子作用域和最小动作参数，不保存 PIN、Token、答案键或课程权利文档。队列最多 100 项，损坏密文 fail-closed 并提示家长，不静默伪造成功。
+2. 网络失败保留动作；进程重启后先显示待同步数量，家长重新登录同一家庭/孩子后按顺序恢复。401 清除内存 Token 但保留队列；409/不可重试错误进入“需要家长处理”，先刷新 Assignment，再按当前 version 和目标状态显式合并，不能静默覆盖服务端事实。
+3. 家长工作台使用真实课程事实源，支持填写课程/课节名称、选择当前孩子有效学段和一种安全活动模板，创建 DRAFT、发布 PUBLISHED，并把首个课节分配给当前孩子。已发布版本仍不可原地修改；完整多单元、多课节、任意题库编排后移。
+4. 儿童端只显示“正在保存 / 需要家长帮忙”等可理解状态，不暴露 HTTP、Token、版本号或冲突术语；队列状态不会制造第二个主要行动，也不会离线生成 MASTERED 或奖励。
+
+V12 完成判定：纯 JVM 队列重建/顺序/幂等/冲突合并测试；HTTP 401/409 分类测试；家长建课/发布/分配 API 契约与 Android 两变体 lint/assemble；目标平板杀进程和真实网络回放仍单独归 AC21-06。
+
+2026-08-28 V12 离线工程已达到上述判定：队列编码/重建/上限/同载荷去重/冲突合并和 Repository 令牌/幂等契约通过，家长端真实执行创建 DRAFT、发布、读取课节树和分配；密钥库真机行为、杀进程、断网与无障碍不由 JVM/构建结果代替。
 
 ## 数据、API、Android 与文档变化
 
@@ -68,6 +82,8 @@ V11 完成判定必须同时包含：领域状态向量、MockMvc 权限/幂等/
 | V21-02 | H2 MockMvc | 家长建课/发布/分配，孩子目录/尝试/提交，家长确认/复做，RBAC/跨家庭/幂等/版本冲突 | 200/201、400/401/403/404/409 和证据链准确 | Stage 21 evidence |
 | V21-03 | PostgreSQL 16 | V1–V11、Hibernate validate、并发尝试/审核和全量后端测试 | 迁移、约束、唯一键、锁和状态机通过 | Stage 21 evidence |
 | V21-04 | Android JVM/lint/build | 远端课程解析、学段过滤、活动提交、重启 outbox、401/409、debug/release | 自动化、lint 和两变体构建通过 | Stage 21 evidence |
+| V21-04C | Android JVM | 队列写前落盘、同幂等键恢复、100 项上限、重建、401 保留、409 刷新/合并 | 无丢失、无静默覆盖、状态可解释 | Stage 21 evidence |
+| V21-04D | Android + Mock transport | 家长创建一课一活动 DRAFT、发布、读取版本并分配当前孩子 | 服务端事实更新，失败可恢复，不修改已发布版本 | Stage 21 evidence |
 | V21-04B | Java/H2/PostgreSQL/Android | 公共 HTTPS URL 策略、栏目发现上限/同源过滤、家长 RBAC、刷新/批准/撤回、失败保留快照、家长来源书架和儿童无 URL 投影 | SSRF 反向向量、栏目替换事务、动态 UI 状态和两变体门禁通过 | Stage 21 evidence |
 | V21-05 | Android 平板 + 测试服务 | 四学段读取同一引擎不同投影，完成选择/视频/亲子/线下活动，断网重启恢复，家长复做/确认 | 真实 UI、网络、持久化、无障碍和 E2E 通过 | Stage 21 evidence/设备阻塞 |
 | V21-06 | 通用 | diff、secret、Markdown 链接、证据 JSON、OpenAPI | 治理与机器契约一致 | Stage 21 evidence |
@@ -77,19 +93,21 @@ V11 完成判定必须同时包含：领域状态向量、MockMvc 权限/幂等/
 - [x] AC21-01：`PASS_OFFLINE` — V11 只允许 DRAFT 发布且没有已发布内容修改/删除 API；新版本独立创建。孩子目录按家庭、本人、有效学段、PUBLISHED 和 Assignment 过滤，跨家庭/未发布拒绝。
 - [x] AC21-02：`PASS_OFFLINE` — 九类活动由服务端枚举固定规则；安装包短视频累计实际播放至少 90% 才产生 VIEWED，四类客观活动服务端判题，四类亲子/口头/线下活动最终需要 PARENT_CONFIRMED；孩子响应无答案键。
 - [x] AC21-03：`PASS_OFFLINE` — V11 的 Assignment/Attempt/Completion/MasteryEvidence 和 teaching_action 可回放；REWORK_REQUIRED 后必须新增 Attempt 才能重交，全部写入幂等，提交/审核使用 expectedVersion，PostgreSQL 并发 APPROVE/REWORK 仅一方成功。
-- [ ] AC21-04：`PARTIAL` — Android 未新增一级导航，已能同步学习路径、提交活动/课节和家长确认/复做；但当前连接会话仍为内存态，尚未完成持久化 outbox、进程重启后的待提交恢复及专门的 401/409 冲突界面，不能标记通过。
+- [x] AC21-04：`PASS_OFFLINE` — Android 未新增儿童一级导航，已能同步学习路径、提交活动/课节和家长确认/复做；学习动作先进入加密 outbox，重新登录同一作用域后恢复。会话仍刻意只存在内存，401 不清除队列，409 进入可解释的家长处理状态。目标平板运行态归 AC21-06。
+- [x] AC21-04C：`PASS_OFFLINE` — AES/GCM 写前队列只保存最小动作和原幂等键，最多 100 项；JVM 证明编码重建、同载荷去重、失败保留和 409 版本/已达成合并，Repository 证明 401 清会话但不触碰队列。Token/PIN 不进入模型；实际 AndroidKeyStore/杀进程仍待设备回放。
+- [x] AC21-04D：`PASS_OFFLINE` — 家长“家庭备课夹”从真实课程列表完成一课一活动 DRAFT 创建、发布、读取版本首课节并分配当前孩子；写动作单飞，0–2 岁禁用儿童课程，已发布版本无修改入口。完整课程编辑器仍在后续工作台范围。
 - [x] AC21-04A：`PASS_OFFLINE` — 孩子可在现有“学习”入口切换“我的任务/自主学习”，按五级教材条件选择；官方页面只在受限 WebView 内手动打开，非官方顶层导航、文件访问、自动播放和视频地址抽取均被禁止。真实平板播放与平台后续页面路径仍归 AC21-06。
 - [x] AC21-04B：`PASS_OFFLINE` — 家长可配置、刷新、批准和撤回免费教育来源；服务端安全发现同源栏目并动态替换快照，成功刷新回到待批准、失败保留旧快照；儿童只见匹配学段的已批准栏目标签且不含 URL。真实公共站点兼容和目标平板交互仍归 AC21-06。
-- [x] AC21-05：`PASS_OFFLINE` — H2 46 项（6 项 PostgreSQL 条件跳过）、PostgreSQL 16.15 全量 46 项零失败/零跳过、V1–V11/55 表、Android debug/release 各 31 项、两变体 lint/assemble 和 OpenAPI/文档门禁通过。
-- [ ] AC21-06：`BLOCKED` — 目标平板上的多活动交互、TalkBack、横竖屏、断网重启与家长/孩子端到端需要真实设备和测试服务。
+- [x] AC21-05：`PASS_OFFLINE` — V12 H2 全量 46 项（6 项 PostgreSQL 条件跳过），新增课程版本读取权限测试通过；V11 PostgreSQL 16.15 全量 46 项零失败/零跳过、V1–V11/55 表基线未发生 schema 变化；Android debug/release 各 40 项、两变体 lint/assemble 和 OpenAPI/文档门禁通过。
+- [ ] AC21-06：`BLOCKED` — 目标平板上的 AndroidKeyStore 队列、杀进程恢复、断网/401/409、多活动交互、TalkBack、横竖屏和家长/孩子端到端需要真实设备和可访问测试服务。
 
 ## 安全检查、已知限制与交接
 
 - 内容权利依据、发布人、版本和下架动作必须审计；儿童响应不包含权利文档、任意 URL、答案键或其他孩子数据。
 - 题目答案只在服务端判定，Android 不下载可直接还原的答案键；自由文本做长度/日志脱敏，不做自动人格或心理标签推断。
 - 自主学习入口只对小学、初中、高中开放，学段锁定为家长配置的 `effectiveStage`；幼儿园不进入外部网页。当前只对已核验的“一年级·语文·统编版·上册”使用用户提供的深链，其他组合安全回退官方同步课堂选择页，不猜测内部资源 ID。
-- 2026-08-28 V11 在 V10 基础上新增 12 张课程/证据表；H2 全量 46 项通过（6 项 PostgreSQL 条件跳过），PostgreSQL 16.15 全量 46 项零失败/零跳过并验证 11 次迁移、55 张生产表和并发审核。Android debug/release 各 31 项 JVM、两变体 lint/assemble 已通过。结构化结果见 [Stage 21 evidence](../evidence/stage-21/acceptance.json)。这不替代真实公共来源兼容性、进程重启/outbox 和目标平板运行态。
+- 2026-08-28 V12 未改变 V11 schema；H2 全量仍为 46 项（6 项 PostgreSQL 条件跳过），新增课程版本读取 RBAC 通过；Android debug/release 各 40 项 JVM、两变体 lint/assemble 已通过。结构化结果见 [Stage 21 evidence](../evidence/stage-21/acceptance.json)。这不替代真实公共来源兼容性、AndroidKeyStore/杀进程、断网和目标平板运行态。
 - 公共 DNS 预检不能替代生产网络出口策略；家庭服务部署时仍应通过防火墙/出站代理禁止访问内网与云元数据地址。不同站点栏目结构不一致，JavaScript/登录/反爬站点可能安全失败，不以绕过站点控制提高成功率。
 - Stage 20 因真机回放保持 `BLOCKED`，不阻止 Stage 21 的独立后端/自动化工作；两者可在同一设备窗口联合验收，但状态分别回填。
 - Stage 22–25 只有在本引擎事实链稳定后才制作各学段深度页面和内容；Stage 26 负责连续性、隐私、平板和 Release 总验收。
-- V11 Android 只播放 `lesson_color_garden`、`lesson_count_to_five`、`lesson_shape_home` 三个安装包内审核资源引用；未知 `contentRef` fail-closed。家长目前通过生产 API 建课/发布/分配，Android 可视化课程编辑器属于下一工作包。
+- Android 只播放 `lesson_color_garden`、`lesson_count_to_five`、`lesson_shape_home` 三个安装包内审核资源引用；未知 `contentRef` fail-closed。V12 家长端只交付“一课一活动”模板，不等同于多单元、多课节或任意题库的完整编辑器。

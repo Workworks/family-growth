@@ -1,6 +1,6 @@
 # 待办执行账本
 
-**最后更新：2026-08-28。**
+**最后更新：2026-08-29。**
 
 本文件只维护**尚未完成且可以继续执行的事项**，按优先级和推进责任排序。历史交付查看 [Stage 路线图](stages/stage-roadmap.md)和各 Stage 报告；缺陷查看 [bugList](bug/bugList.md)；问题查看 [AQ](aq/aq.md)；外部阻塞的详细解除条件查看 [BLOCKERS](BLOCKERS.md)。
 
@@ -11,7 +11,8 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P0 | 21 | `IN_PROGRESS` | V11 课程/九类活动/证据链与 Android 学习路径已过离线门禁；继续 V12 持久化 outbox、401/409/进程重启恢复和家长可视化建课，服务/平板到位后回放真实来源与官方播放 | Agent；用户提供平板/可访问服务 | `stages/stage-21-report.md`、`evidence/stage-21/acceptance.json` |
+| P0 | 22 | `NOT_STARTED` | 建立幼儿园深度教学 Spec：以 3–5 岁亲子现实活动、单一行动、低刺激反馈和最少屏幕时长为核心，定义内容/页面/证据与验收，不提前制作小学以上模板 | Agent | Stage 22 报告、需求/设计/验收规格 |
+| P0 | 21 | `BLOCKED` | 在目标平板连接可访问服务，回放 AndroidKeyStore 写前队列、杀进程/断网、重新登录、401/409、真实来源/官方播放和 TalkBack/旋转 | 用户提供平板/可访问服务；Agent 回放 | `stages/stage-21-report.md`、`evidence/stage-21/acceptance.json` |
 | P0 | 20 | `BLOCKED` | 用目标平板回放四学段、触觉开关、Reduced Motion、TalkBack、旋转、重启和真实服务同步 | 用户提供设备；Agent 回放 | `stages/stage-20-report.md`、`evidence/stage-20/acceptance.json` |
 | P0 | 18 | `BLOCKED` | 在平板用 v0.3.3→v0.3.4 更新链同时测试双视角、视频计时、奖励兴趣和重启保留 | 用户测试；Agent 根据反馈修复 | Stage 18/19 真机证据 |
 | P0 | 16 | `BLOCKED` | 在平板覆盖安装 v0.3.3，验证儿童图标及原有数据保留 | 用户提供设备；Agent 回放 | Stage 16/19 真机证据 |
@@ -25,7 +26,7 @@
 
 ## 2. 可由 Agent 继续推进
 
-Stage 20 可离线工程与门禁已经收口，只剩目标平板验收。Stage 21 的自主学习选择台、受限官方 WebView、V10 家长来源书架，以及 V11 Course/Version/Unit/Lesson/九类 Activity、分配/尝试/完成/复做/证据链和 Android 学习路径已通过离线门禁；Agent 下一顺位是 V12 持久化 outbox、401/409/重启恢复和家长可视化建课。LIM-013 数据权利/完整时段审计仍为并行 P0 安全事项。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
+Stage 20/21 可离线工程与门禁已经收口，只剩目标平板/服务验收。Stage 21 的自主学习选择台、受限官方 WebView、家长来源书架、共用课程/九类活动/证据链、Android 学习路径，以及 V12 加密 outbox、401/409 合并和家庭备课夹均已通过离线门禁。Agent 下一顺位是先建立 Stage 22 幼儿园深度教学 Spec；LIM-013 数据权利/完整时段审计仍为并行 P0 安全事项。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
 
 ## 3. 只能由外部条件解除
 
@@ -37,6 +38,7 @@ Stage 20 可离线工程与门禁已经收口，只剩目标平板验收。Stage
 | P0 | 15 | 启用 USB 调试的 Android 平板/真机，用于儿童端触控和无障碍验收 |
 | P0 | 18 | Android 平板/真机，用于双视角、视频、奖励兴趣、重启和 v0.3.3→v0.3.4 更新验收 |
 | P0 | 20 | Android 平板/真机与可访问测试服务，用于四学段布局、触觉/Reduced Motion/TalkBack、旋转、重启和配置同步验收 |
+| P0 | 21 | Android 平板/真机与可访问测试服务，用于 AndroidKeyStore、杀进程/断网、401/409、来源/官方播放和家长孩子 E2E |
 | P0 | 8 | 启用 USB 调试的 Android 平板/真机，用于生产登录、同步、写入和恢复验收 |
 | P0 | 10 | 启用 USB 调试的 Android 平板/真机，以及设备可访问并信任证书的 HTTPS 家庭服务 |
 

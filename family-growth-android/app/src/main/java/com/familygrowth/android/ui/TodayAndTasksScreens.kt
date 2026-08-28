@@ -298,6 +298,7 @@ private fun ChildTasksScreen(viewModel: FamilyAppViewModel) {
                 Text("先做第一件。后面的事情不着急。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
+        item { ChildLearningSyncStatus(viewModel) }
         item { ChildLearningPath(viewModel) }
         if (todo.isEmpty() && !hasActiveLearning) {
             item {

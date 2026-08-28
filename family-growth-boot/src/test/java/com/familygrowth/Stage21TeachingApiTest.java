@@ -48,6 +48,14 @@ class Stage21TeachingApiTest {
         UUID versionId = uuid(course, "versionId");
         UUID lessonId = uuid(course.path("units").get(0).path("lessons").get(0), "id");
 
+        mvc.perform(get("/api/v1/families/" + parent.family + "/teaching/course-versions/" + versionId)
+            .header("Authorization", bearer(parent.token))).andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.units[0].lessons[0].id").value(lessonId.toString()));
+        mvc.perform(get("/api/v1/families/" + parent.family + "/teaching/course-versions/" + versionId)
+            .header("Authorization", bearer(childToken))).andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/families/" + other.family + "/teaching/course-versions/" + versionId)
+            .header("Authorization", bearer(other.token))).andExpect(status().isNotFound());
+
         mvc.perform(post(courses).header("Authorization", bearer(parent.token))
             .header("Idempotency-Key", "course-create-1").contentType(MediaType.APPLICATION_JSON).content(courseBody()))
             .andExpect(status().isCreated()).andExpect(jsonPath("$.data.versionId").value(versionId.toString()));

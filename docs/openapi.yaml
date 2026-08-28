@@ -722,6 +722,14 @@ paths:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/TeachingVersionRequest' } } } }
       responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/teaching/course-versions/{versionId}:
+    get:
+      operationId: getTeachingCourseVersion
+      description: Parent-only read of one immutable course-version tree so an Android client can select a lesson for assignment. Child sessions are forbidden.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - { name: versionId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
   /families/{familyId}/teaching/course-versions/{versionId}/publish:
     post:
       operationId: publishTeachingCourseVersion
