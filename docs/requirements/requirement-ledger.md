@@ -43,7 +43,7 @@
 | REQ-037 | 2026-08-28 | 用户连续推进指令 | 现在进行下一步 | 不等待 Stage 20/21 的外部平板条件，按当前 TODO 最高可执行顺位进入 Stage 21 V11：交付不可变课程版本、九类活动、课节分配、尝试/提交/家长复做或确认、最小学习证据链和 Android 动态课程入口；真实设备能力仍不得用构建结果代替 | P0 | `VALIDATED` | 21 | V11、生产 API、Android 学习路径；H2/PostgreSQL 16.15/Android 双变体门禁；`evidence/stage-21/acceptance.json` |
 | REQ-038 | 2026-08-28 | 用户连续推进指令 | 继续 | 保持 REQ-037 的 V11 实施边界连续推进，完成动态视频可信播放入口、Android 学习路径/家长审核、契约和全量门禁；不因中途首轮测试通过提前停止或虚假收口 | P0 | `VALIDATED` | 21 | `LearningPathUi`、实际播放 90% VIEWED、家长确认/复做、OpenAPI 与全量门禁；平板仍归 AC21-06 |
 | REQ-039 | 2026-08-28 | 用户连续推进指令 | 进行下一步 | 按 TODO 进入 Stage 21 V12：加密持久化最小学习 outbox，保留原幂等键并在重新连接后恢复；401 保留队列等待家长登录，409 刷新服务端事实后显式合并，不静默覆盖或丢弃。家长端增加“一课一活动”的可视化建课、发布与分配纵切；足量课程、多课节自由编排和目标平板仍不冒充完成 | P0 | `VALIDATED` | 21 | `LearningOutbox.kt`、`TeachingStudioUi.kt`、课程版本读取 API、Android 双变体 40 项与 Stage 21 evidence；真机运行态仍归 AC21-06 |
-| REQ-040 | 2026-08-29 | 用户发布要求 | 本次完成后，发布新版本 | 在已完成 Stage 21 V12 后立即发布下一稳定版本：从 v0.3.4/10 递增为 v0.3.5/11，使用既有稳定 release 身份和公开 GitHub Release tag workflow；验证测试/lint/构建、tag/版本一致、GitHub digest、包名、版本与同证书。目标平板覆盖升级仍单独保留，不以远端 Release 冒充设备验收 | P0 | `IN_PROGRESS` | 21 | Stage 21 发布切片、v0.3.5 Release、远端 APK/摘要/签名证据 |
+| REQ-040 | 2026-08-29 | 用户发布要求 | 本次完成后，发布新版本 | 在已完成 Stage 21 V12 后立即发布下一稳定版本：从 v0.3.4/10 递增为 v0.3.5/11，使用既有稳定 release 身份和公开 GitHub Release tag workflow；验证测试/lint/构建、tag/版本一致、GitHub digest、包名、版本与同证书。目标平板覆盖升级仍单独保留，不以远端 Release 冒充设备验收 | P0 | `VALIDATED` | 21 | [v0.3.5 Release](https://github.com/Workworks/family-growth/releases/tag/v0.3.5)、run 33190582209、SHA-256/包名/版本/稳定证书复验、Stage 21 evidence |
 
 ## 维护记录
 
@@ -81,3 +81,4 @@
 - 2026-08-28：登记 REQ-039/P0：按既定下一动作启动 V12，加密持久化学习 outbox、重启/401/409 恢复及家长端“一课一活动”可视化建课纵切。
 - 2026-08-28：REQ-039 完成离线工程验收：写前 AES/GCM 加密队列、原幂等键恢复、401 保留、409 显式合并和家长建课/发布/布置通过自动化；目标平板杀进程/密钥库回放仍作为外部验收保留。
 - 2026-08-29：登记 REQ-040/P0：Stage 21 V12 完成后发布 v0.3.5/11，必须复用稳定签名并完成公开 Release 摘要、包名、版本和证书复验；设备覆盖升级证据继续独立保留。
+- 2026-08-29：REQ-040 完成：v0.3.5/11 已由 tag workflow 使用稳定 release 证书发布为 GitHub latest，公开资产 digest、下载 SHA-256、大小、包名、版本与证书复验一致；真机 v0.3.4→v0.3.5 仍单独阻塞。

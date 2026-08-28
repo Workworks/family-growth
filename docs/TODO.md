@@ -12,7 +12,7 @@
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
 | P0 | 22 | `NOT_STARTED` | 建立幼儿园深度教学 Spec：以 3–5 岁亲子现实活动、单一行动、低刺激反馈和最少屏幕时长为核心，定义内容/页面/证据与验收，不提前制作小学以上模板 | Agent | Stage 22 报告、需求/设计/验收规格 |
-| P0 | 21 | `IN_PROGRESS` | 按 REQ-040 发布 v0.3.5/11：版本递增、门禁、commit/tag、GitHub Release 和远端 digest/包名/版本/同证书复验；完成后恢复目标平板阻塞项 | Agent；设备验收由用户提供条件 | `stages/stage-21-report.md`、`evidence/stage-21/acceptance.json`、v0.3.5 Release |
+| P0 | 21 | `BLOCKED` | v0.3.5/11 已发布；在目标平板从 v0.3.4 应用内覆盖升级并回放 AndroidKeyStore 写前队列、杀进程/断网、重新登录、401/409、真实来源/官方播放和 TalkBack/旋转 | 用户提供平板/可访问服务；Agent 回放 | `stages/stage-21-report.md`、`evidence/stage-21/acceptance.json`、v0.3.5 Release |
 | P0 | 20 | `BLOCKED` | 用目标平板回放四学段、触觉开关、Reduced Motion、TalkBack、旋转、重启和真实服务同步 | 用户提供设备；Agent 回放 | `stages/stage-20-report.md`、`evidence/stage-20/acceptance.json` |
 | P0 | 18 | `BLOCKED` | 在平板用 v0.3.3→v0.3.4 更新链同时测试双视角、视频计时、奖励兴趣和重启保留 | 用户测试；Agent 根据反馈修复 | Stage 18/19 真机证据 |
 | P0 | 16 | `BLOCKED` | 在平板覆盖安装 v0.3.3，验证儿童图标及原有数据保留 | 用户提供设备；Agent 回放 | Stage 16/19 真机证据 |

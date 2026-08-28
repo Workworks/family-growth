@@ -26,7 +26,7 @@
 | 18 | V1 Android | 双视角排版、奖励浏览与教学视频任务 | `BLOCKED` | 离线代码与 v0.3.2 已交付；用户用 v0.3.3→v0.3.4 链同时测试布局、播放和持久化 |
 | 19 | 发布可靠性 | GitHub Release 下载 0% 真机修复 | `COMPLETED` | 用户确认 v0.3.3→v0.3.4 可正常更新；BUG-004 已关闭 |
 | 20 | 全面教学基座 | 学段底座、家长配置与分层体验路由 | `BLOCKED` | 离线工程与全量门禁通过；需平板回放四学段、触觉/Reduced Motion/TalkBack、重启和服务同步 |
-| 21 | 全面教学核心 | 共用课程、活动与学习证据引擎 | `IN_PROGRESS` | REQ-040 正在发布 v0.3.5/11；完成远端 digest/版本/同证书复验后恢复目标平板阻塞项 |
+| 21 | 全面教学核心 | 共用课程、活动与学习证据引擎 | `BLOCKED` | v0.3.5/11 已发布并通过远端 digest/版本/同证书复验；需目标平板回放覆盖升级、AndroidKeyStore、断网/401/409、来源和无障碍 |
 
 Stage 2 的代码、PostgreSQL 和自动化门禁已交付，debug APK 已生成；Android 安装启动因本机 Emulator 37.1.11 在 ADB 可用前退出而阻塞。未完成运行态验收前不得把 APK 描述为已安装可用。
 
@@ -71,6 +71,8 @@ REQ-036 已完成离线工程纵切：V10 增加免费教育来源、适用学�
 REQ-037/038 已交付 V11 离线纵切：服务端提供不可变课程版本、九类活动、题目答案隔离、课节分配、尝试/提交/复做/确认和五类证据；Android 在原“小任务”页渲染单课节学习路径，安装包视频实际播放 90% 只记 VIEWED，家长可确认或要求复做。H2/PostgreSQL 16.15 全量 46 项、11 次迁移/55 表、PostgreSQL 并发审核和 Android 两变体各 31 项通过。V11 结束时缺少的持久化 outbox、401/409 恢复和家长可视化建课已由 V12 补齐；目标平板仍未完成。
 
 REQ-039 已完成 V12 离线纵切：学习写入使用 Android Keystore AES/GCM 写前 outbox，进程重建后保留并在同一家庭重新登录时恢复；401 不丢队列，409 先刷新再由明确规则合并。家长端“家庭备课夹”可完成一课一活动的建课、发布与当前孩子分配；完整课程编辑和目标平板运行态没有冒充完成。H2 全量 46 项（6 项 PostgreSQL 条件跳过）、Android debug/release 各 40 项与两变体 lint/assemble 通过。Stage 21 已无可独立于设备/服务继续的工作，状态转为 `BLOCKED`；Agent 下一顺位是为 Stage 22 幼儿园深度课程与亲子现实活动建立 Spec。
+
+REQ-040 已将上述 Stage 20/21 工程能力发布为稳定 [v0.3.5](https://github.com/Workworks/family-growth/releases/tag/v0.3.5)，versionCode 11。GitHub Actions、公开 digest、下载 SHA-256、包名和同证书复验通过；v0.3.4→v0.3.5 的真机覆盖升级、数据保留和 Stage 21 运行态仍未执行，因此 Stage 21 保持 `BLOCKED`。
 
 ## 关键决策快照
 

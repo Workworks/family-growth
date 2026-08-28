@@ -2,13 +2,13 @@
   "stage": 21,
   "status": "BLOCKED",
   "passed": false,
-  "capturedAt": "2026-08-29T00:15:08+08:00",
-  "command": "Stage 21 V12 H2 backend, Android debug/release JVM/lint/assemble and governance gates; see checks",
+  "capturedAt": "2026-08-29T00:41:08+08:00",
+  "command": "Stage 21 V12 gates plus v0.3.5/11 local release gate, tag workflow and public APK verification; see checks",
   "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
   "shellType": "PowerShell",
   "exitCode": 0,
-  "scope": "REQ-034 through REQ-039: official autonomous learning, configurable education sources, immutable teaching versions, nine activities/evidence, encrypted Android outbox and minimal parent authoring",
-  "summary": "V12 adds a write-before-send Android learning outbox encrypted with an Android Keystore AES/GCM key, preserves original idempotency keys across reconstruction, retains actions on network/401, and exposes explicit refresh/reconcile handling for 409 or permanent conflicts. The parent Family Teaching Folder creates one real DRAFT course/lesson/activity, publishes it, reads the immutable version tree and assigns its first lesson. H2 and Android two-variant gates pass. Real AndroidKeyStore, process kill, network loss, public-site and tablet accessibility/E2E still require a target device and reachable service, so Stage 21 is BLOCKED rather than complete.",
+  "scope": "REQ-034 through REQ-040: official autonomous learning, configurable education sources, immutable teaching versions, nine activities/evidence, encrypted Android outbox, minimal parent authoring and v0.3.5 stable release",
+  "summary": "V12 adds a write-before-send Android learning outbox encrypted with an Android Keystore AES/GCM key, explicit 401/409 recovery and a real one-lesson parent authoring flow. REQ-040 publishes these Stage 20/21 engineering capabilities as v0.3.5/versionCode 11 through the stable-signing tag workflow. The public APK digest, downloaded SHA-256, package, version and certificate match. Real AndroidKeyStore, process kill, network loss, public-site, overlay update/data retention and tablet accessibility/E2E still require a target device and reachable service, so Stage 21 remains BLOCKED rather than complete.",
   "checks": [
     {
       "id": "V21-01-domain",
@@ -61,6 +61,12 @@
       "result": "OpenAPI 3.1 now also documents parent-only immutable course-version detail read and parsed with 64 paths. The Markdown gate passed for 86 files/85 indexed documents, all 21 evidence JSON files parsed, and git diff --check exited 0. V12 adds no database migration and preserves the V1-V11/55-table PostgreSQL baseline."
     },
     {
+      "id": "V21-07-release",
+      "passed": true,
+      "command": ".\\gradlew.bat clean testReleaseUnitTest lintRelease assembleRelease; push commit 7f20b30 and tag v0.3.5; wait run 33190582209; download and verify public asset",
+      "result": "PASS_RELEASE: local release gate passed 40 JVM tests, lint and assemble. GitHub Actions run 33190582209 validated tag/signing secrets, restored the stable keystore, rebuilt, signed and published v0.3.5. Latest API and downloaded asset agree on 11,584,931 bytes and SHA-256 8edc85a6feae7cf7071815115096e8d4c1bb7ab54eac121191fcc2be3ef9c56b. aapt reports com.familygrowth.android, versionName 0.3.5/versionCode 11; apksigner verifies v2 with stable certificate SHA-256 9179a5da2973e8ff9115edd1fb74e21ad70d9540c1d33203c9af442106d2eacb. GitHub reports isImmutable=false, so evidence claims a fresh non-overwriting workflow asset, not platform-enforced Release immutability."
+    },
+    {
       "id": "V21-06-device-and-recovery",
       "passed": false,
       "result": "BLOCKED: no target tablet or device-reachable service was available. The V12 code and JVM tests do not substitute for AndroidKeyStore encryption, force-stop/process-kill reconstruction, real network loss/401/409, official page playback, public-source discovery, rotation, TalkBack or parent/child E2E on the target tablet."
@@ -79,7 +85,22 @@
     "outboxContainsPinOrTokenField": false,
     "outboxUsesOriginalIdempotencyKey": true,
     "offlineOutboxCanCreateMasteryOrReward": false,
-    "parentOnlyModeCanCreateChildCourse": false
+    "parentOnlyModeCanCreateChildCourse": false,
+    "releaseUsesStableCertificate": true,
+    "releaseAssetDigestMatchesDownload": true,
+    "githubReleasePlatformImmutable": false
+  },
+  "release": {
+    "tag": "v0.3.5",
+    "versionName": "0.3.5",
+    "versionCode": 11,
+    "commit": "7f20b30",
+    "workflowRun": "https://github.com/Workworks/family-growth/actions/runs/33190582209",
+    "releaseUrl": "https://github.com/Workworks/family-growth/releases/tag/v0.3.5",
+    "asset": "family-growth-0.3.5.apk",
+    "bytes": 11584931,
+    "sha256": "8edc85a6feae7cf7071815115096e8d4c1bb7ab54eac121191fcc2be3ef9c56b",
+    "certificateSha256": "9179a5da2973e8ff9115edd1fb74e21ad70d9540c1d33203c9af442106d2eacb"
   },
   "remaining": [
     "Run AndroidKeyStore write-before-send, force-stop/process-kill reconstruction, same-scope login, network loss, 401 retention, 409 reconcile and queue-clear scenarios on the target tablet.",
