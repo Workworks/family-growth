@@ -138,9 +138,9 @@
 
 状态：`IN_PROGRESS`　文档：[Stage 21](stages/stage-21-report.md)
 
-当前工作：V10、不可变课程版本、九类活动、题目版本、Assignment/Attempt/Completion/MasteryEvidence、生产 API 和 Android 课程同步尚在建设。
+当前工作：孩子“我的任务/自主学习”二级切换、五级教材选择台、官方域名受限 WebView 和离线 Android 门禁已完成；V10、不可变课程版本、九类活动、题目版本、Assignment/Attempt/Completion/MasteryEvidence、生产 API 和 Android 课程同步仍在建设。
 
-外部验收：工程自动化完成后仍需目标平板和可访问测试服务验证多活动交互、TalkBack、横竖屏、断网重启、401/409 恢复及家长/孩子 E2E。
+外部验收：需要目标平板验证国家智慧教育平台实际页面加载、课程播放、站内跳转/返回、横竖屏、TalkBack 和网络失败恢复；共用教学引擎完成后还需可访问测试服务验证多活动交互、断网重启、401/409 恢复及家长/孩子 E2E。若未来要求抽取视频直链、离线缓存、改编页面或自动回传完成证据，还需要平台书面许可或官方 SDK/API，当前项目不绕过该条件。
 
 推进方：Agent 完成工程与自动化；用户提供最终设备/服务后完成运行态回放。
 

@@ -267,11 +267,26 @@ fun TasksScreen(viewModel: FamilyAppViewModel) {
 @Composable
 private fun ChildTasksScreen(viewModel: FamilyAppViewModel) {
     val feedback = rememberChildControlFeedback(viewModel.state.experience)
+    val supportsSelfLearning = viewModel.state.experience.effectiveStage in setOf(SchoolStage.PRIMARY, SchoolStage.JUNIOR_MIDDLE, SchoolStage.SENIOR_HIGH)
+    var selfLearning by remember(viewModel.state.experience.effectiveStage) { mutableStateOf(false) }
     val todo = viewModel.state.tasks.filter { it.status == TaskStatus.TODO }.take(3)
     val waitingCount = viewModel.state.tasks.count { it.status == TaskStatus.SUBMITTED }
     val doneCount = viewModel.state.tasks.count { it.status == TaskStatus.APPROVED }
-    LazyColumn(
-        Modifier.fillMaxSize(),
+    Column(Modifier.fillMaxSize()) {
+        if (supportsSelfLearning) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                if (!selfLearning) Button(onClick = {}, modifier = Modifier.weight(1f).heightIn(min = 52.dp)) { Text("我的任务") }
+                else OutlinedButton(onClick = { feedback { selfLearning = false } }, modifier = Modifier.weight(1f).heightIn(min = 52.dp)) { Text("我的任务") }
+                if (selfLearning) Button(onClick = {}, modifier = Modifier.weight(1f).heightIn(min = 52.dp)) { Text("自主学习") }
+                else OutlinedButton(onClick = { feedback { selfLearning = true } }, modifier = Modifier.weight(1f).heightIn(min = 52.dp)) { Text("自主学习") }
+            }
+        }
+        if (selfLearning) {
+            OfficialSelfLearningScreen(viewModel.state.experience)
+            return@Column
+        }
+        LazyColumn(
+        Modifier.fillMaxWidth().weight(1f),
         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -318,6 +333,7 @@ private fun ChildTasksScreen(viewModel: FamilyAppViewModel) {
                     )
                 }
             }
+        }
         }
     }
 }

@@ -169,6 +169,7 @@ Android 登录或同步后取得 `AgeExperienceProfile`：
 | Smithsonian Open Access | 小学、初中、高中 | 仅带 `CC0` 标识的素材可进入原创课件 | 不是所有 Smithsonian 内容都是 CC0；必须逐件保存权利标识和来源 |
 | Smithsonian Science How | 小学高年级、初中 | 优先 `OFFICIAL_LINK` | 官方档案面向 3–5 年级，带字幕/文本；不把页面存在等同于可离线再分发 |
 | 央视网/央视纪录片 | 四学段，由家长选择 | 未获书面授权前仅 `OFFICIAL_LINK`，且只能由家长打开 | 央视网协议限制未经书面同意的复制、播放、链接和再分发；项目不得抓取、内嵌或下载其视频 |
+| 国家中小学智慧教育平台同步课堂 | 小学、初中、高中 | `OFFICIAL_LINK`，孩子在受限 WebView 内手动打开 | 先在 App 内按有效学段、年级、学科、版本、册次选择；固定官方 HTTPS 域名，不抽取、缓存、代理、转码或改编视频，不把播放自动认定为完成 |
 
 权利事实源：
 
@@ -181,6 +182,8 @@ Android 登录或同步后取得 `AgeExperienceProfile`：
 - Smithsonian Open Access FAQ：<https://www.si.edu/openaccess/faq>
 - Smithsonian Science How Archive：<https://naturalhistory.si.edu/education/teaching-resources/smithsonian-science-how-video-archives>
 - 央视网用户服务协议：<https://www.cctv.com/special/guanyunew/fuwuxieyi/index.shtml>
+- 国家中小学智慧教育平台同步课堂：<https://basic.smartedu.cn/syncClassroom>
+- 国家中小学智慧教育平台网站声明：<https://basic.smartedu.cn/copyright>
 
 中文配音、字幕翻译、剪辑和截图都属于可能受授权范围影响的再加工；没有明确许可就保持原内容、使用官方入口，或改为基于可用素材重新制作项目原创中文课程。
 
@@ -188,6 +191,7 @@ Android 登录或同步后取得 `AgeExperienceProfile`：
 
 - 家长端可预览、启用/停用、设置每天视频上限并查看来源与授权。
 - 儿童端只看到已启用且符合 `effectiveStage` 的条目；不提供 URL 输入、搜索全网或跳转评论区。
+- 国家中小学智慧教育平台入口只对小学、初中、高中开放；孩子不能切换家长配置的学段。已核验教材组合可使用精确官方深链，未核验组合回到官方同步课堂选择页，不猜测平台内部资源 ID。
 - 不自动播放、不自动下一集、不无限滚动；结束页首先给出一个现实观察、讨论或小练习。
 - 幼儿园纪录片默认亲子共看；快速剪辑、恐怖捕食、灾害细节和高强度音效需要单独年龄审查。
 - 播放进度可恢复，但不以“看完更多”作为推荐目标。

@@ -1,0 +1,53 @@
+{
+  "stage": 21,
+  "status": "IN_PROGRESS",
+  "passed": false,
+  "capturedAt": "2026-08-28T11:50:42+08:00",
+  "command": ".\\gradlew.bat clean testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+  "shellType": "PowerShell",
+  "exitCode": 0,
+  "scope": "REQ-034/REQ-035 autonomous learning Android vertical slice",
+  "summary": "The age-stage textbook selector and restricted official SmartEdu WebView passed offline Android gates. The shared production teaching engine and target-tablet playback remain unfinished.",
+  "checks": [
+    {
+      "id": "V21-04A-source",
+      "passed": true,
+      "result": "Read-only inspection confirmed the official sync classroom exposes autonomous learning and stage, grade, subject, edition and volume selection. The user-provided exact selection is preserved as the only verified deep link."
+    },
+    {
+      "id": "V21-04A-unit",
+      "passed": true,
+      "command": ".\\gradlew.bat clean testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease",
+      "result": "Exit 0; BUILD SUCCESSFUL; 112 actionable tasks; debug 28 tests and release 28 tests passed."
+    },
+    {
+      "id": "V21-04A-policy",
+      "passed": true,
+      "result": "SmartEduOfficialSourceTest covers the verified URL, generic fallback for unknown textbook combinations, and rejection of HTTP, non-official hosts and non-course navigation."
+    },
+    {
+      "id": "V21-06-governance",
+      "passed": true,
+      "result": "Documentation link gate passed for 86 Markdown files and 85 indexed documents; 21 evidence JSON files parsed; OpenAPI 3.1.0 parsed with 51 paths; git diff whitespace and scoped secret scans passed."
+    },
+    {
+      "id": "V21-05-device",
+      "passed": false,
+      "result": "NOT_RUN: target Android tablet is required to verify official page loading, media playback, in-site navigation, back handling, rotation, TalkBack and network recovery."
+    }
+  ],
+  "security": {
+    "extractsMediaStreams": false,
+    "downloadsOrTranscodesThirdPartyMedia": false,
+    "allowsArbitraryTopLevelHosts": false,
+    "autoplaysMedia": false,
+    "createsLearningCompletionOrRewards": false,
+    "kindergartenExternalWebEnabled": false
+  },
+  "remaining": [
+    "Implement V10 and the production Course/Unit/Lesson/Activity evidence engine.",
+    "Run the official learning flow on the target tablet and record runtime evidence.",
+    "Obtain platform permission or an official SDK/API before any future media extraction, offline distribution, page adaptation or trusted completion callback."
+  ]
+}
