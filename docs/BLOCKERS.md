@@ -134,6 +134,16 @@
 
 ## 2. 工程未完成
 
+### Stage 21：共用课程、活动与学习证据引擎
+
+状态：`IN_PROGRESS`　文档：[Stage 21](stages/stage-21-report.md)
+
+当前工作：V10、不可变课程版本、九类活动、题目版本、Assignment/Attempt/Completion/MasteryEvidence、生产 API 和 Android 课程同步尚在建设。
+
+外部验收：工程自动化完成后仍需目标平板和可访问测试服务验证多活动交互、TalkBack、横竖屏、断网重启、401/409 恢复及家长/孩子 E2E。
+
+推进方：Agent 完成工程与自动化；用户提供最终设备/服务后完成运行态回放。
+
 ### Stage 15：3 岁起儿童端发展适龄改造
 
 状态：`BLOCKED`　文档：[Stage 15](stages/stage-15-report.md)

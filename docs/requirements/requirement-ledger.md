@@ -36,7 +36,7 @@
 | REQ-030 | 2026-08-26 | 用户当前产品反馈 | 目前不足以支撑全面的教学任务，要求把所有待做事项全部列出 | 将全面教学能力提升为当前 P0 产品主线；当前“通用任务 + 3 个内置视频”仅算基础样例。先完成课程/课节/活动/题库/评估/进度/内容发布/生产同步/适龄 UI 的全量缺口审计，再按 Spec 分 Stage 实现；真实金融等安全边界不变 | P0 | `IN_PROGRESS` | 20–26 | `requirements/teaching-and-project-backlog.md`、`stages/stage-20-report.md`、`TODO.md` |
 | REQ-031 | 2026-08-26 | 用户教学分层与前端要求 | 教学任务按幼儿园、小学、初中、高中分开展示；家长可配置年龄并展示不同页面；幼儿园 UI 有趣、吸引注意力，按钮有夸张反馈和震动；内置适龄纪录片源；小学至高中由 Agent 设计 | 扩展 REQ-030：以家长配置年龄得到推荐学段并允许受保护覆盖，四学段使用不同页面结构、活动类型和反馈档案。幼儿园“夸张”解释为短促、明显、可预测的视觉/单次触觉确认，须可关闭并遵守 Reduced Motion，禁止持续强刺激。纪录片先建来源/版权/年龄审核目录；只内置原创或明确授权内容，其他仅提供家长批准的官方入口，不开放儿童网页和推荐流 | P0 | `IN_PROGRESS` | 20–26 | `AGENTS.md`、`design/39-age-stage-teaching-experience.md`、`requirements/teaching-and-project-backlog.md`、`stages/stage-20-report.md` |
 | REQ-032 | 2026-08-26 | 用户连续推进指令 | 直接进行下一步 | 按已确认路线立即启动 Stage 20，不再等待产品范围确认；先完成学段事实源、家长配置/审计、分层反馈与页面路由、纪录片权利目录，再进行 Stage 21 共用教学引擎 | P0 | `IN_PROGRESS` | 20 | `stages/stage-20-report.md`、`evidence/stage-20/acceptance.json` |
-| REQ-033 | 2026-08-28 | 用户连续推进指令 | 继续 | 不暂停当前交付：先按 Stage 20 Spec 完成最终审查、证据、状态收口和阶段提交；随后以独立 Spec 启动 Stage 21 共用教学引擎，不以 Stage 20 的平板阻塞冒充完成，也不跳过课程/活动/题库/证据模型的边界设计 | P0 | `IN_PROGRESS` | 20–21 | `stages/stage-20-report.md`、`evidence/stage-20/acceptance.json`、Stage 21 待立项 |
+| REQ-033 | 2026-08-28 | 用户连续推进指令 | 继续 | 不暂停当前交付：先按 Stage 20 Spec 完成最终审查、证据、状态收口和阶段提交；随后以独立 Spec 启动 Stage 21 共用教学引擎，不以 Stage 20 的平板阻塞冒充完成，也不跳过课程/活动/题库/证据模型的边界设计 | P0 | `IN_PROGRESS` | 20–21 | `stages/stage-20-report.md`、`evidence/stage-20/acceptance.json`、`stages/stage-21-report.md` |
 
 ## 维护记录
 

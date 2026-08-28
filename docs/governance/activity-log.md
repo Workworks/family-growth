@@ -132,3 +132,4 @@
 | 30 | 20 | 完成四学段 Android 两遍设计与实现 | 将通用卡片仪表盘拆为幼儿园故事舞台、小学探索手册、初中学科实验台和高中自主学习室；接入本机旧 JSON 兼容、服务端配置、家长设置与短促反馈引擎，遵守三入口、Reduced Motion 和触觉关闭 | `ui/AgeStageExperienceScreens.kt`、Android core/remote |
 | 31 | 20 | 完成全量门禁并收敛状态 | H2 17+20 测试通过（PG 条件项按设计跳过）；PostgreSQL 16.15 上同组测试零跳过、V1–V9/39 表通过；Android debug/release 各 24 项 JVM、lint 和构建通过；文档/OpenAPI 通过。临时 PG 容器已移除；因无目标平板，Stage 20 标记 `BLOCKED` | `evidence/stage-20/acceptance.json`、Stage 20/TODO/current/BLOCKERS |
 | 32 | 20–21 | 用户要求继续连续推进 | 登记 REQ-033/P0；先完成 Stage 20 最终审查、提交和推送，再按 Spec 驱动协议启动 Stage 21，不吞掉 Stage 20 的目标平板阻塞 | REQ-033、Stage 20/21 |
+| 33 | 21 | 建立共用教学引擎 Spec | 固化 Course/Unit/Lesson/Activity、九类活动、版本不可变、Assignment/Attempt/Completion/MasteryEvidence、复做/幂等、儿童数据最小化、V10/API/Android 边界及 WP/V/AC；Stage 20 真机缺口继续独立保留 | `stages/stage-21-report.md`、TODO/current/BLOCKERS/roadmap |
