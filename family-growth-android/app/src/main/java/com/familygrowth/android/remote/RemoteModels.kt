@@ -13,6 +13,16 @@ data class RemoteQuestionOption(val value:String,val label:String)
 data class RemoteLearningActivity(val id:String,val type:String,val title:String,val instruction:String,val contentRef:String,val expectedMinutes:Int,val prompt:String,val hint:String,val options:List<RemoteQuestionOption>,val requiredEvidence:String,val evidence:Set<String>,val checkedCorrect:Boolean?) {
  fun childReady():Boolean = if(requiredEvidence=="PARENT_CONFIRMED") "ATTEMPTED" in evidence else requiredEvidence in evidence && (requiredEvidence!="CHECKED" || checkedCorrect==true)
 }
+object KindergartenActivityPolicy {
+ const val MAX_EXPECTED_MINUTES = 8
+ const val MAX_VISIBLE_CHOICES = 2
+ fun renderIssue(activity:RemoteLearningActivity):String? = when {
+  activity.title.isBlank() || activity.instruction.isBlank() -> "这一步还没有准备好，请家长看看。"
+  activity.expectedMinutes !in 1..MAX_EXPECTED_MINUTES -> "这一步有点长，请家长换成短一点的活动。"
+  activity.options.size > MAX_VISIBLE_CHOICES -> "这里的选择太多了，请家长帮忙。"
+  else -> null
+ }
+}
 data class RemoteLearningAssignment(val id:String,val courseTitle:String,val unitTitle:String,val lessonTitle:String,val lessonSummary:String,val schoolStage:String,val subjectCode:String,val status:String,val version:Long,val activities:List<RemoteLearningActivity>,val reviewNote:String) {
  fun canSubmit():Boolean = status=="IN_PROGRESS" && activities.isNotEmpty() && activities.all(RemoteLearningActivity::childReady)
 }

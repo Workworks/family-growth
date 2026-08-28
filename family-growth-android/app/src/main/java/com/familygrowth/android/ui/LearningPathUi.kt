@@ -11,6 +11,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.SupervisorAccount
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +22,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.familygrowth.android.R
 import com.familygrowth.android.core.FamilyAppViewModel
+import com.familygrowth.android.core.SchoolStage
+import com.familygrowth.android.remote.KindergartenActivityPolicy
 import com.familygrowth.android.remote.RemoteLearningActivity
 import com.familygrowth.android.remote.RemoteLearningAssignment
 import kotlinx.coroutines.delay
@@ -36,6 +39,15 @@ fun ChildLearningPath(viewModel: FamilyAppViewModel) {
         assignment.activities.firstOrNull { it.requiredEvidence == "PARENT_CONFIRMED" }
             ?: assignment.activities.firstOrNull()
     } else assignment.activities.firstOrNull { !it.childReady() }
+    if (viewModel.state.experience.effectiveStage == SchoolStage.KINDERGARTEN) {
+        KindergartenLearningPath(viewModel, assignment, active) { video = it }
+        video?.let { activity ->
+            DynamicLearningVideoDialog(activity, { video = null }) { played, duration ->
+                viewModel.completeLearningVideo(assignment.id, activity.id, played, duration)
+            }
+        }
+        return
+    }
     GrowthCard {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -94,6 +106,84 @@ fun ChildLearningPath(viewModel: FamilyAppViewModel) {
     video?.let { activity ->
         DynamicLearningVideoDialog(activity, { video = null }) { played, duration ->
             viewModel.completeLearningVideo(assignment.id, activity.id, played, duration)
+        }
+    }
+}
+
+@Composable
+private fun KindergartenLearningPath(
+    viewModel: FamilyAppViewModel,
+    assignment: RemoteLearningAssignment,
+    active: RemoteLearningActivity?,
+    playVideo: (RemoteLearningActivity) -> Unit,
+) {
+    val activeStep = when {
+        assignment.status in setOf("SUBMITTED", "COMPLETED") || assignment.canSubmit() -> 2
+        active?.requiredEvidence == "PARENT_CONFIRMED" -> 1
+        else -> 0
+    }
+    Surface(
+        shape = MaterialTheme.shapes.extraLarge,
+        color = ChildColors.Paper,
+        border = BorderStroke(2.dp, ChildColors.Mist),
+    ) {
+        Column(Modifier.fillMaxWidth().padding(26.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            Text("成长舞台", style = MaterialTheme.typography.labelLarge, color = ChildColors.Moss)
+            Text(assignment.lessonTitle, style = MaterialTheme.typography.headlineMedium, color = ChildColors.Ink)
+            KindergartenLearningSteps(activeStep)
+            when (assignment.status) {
+                "SUBMITTED" -> GentleNotice("已经给家长看啦。现在去玩一会儿吧。")
+                "COMPLETED" -> GentleNotice("这一小步做好了。谢谢你认真去做。")
+                else -> active?.let { activity ->
+                    val issue = KindergartenActivityPolicy.renderIssue(activity)
+                    Text("现在做", style = MaterialTheme.typography.titleMedium, color = ChildColors.Moss)
+                    Text(activity.title, style = MaterialTheme.typography.headlineSmall, color = ChildColors.Ink)
+                    Text(activity.instruction, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (issue != null) {
+                        GentleNotice(issue)
+                    } else when {
+                        activity.type == "SHORT_VIDEO" -> StagePrimaryActionButton(viewModel.state.experience, "和家长一起看", Icons.Rounded.PlayArrow) { playVideo(activity) }
+                        activity.options.isNotEmpty() -> activity.options.forEach { option ->
+                            OutlinedButton(
+                                onClick = { viewModel.attemptLearningActivity(assignment.id, activity.id, option.value) },
+                                modifier = Modifier.fillMaxWidth().heightIn(min = 60.dp),
+                            ) { Text(option.label, style = MaterialTheme.typography.titleMedium) }
+                        }
+                        else -> StagePrimaryActionButton(viewModel.state.experience, "我去做一做", Icons.Rounded.Check) {
+                            viewModel.attemptLearningActivity(assignment.id, activity.id, "我完成了这一步")
+                        }
+                    }
+                    if (activity.checkedCorrect == false) GentleNotice("还没对上。慢慢再试一次，也可以请家长帮忙。")
+                }
+            }
+            if (assignment.canSubmit()) {
+                StagePrimaryActionButton(viewModel.state.experience, "给家长看", Icons.Rounded.SupervisorAccount) {
+                    viewModel.submitLearningAssignment(assignment.id, assignment.version)
+                }
+            }
+            if (assignment.status == "REWORK_REQUIRED" && assignment.reviewNote.isNotBlank()) {
+                GentleNotice("家长说：${assignment.reviewNote}")
+            }
+            Text("看完屏幕要去现实中做一做。需要帮助时，请家长一起。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun KindergartenLearningSteps(active: Int) {
+    val labels = listOf("看看", "去做", "给家长看")
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        labels.forEachIndexed { index, label ->
+            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                Surface(
+                    modifier = Modifier.size(44.dp),
+                    shape = androidx.compose.foundation.shape.CircleShape,
+                    color = if (index == active) ChildColors.Sun else ChildColors.Mist,
+                ) { Box(contentAlignment = Alignment.Center) { Text("${index + 1}", color = ChildColors.Ink) } }
+                Spacer(Modifier.height(5.dp))
+                Text(label, style = MaterialTheme.typography.bodyLarge)
+            }
+            if (index < labels.lastIndex) HorizontalDivider(Modifier.weight(.35f), thickness = 2.dp, color = ChildColors.Mist)
         }
     }
 }

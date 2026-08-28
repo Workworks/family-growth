@@ -98,6 +98,7 @@
 - [Stage 19：GitHub Release 下载 0% 真机修复](stages/stage-19-report.md)
 - [Stage 20：学段底座、家长配置与分层体验路由](stages/stage-20-report.md)
 - [Stage 21：共用课程、活动与学习证据引擎](stages/stage-21-report.md)
+- [Stage 22：幼儿园故事舞台与亲子现实活动](stages/stage-22-report.md)
 
 ## 项目计划与 Phase · `program/` `phases/`
 
@@ -136,6 +137,7 @@
 - [Stage 17](evidence/stage-17/acceptance.json)
 - [Stage 18](evidence/stage-18/acceptance.json)
 - [Stage 19](evidence/stage-19/acceptance.json)
+- [Stage 22](evidence/stage-22/acceptance.json)
 
 ## 目录约定
 
