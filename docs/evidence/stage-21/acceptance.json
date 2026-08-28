@@ -2,13 +2,13 @@
   "stage": 21,
   "status": "IN_PROGRESS",
   "passed": false,
-  "capturedAt": "2026-08-28T11:50:42+08:00",
-  "command": ".\\gradlew.bat clean testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease",
-  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+  "capturedAt": "2026-08-28T12:34:36+08:00",
+  "command": "multiple Stage 21 backend, PostgreSQL 16.15, Android and documentation gates; see checks",
+  "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
   "shellType": "PowerShell",
   "exitCode": 0,
-  "scope": "REQ-034/REQ-035 autonomous learning Android vertical slice",
-  "summary": "The age-stage textbook selector and restricted official SmartEdu WebView passed offline Android gates. The shared production teaching engine and target-tablet playback remain unfinished.",
+  "scope": "REQ-034/REQ-035 autonomous learning and REQ-036 configurable free education source vertical slices",
+  "summary": "The age-stage textbook selector, restricted official SmartEdu WebView, V10 configurable education sources, bounded HTML category discovery, parent approval lifecycle and child URL-free dynamic catalogue passed offline gates. The shared production teaching engine, real-site compatibility and target-tablet playback remain unfinished.",
   "checks": [
     {
       "id": "V21-04A-source",
@@ -19,7 +19,7 @@
       "id": "V21-04A-unit",
       "passed": true,
       "command": ".\\gradlew.bat clean testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease",
-      "result": "Exit 0; BUILD SUCCESSFUL; 112 actionable tasks; debug 28 tests and release 28 tests passed."
+      "result": "Exit 0; BUILD SUCCESSFUL; 112 actionable tasks; debug 29 tests and release 29 tests passed after adding source repository coverage."
     },
     {
       "id": "V21-04A-policy",
@@ -27,9 +27,26 @@
       "result": "SmartEduOfficialSourceTest covers the verified URL, generic fallback for unknown textbook combinations, and rejection of HTTP, non-official hosts and non-course navigation."
     },
     {
+      "id": "V21-04B-h2",
+      "passed": true,
+      "command": ".\\mvnw.cmd test",
+      "result": "Exit 0. H2 full regression passed with 19 domain, 2 infrastructure discovery and 21 Boot tests; five PostgreSQL-only tests were conditionally skipped. Flyway V1-V10 and Hibernate validate passed."
+    },
+    {
+      "id": "V21-04B-postgres",
+      "passed": true,
+      "command": "start exact isolated localhost PostgreSQL 16.15 container; export datasource only for Maven; .\\mvnw.cmd test; inspect and remove the exact container in finally",
+      "result": "The first run correctly failed because PostgresSchemaValidationTest still expected 9 migrations; the assertion/table inventory was updated for V10. The final rerun passed 42 tests with zero failures and zero skips, validated 10 migrations and 43 production tables, and removed the exact temporary container without a volume."
+    },
+    {
+      "id": "V21-04B-security-and-lifecycle",
+      "passed": true,
+      "result": "Tests reject HTTP, IP literals, credentials, query/fragment and non-default ports; reject private/documentation DNS ranges; keep only same-origin HTML navigation; enforce parent RBAC and cross-family hiding; require refresh then approval; reset successful refreshes to DRAFT; retain approved categories after failed refresh; and omit all URLs from child responses."
+    },
+    {
       "id": "V21-06-governance",
       "passed": true,
-      "result": "Documentation link gate passed for 86 Markdown files and 85 indexed documents; 21 evidence JSON files parsed; OpenAPI 3.1.0 parsed with 51 paths; git diff whitespace and scoped secret scans passed."
+      "result": "Documentation link gate passed for 86 Markdown files and 85 indexed documents; 21 evidence JSON files parsed; OpenAPI 3.1.0 parsed with 56 paths; git diff whitespace and scoped secret scans passed."
     },
     {
       "id": "V21-05-device",
@@ -43,10 +60,17 @@
     "allowsArbitraryTopLevelHosts": false,
     "autoplaysMedia": false,
     "createsLearningCompletionOrRewards": false,
-    "kindergartenExternalWebEnabled": false
+    "kindergartenExternalWebEnabled": false,
+    "customSourceAllowsCredentialsOrQuery": false,
+    "customSourceChildReceivesUrl": false,
+    "customSourceExecutesJavascriptOrDownloadsMedia": false,
+    "successfulRefreshRequiresReapproval": true,
+    "failedRefreshDeletesLastSnapshot": false
   },
   "remaining": [
-    "Implement V10 and the production Course/Unit/Lesson/Activity evidence engine.",
+    "Implement V11 and the production Course/Unit/Lesson/Activity evidence engine.",
+    "Run representative parent-approved public education sites through the deployed service and target tablet; static HTML navigation is not universally compatible with JavaScript, login or anti-bot sites.",
+    "Enforce deployment-level outbound firewall or proxy policy in addition to application DNS validation.",
     "Run the official learning flow on the target tablet and record runtime evidence.",
     "Obtain platform permission or an official SDK/API before any future media extraction, offline distribution, page adaptation or trusted completion callback."
   ]

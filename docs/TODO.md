@@ -11,7 +11,7 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P0 | 21 | `IN_PROGRESS` | 自主学习选择台与受限官方 WebView 已过离线门禁；继续实现 V10、课程版本、九类活动和生产证据链，平板到位后补官方播放回放 | Agent；用户提供平板 | `stages/stage-21-report.md`、`evidence/stage-21/acceptance.json` |
+| P0 | 21 | `IN_PROGRESS` | V10 自定义免费来源与动态栏目已过离线门禁；继续 V11 课程版本、九类活动和生产证据链，服务/平板到位后回放真实来源与官方播放 | Agent；用户提供平板/可访问服务 | `stages/stage-21-report.md`、`evidence/stage-21/acceptance.json` |
 | P0 | 20 | `BLOCKED` | 用目标平板回放四学段、触觉开关、Reduced Motion、TalkBack、旋转、重启和真实服务同步 | 用户提供设备；Agent 回放 | `stages/stage-20-report.md`、`evidence/stage-20/acceptance.json` |
 | P0 | 18 | `BLOCKED` | 在平板用 v0.3.3→v0.3.4 更新链同时测试双视角、视频计时、奖励兴趣和重启保留 | 用户测试；Agent 根据反馈修复 | Stage 18/19 真机证据 |
 | P0 | 16 | `BLOCKED` | 在平板覆盖安装 v0.3.3，验证儿童图标及原有数据保留 | 用户提供设备；Agent 回放 | Stage 16/19 真机证据 |
@@ -25,7 +25,7 @@
 
 ## 2. 可由 Agent 继续推进
 
-Stage 20 可离线工程与门禁已经收口，只剩目标平板验收。Stage 21 的自主学习教材选择台和受限官方 WebView 已通过离线门禁，Agent 继续建设 Course/Unit/Lesson/Activity、题库、分配/尝试/完成/复做、证据与 Android 生产接入；LIM-013 数据权利/完整时段审计仍为并行 P0 安全事项。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
+Stage 20 可离线工程与门禁已经收口，只剩目标平板验收。Stage 21 的自主学习选择台、受限官方 WebView、V10 家长来源书架和动态栏目安全投影已通过离线门禁；Agent 继续以 V11 建设 Course/Unit/Lesson/Activity、题库、分配/尝试/完成/复做和证据链。LIM-013 数据权利/完整时段审计仍为并行 P0 安全事项。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
 
 ## 3. 只能由外部条件解除
 

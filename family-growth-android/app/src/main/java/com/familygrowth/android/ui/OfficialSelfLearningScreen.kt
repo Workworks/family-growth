@@ -23,12 +23,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.familygrowth.android.core.*
+import com.familygrowth.android.remote.RemoteChildEducationSource
 
 private val SmartEduBlue = Color(0xFF355C7D)
 private val SmartEduPaper = Color(0xFFF7F9F5)
 
 @Composable
-fun OfficialSelfLearningScreen(settings: ChildExperienceSettings) {
+fun OfficialSelfLearningScreen(
+    settings: ChildExperienceSettings,
+    familyResources: List<RemoteChildEducationSource>,
+    requestParent: () -> Unit,
+) {
     val stage = settings.effectiveStage
     var selection by remember(stage) { mutableStateOf(SmartEduOfficialSource.defaultSelection(stage)) }
     var browserUrl by remember { mutableStateOf<String?>(null) }
@@ -94,6 +99,30 @@ fun OfficialSelfLearningScreen(settings: ChildExperienceSettings) {
                     Text("去官方平台学习", style = MaterialTheme.typography.titleMedium)
                 }
                 Text("课程由国家中小学智慧教育平台提供；不会自动播放，也不会自动发放奖励。", style = MaterialTheme.typography.bodySmall)
+            }
+        }
+        if (familyResources.isNotEmpty()) {
+            item {
+                HorizontalDivider()
+                Text("家长添加的资源", style = MaterialTheme.typography.titleLarge, color = SmartEduBlue)
+                Text("栏目会随家长最近一次读取结果更新。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            items(familyResources, key = { it.id }) { source ->
+                GrowthCard {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(shape = MaterialTheme.shapes.small, color = SmartEduBlue.copy(alpha = .12f)) {
+                            Text("资源站", Modifier.padding(horizontal = 10.dp, vertical = 5.dp), color = SmartEduBlue)
+                        }
+                        Spacer(Modifier.width(10.dp))
+                        Text(source.title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    }
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+                        source.categories.forEach { category ->
+                            SuggestionChip(onClick = requestParent, label = { Text(category.title) })
+                        }
+                    }
+                    Text("点栏目后请家长一起打开，App 不会把你带到陌生网页。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
         }
     }

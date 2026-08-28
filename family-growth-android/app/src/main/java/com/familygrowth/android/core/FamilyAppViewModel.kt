@@ -36,6 +36,10 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     var connectionState by mutableStateOf<ConnectionState>(ConnectionState.Disconnected)
         private set
+    var educationSources by mutableStateOf<List<RemoteEducationSource>>(emptyList())
+        private set
+    var childEducationCatalog by mutableStateOf<List<RemoteChildEducationSource>>(emptyList())
+        private set
 
     val isChildLocked: Boolean get() = mode == AppMode.CHILD &&
         (state.usage.usedMinutes >= state.usage.dailyLimitMinutes || sessionUsedMinutes >= state.usage.sessionLimitMinutes)
@@ -131,22 +135,69 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             }
         }
     }
+    fun addEducationSource(title: String, url: String, stages: List<SchoolStage>, usageNote: String) {
+        if (title.isBlank() || url.isBlank() || stages.isEmpty() || usageNote.isBlank()) return failUnit("请完整填写来源、网址、学段和免费使用说明")
+        viewModelScope.launch {
+            when (val result = remote.createEducationSource(title.trim(), url.trim(), stages, usageNote.trim())) {
+                is RemoteResult.Ok -> { educationSources = result.value; message = "来源已保存，请读取栏目后再批准" }
+                RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+                is RemoteResult.Failure -> message = result.message
+            }
+        }
+    }
+    fun refreshEducationSource(id: String) = changeEducationSource(id, "refresh", "栏目读取完成；请确认后批准")
+    fun approveEducationSource(id: String) = changeEducationSource(id, "approve", "来源已批准，孩子目录会动态更新")
+    fun withdrawEducationSource(id: String) = changeEducationSource(id, "withdraw", "来源已撤回，不再显示给孩子")
+    fun requestParentForResource() { message = "这个栏目需要家长一起打开" }
     fun clearMessage() { message = null }
 
     fun connectService(baseUrl: String, familyId: String, parentId: String, childId: String, pin: String) {
         if (connectionState == ConnectionState.Connecting) return
         connectionState = ConnectionState.Connecting
-        viewModelScope.launch { handleRemote(remote.connect(baseUrl, familyId, parentId, childId, pin), "已连接并同步家庭服务") }
+        viewModelScope.launch {
+            val result = remote.connect(baseUrl, familyId, parentId, childId, pin)
+            handleRemote(result, "已连接并同步家庭服务")
+            if (result is RemoteResult.Ok) syncEducationResources()
+        }
     }
     fun refreshService() {
         if (connectionState !is ConnectionState.Connected) connectionState = ConnectionState.Connecting
         viewModelScope.launch {
             val result = remote.refresh()
             handleRemote(result, "已同步最新数据")
-            if (result is RemoteResult.Ok) flushUsageNow()
+            if (result is RemoteResult.Ok) { syncEducationResources(); flushUsageNow() }
         }
     }
-    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); connectionState = ConnectionState.Disconnected; message = "已断开；服务端 Token 已从内存清除" }
+    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); connectionState = ConnectionState.Disconnected; message = "已断开；服务端 Token 已从内存清除" }
+
+    private fun changeEducationSource(id: String, action: String, success: String) {
+        viewModelScope.launch {
+            when (val result = remote.educationSourceAction(id, action)) {
+                is RemoteResult.Ok -> {
+                    educationSources = result.value
+                    syncEducationResources()
+                    val changed = result.value.firstOrNull { it.id == id }
+                    message = if (action == "refresh" && changed?.refreshStatus == "FAILED")
+                        "栏目读取失败，已保留上一次成功结果：${changed.refreshError}" else success
+                }
+                RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+                is RemoteResult.Failure -> message = result.message
+            }
+        }
+    }
+
+    private suspend fun syncEducationResources() {
+        when (val sources = remote.educationSources()) {
+            is RemoteResult.Ok -> educationSources = sources.value
+            RemoteResult.Unauthorized -> { handleRemote(RemoteResult.Unauthorized, ""); return }
+            is RemoteResult.Failure -> message = sources.message
+        }
+        when (val catalog = remote.childEducationCatalog()) {
+            is RemoteResult.Ok -> childEducationCatalog = catalog.value
+            RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+            is RemoteResult.Failure -> message = catalog.message
+        }
+    }
 
     private fun handleRemote(result: RemoteResult<RemoteSnapshot>, success: String) {
         when (result) {

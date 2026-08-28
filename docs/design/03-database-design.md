@@ -35,6 +35,7 @@ erDiagram
 | 零钱回收 | `withdrawal_rule`, `withdrawal_quote`, `withdrawal_request`, `withdrawal_action` | 默认 1:1；十分钟报价与费用快照；APPROVED 冻结、PAID 扣账；动作幂等 |
 | 学段体验 | `child_experience_profile`, `child_experience_audit` | 每个孩子一份服务端事实源；乐观版本；出生日期/覆盖/触觉变更追加审计 |
 | 内容权利目录 | `documentary_source`, `documentary_source_action` | 学段、访问模式、权利依据和到期日必审；DRAFT/APPROVED/WITHDRAWN；动作幂等 |
+| 免费教育来源目录 | `education_resource_source`, `_source_stage`, `_category`, `_action` | 公共 HTTPS 来源、适用学段、栏目快照、NEVER/READY/FAILED、DRAFT/APPROVED/WITHDRAWN；刷新失败不删除旧栏目，所有动作幂等 |
 | 报告 | 优先查询/投影，不建可变余额事实表 | 月报可重算，必要快照在后续 Stage 决定 |
 
 ## 数值、ID 与审计

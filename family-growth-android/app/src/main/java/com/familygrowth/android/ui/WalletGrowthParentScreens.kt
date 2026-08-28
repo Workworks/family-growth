@@ -464,6 +464,7 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
     var showUsage by remember { mutableStateOf(false) }
     var showConnection by remember { mutableStateOf(false) }
     var showExperience by remember { mutableStateOf(false) }
+    var showEducationSource by remember { mutableStateOf(false) }
     val state = viewModel.state
     val approved = state.tasks.count { it.status == TaskStatus.APPROVED }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -472,6 +473,7 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
         }
         item { ServiceConnectionCard(viewModel) { showConnection = true } }
         item { ChildExperienceCard(viewModel) { showExperience = true } }
+        item { EducationResourceShelfCard(viewModel) { showEducationSource = true } }
         item {
             BoxWithConstraints {
                 val wide = maxWidth >= 720.dp
@@ -496,6 +498,7 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
     if (showUsage) UsageDialog(state.usage, { showUsage = false }) { daily, session -> viewModel.updateUsage(daily, session); showUsage = false }
     if (showConnection) ServiceConnectionDialog(viewModel) { showConnection = false }
     if (showExperience) ChildExperienceDialog(viewModel) { showExperience = false }
+    if (showEducationSource) EducationResourceSourceDialog(viewModel) { showEducationSource = false }
 }
 
 @Composable

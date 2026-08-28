@@ -63,6 +63,11 @@
 | GET | `/families/{familyId}/children/{childId}/documentaries` | PARENT/CHILD 本人 | 只投影有效学段内已批准且未过期的条目；孩子响应不含可启动 URL 或权利元数据 |
 | POST | `/families/{familyId}/documentary-sources/{sourceId}/approve` | PARENT | 幂等批准 DRAFT 来源 |
 | POST | `/families/{familyId}/documentary-sources/{sourceId}/withdraw` | PARENT | 幂等撤回来源并保留历史 |
+| GET/POST | `/families/{familyId}/education-resource-sources` | PARENT | 查询或幂等创建免费教育来源；只接受公共、无凭据/查询/片段、默认 443 的 HTTPS 主机名 |
+| POST | `/families/{familyId}/education-resource-sources/{sourceId}/refresh` | PARENT | 受限读取 HTML 导航栏目；逐跳复验 DNS/同源重定向，失败保留最近成功快照 |
+| POST | `/families/{familyId}/education-resource-sources/{sourceId}/approve` | PARENT | 成功读取非空栏目后幂等批准，允许进入适龄儿童投影 |
+| POST | `/families/{familyId}/education-resource-sources/{sourceId}/withdraw` | PARENT | 幂等撤回并保留来源、栏目和动作历史 |
+| GET | `/families/{familyId}/children/{childId}/education-resource-catalog` | PARENT/CHILD 本人 | 只返回匹配有效学段的已批准来源名/栏目名/同步时间，不返回任何 URL 或使用说明；幼儿园为空 |
 
 批准审核会锁定 Completion 与 Wallet；Coin/Money 流水先追加，再在同一事务更新余额和 Completion。重复提交返回首次结果；重复/冲突审核返回 409，不能重复发奖。XP 的奖励事实保存在 Completion 快照并更新 `child_progress`。
 
@@ -71,6 +76,8 @@
 月度报告不保存第二份余额：Money/Coin 收支来自不可变 Ledger，压岁钱、兑换费、储蓄和模拟基金分别来自业务事实表；`walletLedgerBalanced` 直接比较 Wallet 与全量流水。CHILD 会话不能读取月度财务报告，也不能读取其他孩子的今日摘要。
 
 学段推荐边界为 0–2 岁 `PARENT_ONLY`、3–5 岁 `KINDERGARTEN`、6–11 岁 `PRIMARY`、12–14 岁 `JUNIOR_MIDDLE`、15 岁及以上 `SENIOR_HIGH`。家长覆盖不能选择 `PARENT_ONLY`，且必须说明原因；更新使用 `expectedVersion` 防止并发覆盖并追加审计。纪录片 `OFFICIAL_LINK` 只接受无凭据 HTTPS 地址且始终要求家长操作；原创离线和已授权离线内容分别只接受 `asset://`、`content-package://` 引用。目录仅证明来源已登记和审批，不证明第三方内容已获下载、剪辑或再分发授权。
+
+免费教育来源发现不是通用爬虫：服务端不执行 JavaScript、不提交表单、不携带 Cookie/认证，只读取最多 512 KiB HTML，最多跟随 3 次同源重定向并保存 30 个同源导航栏目。URL 创建、DNS 结果和每次重定向均拒绝 loopback、私网、链路本地、组播、保留地址和 IP 字面量。成功刷新会把来源重新置为 `DRAFT`，必须由家长再次批准新快照；失败返回 `FAILED`、保留最近成功快照和既有批准状态。不同站点的栏目结构可能无法自动识别，由家长更换为该站稳定的栏目首页。
 
 ## 响应与错误
 

@@ -282,7 +282,7 @@ private fun ChildTasksScreen(viewModel: FamilyAppViewModel) {
             }
         }
         if (selfLearning) {
-            OfficialSelfLearningScreen(viewModel.state.experience)
+            OfficialSelfLearningScreen(viewModel.state.experience, viewModel.childEducationCatalog, viewModel::requestParentForResource)
             return@Column
         }
         LazyColumn(

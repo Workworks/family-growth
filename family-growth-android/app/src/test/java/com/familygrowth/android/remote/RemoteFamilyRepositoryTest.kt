@@ -49,16 +49,31 @@ class RemoteFamilyRepositoryTest {
         assertFalse(transport.updatedHaptics)
     }
 
+    @Test fun educationSourceActionsUseParentSessionAndChildCatalogUsesChildSession() = runBlocking {
+        val transport = FakeTransport()
+        val repository = RemoteFamilyRepository(transport, MemorySessionStore(), false)
+        assertTrue(repository.connect("https://family.example", FAMILY, PARENT, CHILD, "123456") is RemoteResult.Ok)
+        assertTrue(repository.createEducationSource("公益课堂", "https://learn.example.org", listOf(SchoolStage.PRIMARY), "免费浏览") is RemoteResult.Ok)
+        assertTrue(repository.educationSourceAction("source-1", "refresh") is RemoteResult.Ok)
+        assertTrue(repository.childEducationCatalog() is RemoteResult.Ok)
+        assertEquals(listOf("create", "refresh", "child-catalog"), transport.resourceCalls)
+    }
+
     private class FakeTransport : FamilyApiTransport {
         var expire = false
         val usageKeys = mutableListOf<String>()
         var updatedStage: SchoolStage? = null
         var updatedHaptics = true
+        val resourceCalls = mutableListOf<String>()
         override suspend fun login(base:String,family:String,parent:String,pin:String)=RemoteResult.Ok("parent-token")
         override suspend fun childSession(base:String,parentToken:String,child:String)=RemoteResult.Ok("child-token")
         override suspend fun snapshot(base:String,token:String,family:String,child:String):RemoteResult<RemoteSnapshot> = if(expire) RemoteResult.Unauthorized else RemoteResult.Ok(RemoteSnapshot(family,child,"小树",BigDecimal("12.00"),30,emptyList(),0,0))
         override suspend fun experience(base:String,token:String,family:String,child:String):RemoteResult<RemoteExperienceProfile> = if(expire) RemoteResult.Unauthorized else RemoteResult.Ok(RemoteExperienceProfile("2022-08-26","KINDERGARTEN",null,"KINDERGARTEN","",true,0))
         override suspend fun updateExperience(base:String,token:String,family:String,child:String,birthDate:LocalDate,stageOverride:SchoolStage?,overrideReason:String,hapticsEnabled:Boolean,expectedVersion:Long):RemoteResult<RemoteExperienceProfile>{updatedStage=stageOverride;updatedHaptics=hapticsEnabled;return RemoteResult.Ok(RemoteExperienceProfile(birthDate.toString(),"PRIMARY",stageOverride?.name,stageOverride?.name?:"PRIMARY",overrideReason,hapticsEnabled,expectedVersion+1))}
+        override suspend fun educationSources(base:String,token:String,family:String)=RemoteResult.Ok(emptyList<RemoteEducationSource>())
+        override suspend fun createEducationSource(base:String,token:String,family:String,title:String,sourceUrl:String,stages:List<SchoolStage>,usageNote:String,key:String):RemoteResult<RemoteEducationSource>{resourceCalls += "create";return RemoteResult.Ok(RemoteEducationSource("source-1",title,sourceUrl,stages.map{it.name},usageNote,"DRAFT","NEVER","",null,emptyList()))}
+        override suspend fun educationSourceAction(base:String,token:String,family:String,source:String,action:String,key:String):RemoteResult<RemoteEducationSource>{resourceCalls += action;return RemoteResult.Ok(RemoteEducationSource(source,"公益课堂","https://learn.example.org",listOf("PRIMARY"),"免费浏览","DRAFT","READY","",null,emptyList()))}
+        override suspend fun childEducationCatalog(base:String,token:String,family:String,child:String):RemoteResult<List<RemoteChildEducationSource>>{resourceCalls += "child-catalog";return RemoteResult.Ok(emptyList())}
         override suspend fun submit(base:String,childToken:String,family:String,child:String,task:String,key:String)=RemoteResult.Ok(Unit)
         override suspend fun review(base:String,parentToken:String,family:String,completion:String,key:String)=RemoteResult.Ok(Unit)
         override suspend fun usage(base:String,childToken:String,family:String,child:String,key:String,occurredAt:Instant):RemoteResult<Unit>{usageKeys += key;return RemoteResult.Ok(Unit)}

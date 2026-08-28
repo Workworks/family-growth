@@ -6,6 +6,9 @@ import java.util.UUID
 
 data class RemoteTask(val id:String,val title:String,val minutes:Int,val status:String,val completionId:String?)
 data class RemoteExperienceProfile(val birthDate:String,val recommendedStage:String,val stageOverride:String?,val effectiveStage:String,val overrideReason:String,val hapticsEnabled:Boolean,val version:Long)
+data class RemoteResourceCategory(val id:String,val title:String,val displayOrder:Int,val categoryUrl:String?=null)
+data class RemoteEducationSource(val id:String,val title:String,val sourceUrl:String,val schoolStages:List<String>,val usageNote:String,val status:String,val refreshStatus:String,val refreshError:String,val lastRefreshedAt:String?,val categories:List<RemoteResourceCategory>)
+data class RemoteChildEducationSource(val id:String,val title:String,val categories:List<RemoteResourceCategory>,val lastRefreshedAt:String?,val parentActionRequired:Boolean)
 data class RemoteSnapshot(val familyId:String,val childId:String,val childName:String,val money:BigDecimal,val coin:Int,val tasks:List<RemoteTask>,val pendingReviews:Int,val approvedToday:Int,val experience:RemoteExperienceProfile?=null)
 data class RemoteSession(val baseUrl:String,val familyId:String,val parentId:String,val childId:String,val parentToken:String,val childToken:String)
 sealed interface ConnectionState{data object Disconnected:ConnectionState;data object Connecting:ConnectionState;data class Connected(val snapshot:RemoteSnapshot):ConnectionState;data class Error(val message:String):ConnectionState;data object Expired:ConnectionState}
