@@ -57,12 +57,20 @@
 | POST | `/families/{familyId}/children/{childId}/usage-events` | PARENT/CHILD 本人 | 幂等记录本 App 的活跃/学习分钟；只接受最近 31 天且不超过未来 5 分钟的事件 |
 | GET | `/families/{familyId}/children/{childId}/reports/today` | PARENT/CHILD 本人 | 按家庭时区返回本人适龄使用、任务、待审核和钱包摘要 |
 | GET | `/families/{familyId}/children/{childId}/reports/monthly` | PARENT | 从 Usage/Completion/Ledger/Saving/Fund 事实表聚合月度成长和财商报告 |
+| GET/PUT | `/families/{familyId}/children/{childId}/experience-profile` | PARENT/CHILD 本人 / PARENT | 查询服务端推荐/有效学段与反馈档案；家长按版本修改出生日期、覆盖学段和触觉开关 |
+| GET | `/families/{familyId}/children/{childId}/experience-profile/audit` | PARENT | 查询出生日期、覆盖学段和触觉配置的不可变审计记录 |
+| GET/POST | `/families/{familyId}/documentary-sources` | PARENT | 查询或幂等创建带权利依据、访问模式、学段和生命周期的纪录片来源 |
+| GET | `/families/{familyId}/children/{childId}/documentaries` | PARENT/CHILD 本人 | 只投影有效学段内已批准且未过期的条目；孩子响应不含可启动 URL 或权利元数据 |
+| POST | `/families/{familyId}/documentary-sources/{sourceId}/approve` | PARENT | 幂等批准 DRAFT 来源 |
+| POST | `/families/{familyId}/documentary-sources/{sourceId}/withdraw` | PARENT | 幂等撤回来源并保留历史 |
 
 批准审核会锁定 Completion 与 Wallet；Coin/Money 流水先追加，再在同一事务更新余额和 Completion。重复提交返回首次结果；重复/冲突审核返回 409，不能重复发奖。XP 的奖励事实保存在 Completion 快照并更新 `child_progress`。
 
 零钱回收状态机为 `REQUESTED → APPROVED → PAID`、`REQUESTED → REJECTED/CANCELLED`、`APPROVED → CANCELLED`。`availableMoney = moneyBalance - reservedMoney`；家长调账、Money→Coin、储蓄转入和模拟基金买入都必须检查可用额。APPROVED 只冻结，PAID 才按申请 Money 扣账；手续费只影响家庭约定的线下净到账，并以不可变快照和流水原因透明保存。
 
 月度报告不保存第二份余额：Money/Coin 收支来自不可变 Ledger，压岁钱、兑换费、储蓄和模拟基金分别来自业务事实表；`walletLedgerBalanced` 直接比较 Wallet 与全量流水。CHILD 会话不能读取月度财务报告，也不能读取其他孩子的今日摘要。
+
+学段推荐边界为 0–2 岁 `PARENT_ONLY`、3–5 岁 `KINDERGARTEN`、6–11 岁 `PRIMARY`、12–14 岁 `JUNIOR_MIDDLE`、15 岁及以上 `SENIOR_HIGH`。家长覆盖不能选择 `PARENT_ONLY`，且必须说明原因；更新使用 `expectedVersion` 防止并发覆盖并追加审计。纪录片 `OFFICIAL_LINK` 只接受无凭据 HTTPS 地址且始终要求家长操作；原创离线和已授权离线内容分别只接受 `asset://`、`content-package://` 引用。目录仅证明来源已登记和审批，不证明第三方内容已获下载、剪辑或再分发授权。
 
 ## 响应与错误
 

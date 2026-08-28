@@ -1,0 +1,74 @@
+{
+  "capturedAt": "2026-08-28T11:20:31+08:00",
+  "stage": 20,
+  "status": "BLOCKED",
+  "passed": false,
+  "workingDirectory": "C:/Users/70649/Desktop/aiWork/studyApp",
+  "shellType": "PowerShell",
+  "summary": "The server-authoritative age/stage profile, immutable configuration audit, rights-gated documentary catalogue, four structurally distinct Android stage homes and bounded feedback engine passed all offline engineering gates; physical-tablet interaction remains blocked.",
+  "environment": {
+    "java": "17.0.8",
+    "h2": "2.3.232 in PostgreSQL mode",
+    "postgres": "16.15",
+    "postgresImage": "postgres:16.15-alpine",
+    "android": "compileSdk 36 / debug and release",
+    "postgresContainerLifecycle": "isolated random-name localhost container with no persistent volume; exact container removed in finally"
+  },
+  "checks": [
+    {
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am -DskipTests compile",
+      "exitCode": 0,
+      "passed": true,
+      "result": "All six Maven reactor modules compiled with Stage20 domain, application, JDBC and REST code."
+    },
+    {
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am \"-Dtest=Stage20ModelsTest,Stage20ApiTest\" \"-Dsurefire.failIfNoSpecifiedTests=false\" test",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Three domain vectors and two H2 MockMvc scenarios passed: age boundaries, override/feedback rules, RBAC, cross-family hiding, version conflict, immutable audit, access-mode validation, idempotent approval/withdrawal and child-safe projection."
+    },
+    {
+      "command": ".\\mvnw.cmd test",
+      "exitCode": 0,
+      "passed": true,
+      "result": "H2 full regression passed with 17 domain tests and 20 Boot tests; five PostgreSQL-only tests were conditionally skipped. Flyway V1-V9 and Hibernate validate passed."
+    },
+    {
+      "command": "start isolated localhost PostgreSQL 16.15 container; export test datasource only for the Maven process; .\\mvnw.cmd test; remove exact container in finally",
+      "exitCode": 0,
+      "passed": true,
+      "result": "PostgreSQL 16.15 full regression passed with 17 domain and 20 Boot/API/concurrency tests, zero failures/errors/skips; 9 migrations and 39 production tables validated. The temporary container was removed and no volume was created."
+    },
+    {
+      "command": ".\\gradlew.bat testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease",
+      "workingDirectory": "C:/Users/70649/Desktop/aiWork/studyApp/family-growth-android",
+      "exitCode": 0,
+      "passed": true,
+      "result": "111 tasks succeeded on the final source tree; 24 debug and 24 release JVM tests, both lint variants and both APK builds passed. Tests cover age boundaries, safe override/reduced-motion policy, remote experience refresh and parent update; the local decoder keeps an explicit missing-experience fallback for pre-Stage20 JSON."
+    },
+    {
+      "command": ".\\scripts\\Test-DocumentationLinks.ps1; parse all evidence JSON and docs/openapi.yaml",
+      "exitCode": 0,
+      "passed": true,
+      "result": "85 Markdown files and 84 indexed documents passed local-link validation; all 20 evidence JSON files parsed; OpenAPI 3.1 parsed with 51 paths and the Stage20 request schemas."
+    }
+  ],
+  "acceptance": {
+    "AC20-01": "PASS - server recommendation, protected override/clear path, haptic setting, child self-read, optimistic version and immutable audit are implemented and tested.",
+    "AC20-02": "PASS - stage capabilities and feedback profiles differ, and Android routes to story stage, exploration notebook, subject lab and study studio rather than recolouring one dashboard.",
+    "AC20-03": "PASS_OFFLINE - bounded primary-action animation, visible press state, stage-specific short haptics, system animation-scale and haptic-off degradation passed build/unit inspection; physical feedback quality awaits the target tablet.",
+    "AC20-04": "PASS - rights holder/reference, stage, access mode, DRAFT/APPROVED/WITHDRAWN and expiry are enforced; child projection omits launchable URLs and rights metadata.",
+    "AC20-05": "PASS - H2/PostgreSQL 16.15, Android debug/release JVM/lint/build, OpenAPI and documentation gates passed.",
+    "AC20-06": "BLOCKED - target-tablet haptics, Reduced Motion, TalkBack, orientation, restart persistence and live server synchronisation were not executed."
+  },
+  "security": {
+    "childCanModifyExperience": false,
+    "childReceivesExternalUrl": false,
+    "thirdPartyContentDownloadedOrRedistributed": false,
+    "walletOrLedgerChanged": false,
+    "secretsInEvidence": false
+  },
+  "blocked": [
+    "An Android tablet or phone with USB debugging is required for V20-05: all four stage layouts, physical haptics and haptic-off behaviour, system Reduced Motion, TalkBack, rotation, app restart and live service synchronisation."
+  ]
+}

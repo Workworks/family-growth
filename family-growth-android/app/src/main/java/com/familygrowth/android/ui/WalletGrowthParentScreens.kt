@@ -186,6 +186,7 @@ fun GrowthScreen(viewModel: FamilyAppViewModel) {
 @Composable
 private fun ChildGrowthScreen(viewModel: FamilyAppViewModel) {
     val state = viewModel.state
+    val feedback = rememberChildControlFeedback(state.experience)
     var area by remember { mutableStateOf(ChildGrowthArea.LESSONS) }
     var selectedReward by remember { mutableStateOf<LocalRewardItem?>(null) }
     var selectedLesson by remember { mutableStateOf<LearningLesson?>(null) }
@@ -221,8 +222,8 @@ private fun ChildGrowthScreen(viewModel: FamilyAppViewModel) {
                 border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
             ) {
                 Row(Modifier.fillMaxWidth().padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    ChildAreaButton("安静小课堂", area == ChildGrowthArea.LESSONS, Modifier.weight(1f)) { area = ChildGrowthArea.LESSONS }
-                    ChildAreaButton("奖励商店", area == ChildGrowthArea.REWARDS, Modifier.weight(1f)) { area = ChildGrowthArea.REWARDS }
+                    ChildAreaButton("安静小课堂", area == ChildGrowthArea.LESSONS, Modifier.weight(1f)) { feedback { area = ChildGrowthArea.LESSONS } }
+                    ChildAreaButton("奖励商店", area == ChildGrowthArea.REWARDS, Modifier.weight(1f)) { feedback { area = ChildGrowthArea.REWARDS } }
                 }
             }
         }
@@ -230,7 +231,7 @@ private fun ChildGrowthScreen(viewModel: FamilyAppViewModel) {
             item { SectionTitle("今天看一个就好", "视频不会自动播放，看完记为待家长确认的任务") }
             items(LearningCatalog.lessons, key = { it.id }) { lesson ->
                 val progress = state.learningProgress.singleOrNull { it.videoId == lesson.id }
-                ChildLessonCard(lesson, progress) { selectedLesson = lesson }
+                ChildLessonCard(lesson, progress) { feedback { selectedLesson = lesson } }
             }
         } else {
             item { SectionTitle("奖励商店", "点开看看；喜欢就告诉家长") }
@@ -238,7 +239,7 @@ private fun ChildGrowthScreen(viewModel: FamilyAppViewModel) {
                 item { GrowthCard { EmptyInvitation("☆", "还没有家庭奖励", "请家长先添加一个一起约定的奖励。") } }
             } else {
                 items(state.rewards, key = { it.id }) { reward ->
-                    ChildRewardBrowseCard(reward, reward.id in state.rewardInterestIds) { selectedReward = reward }
+                    ChildRewardBrowseCard(reward, reward.id in state.rewardInterestIds) { feedback { selectedReward = reward } }
                 }
             }
         }
@@ -256,8 +257,8 @@ private fun ChildGrowthScreen(viewModel: FamilyAppViewModel) {
         ChildRewardDetailDialog(
             reward = reward,
             interested = reward.id in state.rewardInterestIds,
-            dismiss = { selectedReward = null },
-            toggleInterest = { viewModel.toggleRewardInterest(reward.id) },
+            dismiss = { feedback { selectedReward = null } },
+            toggleInterest = { feedback { viewModel.toggleRewardInterest(reward.id) } },
         )
     }
     selectedLesson?.let { lesson ->
@@ -266,6 +267,7 @@ private fun ChildGrowthScreen(viewModel: FamilyAppViewModel) {
             progress = state.learningProgress.singleOrNull { it.videoId == lesson.id },
             dismiss = { selectedLesson = null },
             watchedSecond = { viewModel.recordLearningSecond(lesson.id) },
+            feedback = feedback,
         )
     }
 }
@@ -336,7 +338,7 @@ private fun ChildRewardDetailDialog(reward: LocalRewardItem, interested: Boolean
 }
 
 @Composable
-private fun LearningVideoDialog(lesson: LearningLesson, progress: LocalLearningProgress?, dismiss: () -> Unit, watchedSecond: () -> Unit) {
+private fun LearningVideoDialog(lesson: LearningLesson, progress: LocalLearningProgress?, dismiss: () -> Unit, watchedSecond: () -> Unit, feedback: ((() -> Unit) -> Unit)) {
     val context = LocalContext.current
     var videoView by remember(lesson.id) { mutableStateOf<VideoView?>(null) }
     var playing by remember(lesson.id) { mutableStateOf(false) }
@@ -385,7 +387,7 @@ private fun LearningVideoDialog(lesson: LearningLesson, progress: LocalLearningP
         confirmButton = {
             Button(
                 enabled = !videoError,
-                onClick = {
+                onClick = { feedback {
                     videoView?.let { view ->
                         if (playing) view.pause() else {
                             if (!view.isPlaying && view.currentPosition >= view.duration - 500) view.seekTo(0)
@@ -393,11 +395,11 @@ private fun LearningVideoDialog(lesson: LearningLesson, progress: LocalLearningP
                         }
                         playing = !playing
                     }
-                },
+                } },
                 modifier = Modifier.heightIn(min = 52.dp),
             ) { Icon(if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, null); Spacer(Modifier.width(6.dp)); Text(if (playing) "暂停" else if (completed) "再看一次" else "开始播放") }
         },
-        dismissButton = { TextButton(onClick = dismiss, modifier = Modifier.heightIn(min = 52.dp)) { Text("关闭") } },
+        dismissButton = { TextButton(onClick = { feedback(dismiss) }, modifier = Modifier.heightIn(min = 52.dp)) { Text("关闭") } },
     )
 }
 
@@ -461,6 +463,7 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
     if (viewModel.mode != AppMode.PARENT) return
     var showUsage by remember { mutableStateOf(false) }
     var showConnection by remember { mutableStateOf(false) }
+    var showExperience by remember { mutableStateOf(false) }
     val state = viewModel.state
     val approved = state.tasks.count { it.status == TaskStatus.APPROVED }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -468,6 +471,7 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
             SectionTitle("家庭家长中心", "可连接自有服务端；Token 仅保留在本次 App 进程内")
         }
         item { ServiceConnectionCard(viewModel) { showConnection = true } }
+        item { ChildExperienceCard(viewModel) { showExperience = true } }
         item {
             BoxWithConstraints {
                 val wide = maxWidth >= 720.dp
@@ -491,6 +495,7 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
     }
     if (showUsage) UsageDialog(state.usage, { showUsage = false }) { daily, session -> viewModel.updateUsage(daily, session); showUsage = false }
     if (showConnection) ServiceConnectionDialog(viewModel) { showConnection = false }
+    if (showExperience) ChildExperienceDialog(viewModel) { showExperience = false }
 }
 
 @Composable

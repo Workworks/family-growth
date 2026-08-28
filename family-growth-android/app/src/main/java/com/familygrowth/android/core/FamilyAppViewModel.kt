@@ -117,6 +117,20 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     fun sellFund() = mutate("已赎回全部纯模拟份额") { LocalFamilyEngine.sellAllFund(it) }
     fun updateNav(nav: BigDecimal) = mutate("教学 NAV 已更新") { LocalFamilyEngine.updateFundNav(it, nav) }
     fun updateUsage(daily: Int, session: Int) = mutate("本机防沉迷规则已更新") { LocalFamilyEngine.updateUsagePolicy(it, daily, session) }
+    fun updateExperience(birthDate: String, stageOverride: SchoolStage?, overrideReason: String, hapticsEnabled: Boolean) {
+        val parsed = runCatching { java.time.LocalDate.parse(birthDate) }.getOrElse { return failUnit("请填写 YYYY-MM-DD 格式的出生日期") }
+        if (remote.hasSession()) {
+            viewModelScope.launch {
+                handleRemote(remote.updateExperience(parsed, stageOverride, overrideReason, hapticsEnabled,
+                    state.experience.version), "学习阶段已保存到家庭服务")
+            }
+        } else {
+            mutate("本机学习阶段已更新；连接服务后以服务端配置为准") {
+                it.copy(experience = ChildExperiencePolicy.localSettings(parsed, stageOverride, overrideReason,
+                    hapticsEnabled, version = it.experience.version + 1))
+            }
+        }
+    }
     fun clearMessage() { message = null }
 
     fun connectService(baseUrl: String, familyId: String, parentId: String, childId: String, pin: String) {
@@ -146,6 +160,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
                         status = when (task.status) { "SUBMITTED" -> TaskStatus.SUBMITTED; "APPROVED" -> TaskStatus.APPROVED; else -> TaskStatus.TODO },
                     ) },
                     wallet = state.wallet.copy(money = snapshot.money, coin = snapshot.coin),
+                    experience = snapshot.experience?.toLocal() ?: state.experience,
                 )
                 connectionState = ConnectionState.Connected(snapshot)
                 message = success
@@ -189,5 +204,17 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     }
 
     private fun fail(text: String): Boolean { message = text; return false }
+    private fun failUnit(text: String) { message = text }
     private data class PendingUsage(val key: String, val occurredAt: Instant)
 }
+
+private fun RemoteExperienceProfile.toLocal() = ChildExperienceSettings(
+    birthDate = birthDate,
+    recommendedStage = SchoolStage.valueOf(recommendedStage),
+    stageOverride = stageOverride?.let(SchoolStage::valueOf),
+    effectiveStage = SchoolStage.valueOf(effectiveStage),
+    overrideReason = overrideReason,
+    hapticsEnabled = hapticsEnabled,
+    version = version,
+    source = ExperienceSource.SERVER,
+)

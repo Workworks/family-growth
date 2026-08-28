@@ -10,6 +10,27 @@ enum class AppSection { TODAY, TASKS, WALLET, GROWTH, PARENT }
 enum class TaskStatus { TODO, SUBMITTED, APPROVED }
 enum class TaskSource { FAMILY, LEARNING_VIDEO }
 enum class WithdrawalStatus { PENDING, APPROVED }
+enum class SchoolStage { PARENT_ONLY, KINDERGARTEN, PRIMARY, JUNIOR_MIDDLE, SENIOR_HIGH }
+enum class ExperienceSource { LOCAL, SERVER }
+
+data class ChildFeedbackProfile(
+    val visualStyle: String,
+    val maxAnimationMs: Int,
+    val hapticPulseCount: Int,
+    val primaryPressScale: Float,
+    val hapticsEnabled: Boolean,
+)
+
+data class ChildExperienceSettings(
+    val birthDate: String = LocalDate.now().minusYears(4).toString(),
+    val recommendedStage: SchoolStage = SchoolStage.KINDERGARTEN,
+    val stageOverride: SchoolStage? = null,
+    val effectiveStage: SchoolStage = SchoolStage.KINDERGARTEN,
+    val overrideReason: String = "",
+    val hapticsEnabled: Boolean = true,
+    val version: Long = 0,
+    val source: ExperienceSource = ExperienceSource.LOCAL,
+)
 
 object ChildExperiencePolicy {
     const val MINIMUM_AGE = 3
@@ -20,6 +41,48 @@ object ChildExperiencePolicy {
         if (mode == AppMode.CHILD) childSections else parentSections
 
     fun allowsAdvancedFinance(mode: AppMode): Boolean = mode == AppMode.PARENT
+
+    fun recommendedStage(birthDate: LocalDate, today: LocalDate = LocalDate.now()): SchoolStage {
+        require(!birthDate.isAfter(today)) { "出生日期不能晚于今天" }
+        val age = java.time.Period.between(birthDate, today).years
+        return when {
+            age < 3 -> SchoolStage.PARENT_ONLY
+            age < 6 -> SchoolStage.KINDERGARTEN
+            age < 12 -> SchoolStage.PRIMARY
+            age < 15 -> SchoolStage.JUNIOR_MIDDLE
+            else -> SchoolStage.SENIOR_HIGH
+        }
+    }
+
+    fun feedbackFor(settings: ChildExperienceSettings, systemReducedMotion: Boolean = false): ChildFeedbackProfile {
+        val enabled = settings.hapticsEnabled
+        val base = when (settings.effectiveStage) {
+            SchoolStage.PARENT_ONLY -> ChildFeedbackProfile("parent-records", 0, 0, 1f, false)
+            SchoolStage.KINDERGARTEN -> ChildFeedbackProfile("storybook-stage", 320, if (enabled) 2 else 0, 1.10f, enabled)
+            SchoolStage.PRIMARY -> ChildFeedbackProfile("exploration-notebook", 220, if (enabled) 1 else 0, 1.04f, enabled)
+            SchoolStage.JUNIOR_MIDDLE -> ChildFeedbackProfile("subject-lab", 160, if (enabled) 1 else 0, 1.02f, enabled)
+            SchoolStage.SENIOR_HIGH -> ChildFeedbackProfile("study-studio", 120, if (enabled) 1 else 0, 1.01f, enabled)
+        }
+        return if (systemReducedMotion) base.copy(maxAnimationMs = 0, primaryPressScale = 1f) else base
+    }
+
+    fun localSettings(
+        birthDate: LocalDate,
+        override: SchoolStage?,
+        overrideReason: String,
+        hapticsEnabled: Boolean,
+        today: LocalDate = LocalDate.now(),
+        version: Long = 0,
+    ): ChildExperienceSettings {
+        require(override != SchoolStage.PARENT_ONLY) { "家长记录模式不能作为学段覆盖" }
+        require(override == null || overrideReason.isNotBlank()) { "覆盖学段时需要填写原因" }
+        val recommended = recommendedStage(birthDate, today)
+        return ChildExperienceSettings(
+            birthDate = birthDate.toString(), recommendedStage = recommended, stageOverride = override,
+            effectiveStage = override ?: recommended, overrideReason = overrideReason.trim(),
+            hapticsEnabled = hapticsEnabled, version = version, source = ExperienceSource.LOCAL,
+        )
+    }
 }
 
 data class LocalGrowthTask(
@@ -130,6 +193,7 @@ data class FamilyLocalState(
     val wishes: List<LocalWish> = emptyList(),
     val fund: LocalFundPosition = LocalFundPosition(),
     val usage: UsagePolicy = UsagePolicy(),
+    val experience: ChildExperienceSettings = ChildExperienceSettings(),
 )
 
 fun money(value: String): BigDecimal =

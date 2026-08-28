@@ -29,6 +29,8 @@ V1 保持单一部署单元。领域可按包/模块隔离，但不引入网络�
 - ViewModel 只编排 UI 状态；Repository 负责远端/本地策略；金额用字符串或精确十进制模型传递，不转 Double。
 - DataStore 存非敏感设置；凭据使用 Android Keystore 加密；Room 仅作缓存/离线草稿，不是金额事实源。
 - 平板采用响应式双栏/导航栏布局，以横屏为首要基线；手机窄屏降级为单栏。
+- `SchoolStage` 路由以服务端 `child_experience_profile` 为联网事实源，本机设置只作未连接时的保守回退。四学段使用不同信息结构：幼儿园故事舞台、小学探索手册、初中学科实验台、高中自主学习室；不是同一仪表盘换色。
+- 儿童反馈由统一 `FeedbackProfile` 约束时长、缩放和触觉次数，并服从系统 Reduced Motion/触觉开关；幼儿园主反馈上限 320ms、最多两次短触觉，不循环、不随机。
 
 ## 使用统计与防沉迷架构
 
@@ -41,6 +43,7 @@ Android 在 App 自身生命周期内采集 `UsageSession`：登录角色、开�
 - REST `/api/v1`，JSON 金额用十进制字符串，时间 ISO-8601 UTC。
 - 写请求携带身份会话、CSRF（Cookie 方案时）、`Idempotency-Key`；版本敏感操作携带 `If-Match` 或规则版本。
 - 统一响应含 `data/error/traceId`；服务端做角色、familyId、childId 对象权限。
+- 纪录片权利目录是元数据和审批事实源。儿童投影不返回外部 URL/权利材料，`OFFICIAL_LINK` 必须回到家长操作；Stage 20 不下载或再分发第三方内容。
 - 余额与流水在同一 ACID 事务；事件通知可在事务后发布，不能反向决定账本结果。
 
 ## 可观测性与部署

@@ -22,7 +22,7 @@ import java.math.RoundingMode
 @Composable
 fun TodayScreen(viewModel: FamilyAppViewModel) {
     if (viewModel.mode == AppMode.CHILD) {
-        ChildTodayScreen(viewModel)
+        AgeStageChildTodayScreen(viewModel)
         return
     }
     val state = viewModel.state
@@ -266,6 +266,7 @@ fun TasksScreen(viewModel: FamilyAppViewModel) {
 
 @Composable
 private fun ChildTasksScreen(viewModel: FamilyAppViewModel) {
+    val feedback = rememberChildControlFeedback(viewModel.state.experience)
     val todo = viewModel.state.tasks.filter { it.status == TaskStatus.TODO }.take(3)
     val waitingCount = viewModel.state.tasks.count { it.status == TaskStatus.SUBMITTED }
     val doneCount = viewModel.state.tasks.count { it.status == TaskStatus.APPROVED }
@@ -287,7 +288,7 @@ private fun ChildTasksScreen(viewModel: FamilyAppViewModel) {
                 }
             }
         } else {
-            item { ChildTaskCard(todo.first(), primary = true) { viewModel.submitTask(todo.first().id) } }
+            item { ChildTaskCard(todo.first(), primary = true) { feedback { viewModel.submitTask(todo.first().id) } } }
             if (todo.size > 1) {
                 item {
                     GrowthCard {

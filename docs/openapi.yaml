@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Family Growth API
   version: 1.0.0
-  description: Stage 3–9 与 Stage 17 生产认证、成长任务、家庭账本、纯模拟基金、冻结式零钱回收、Android 同步与家庭报告 API。
+  description: Stage 3–9、17 与 20 的生产认证、成长任务、家庭账本、纯模拟基金、冻结式零钱回收、Android 同步、家庭报告及儿童学段体验配置 API。
 servers:
   - url: /api/v1
 security:
@@ -598,6 +598,63 @@ paths:
         - $ref: '#/components/parameters/ChildId'
         - { name: month, in: query, required: false, schema: { type: string, pattern: '^\d{4}-\d{2}$' } }
       responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/children/{childId}/experience-profile:
+    get:
+      operationId: getChildExperienceProfile
+      description: Returns the server-authoritative birth date, recommended/effective school stage, capability and bounded feedback profile. A child session may read only itself.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' } }
+    put:
+      operationId: updateChildExperienceProfile
+      description: Parent-only update with optimistic version checking and an immutable audit entry. PARENT_ONLY cannot be selected as an override.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ExperienceProfileRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/experience-profile/audit:
+    get:
+      operationId: listChildExperienceAudit
+      description: Parent-only immutable history of birth date, override and haptic-setting changes.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/documentary-sources:
+    get:
+      operationId: listDocumentarySources
+      description: Parent-only rights and lifecycle view. Source references remain visible only to the parent.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      operationId: createDocumentarySource
+      description: Parent-only creation in DRAFT. Official links must be credential-free HTTPS; offline references must use the access-mode-specific scheme.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/DocumentarySourceRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/documentaries:
+    get:
+      operationId: listChildDocumentaries
+      description: Lists only approved, unexpired entries for the effective school stage. The child projection never includes a launchable source reference or rights metadata; official links require a parent action.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/documentary-sources/{sourceId}/approve:
+    post:
+      operationId: approveDocumentarySource
+      description: Parent-only idempotent DRAFT to APPROVED transition.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - { name: sourceId, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/documentary-sources/{sourceId}/withdraw:
+    post:
+      operationId: withdrawDocumentarySource
+      description: Parent-only idempotent transition that removes a source from the child catalogue without deleting its history.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - { name: sourceId, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
 components:
   securitySchemes:
     bearerAuth:
@@ -671,6 +728,36 @@ components:
           schema:
             $ref: '#/components/schemas/ApiResponse'
   schemas:
+    SchoolStage:
+      type: string
+      enum: [PARENT_ONLY, KINDERGARTEN, PRIMARY, JUNIOR_MIDDLE, SENIOR_HIGH]
+    ExperienceProfileRequest:
+      type: object
+      required: [birthDate, hapticsEnabled, expectedVersion, auditReason]
+      properties:
+        birthDate: { type: string, format: date }
+        stageOverride:
+          oneOf:
+            - { $ref: '#/components/schemas/SchoolStage' }
+            - { type: 'null' }
+        overrideReason: { type: [string, 'null'], maxLength: 240 }
+        hapticsEnabled: { type: boolean }
+        expectedVersion: { type: integer, format: int64, minimum: 0 }
+        auditReason: { type: string, minLength: 1, maxLength: 240 }
+    DocumentarySourceRequest:
+      type: object
+      required: [schoolStage, title, languageTag, accessMode, sourceReference, rightsHolder, rightsReference]
+      properties:
+        schoolStage: { $ref: '#/components/schemas/SchoolStage' }
+        title: { type: string, minLength: 1, maxLength: 160 }
+        description: { type: [string, 'null'], maxLength: 1000 }
+        languageTag: { type: string, pattern: '^[A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*$' }
+        durationSeconds: { type: [integer, 'null'], minimum: 10, maximum: 14400 }
+        accessMode: { type: string, enum: [ORIGINAL_OFFLINE, LICENSED_OFFLINE, OFFICIAL_LINK] }
+        sourceReference: { type: string, minLength: 1, maxLength: 1000 }
+        rightsHolder: { type: string, minLength: 1, maxLength: 240 }
+        rightsReference: { type: string, minLength: 1, maxLength: 1000 }
+        licenseExpiresOn: { type: [string, 'null'], format: date }
     BootstrapRequest:
       type: object
       required: [familyName, parentName, pin]

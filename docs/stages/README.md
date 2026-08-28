@@ -21,3 +21,4 @@
 - [Stage 17：服务端零钱回收与冻结式兑现闭环](stage-17-report.md) — `COMPLETED`
 - [Stage 18：双视角排版、奖励浏览与教学视频任务](stage-18-report.md) — `BLOCKED`
 - [Stage 19：GitHub Release 下载 0% 真机修复](stage-19-report.md) — `COMPLETED`
+- [Stage 20：学段底座、家长配置与分层体验路由](stage-20-report.md) — `BLOCKED`

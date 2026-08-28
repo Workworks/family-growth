@@ -96,6 +96,7 @@
 - [Stage 17：服务端零钱回收与冻结式兑现闭环](stages/stage-17-report.md)
 - [Stage 18：双视角排版、奖励浏览与教学视频任务](stages/stage-18-report.md)
 - [Stage 19：GitHub Release 下载 0% 真机修复](stages/stage-19-report.md)
+- [Stage 20：学段底座、家长配置与分层体验路由](stages/stage-20-report.md)
 
 ## 项目计划与 Phase · `program/` `phases/`
 

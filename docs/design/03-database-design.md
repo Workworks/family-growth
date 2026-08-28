@@ -15,6 +15,10 @@ erDiagram
   CHILD_PROFILE ||--o{ FUND_ORDER : places
   CHILD_PROFILE ||--o{ FUND_POSITION : owns
   VIRTUAL_FUND ||--o{ VIRTUAL_FUND_NAV : publishes
+  CHILD_PROFILE ||--|| CHILD_EXPERIENCE_PROFILE : configures
+  CHILD_PROFILE ||--o{ CHILD_EXPERIENCE_AUDIT : records
+  FAMILY ||--o{ DOCUMENTARY_SOURCE : curates
+  DOCUMENTARY_SOURCE ||--o{ DOCUMENTARY_SOURCE_ACTION : transitions
 ```
 
 ## V1 表清单
@@ -29,6 +33,8 @@ erDiagram
 | 储蓄 | `saving_account`, `saving_transaction`, `saving_interest_rule`, `wish` | 转入/转出关联 Ledger；利率规则版本化 |
 | 投资 | `virtual_fund`, `virtual_fund_nav`, `fund_fee_rule`, `fund_order`, `fund_position` | NAV 日期唯一；订单幂等；持仓唯一 |
 | 零钱回收 | `withdrawal_rule`, `withdrawal_quote`, `withdrawal_request`, `withdrawal_action` | 默认 1:1；十分钟报价与费用快照；APPROVED 冻结、PAID 扣账；动作幂等 |
+| 学段体验 | `child_experience_profile`, `child_experience_audit` | 每个孩子一份服务端事实源；乐观版本；出生日期/覆盖/触觉变更追加审计 |
+| 内容权利目录 | `documentary_source`, `documentary_source_action` | 学段、访问模式、权利依据和到期日必审；DRAFT/APPROVED/WITHDRAWN；动作幂等 |
 | 报告 | 优先查询/投影，不建可变余额事实表 | 月报可重算，必要快照在后续 Stage 决定 |
 
 ## 数值、ID 与审计
@@ -45,5 +51,6 @@ erDiagram
 - RewardOrder：`CREATED → APPROVED | REJECTED | CANCELED → FULFILLED`。
 - FundOrder：`PREVIEWED → CONFIRMED → EXECUTED | REJECTED | CANCELED`；预览有短时效和规则版本。
 - WithdrawalRequest：`REQUESTED → APPROVED → PAID`；`REQUESTED → REJECTED | CANCELLED`；`APPROVED → CANCELLED`。
+- DocumentarySource：`DRAFT → APPROVED → WITHDRAWN`；撤回后不删除历史，孩子目录只查询有效批准项。
 
 所有建表只能通过新增 Flyway migration；已执行迁移不修改，JPA 使用 `ddl-auto=validate`。

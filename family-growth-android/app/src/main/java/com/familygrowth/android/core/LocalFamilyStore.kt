@@ -4,6 +4,7 @@ import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
 import java.math.BigDecimal
+import java.time.LocalDate
 
 class LocalFamilyStore(context: Context) {
     private val preferences = context.getSharedPreferences("family_growth_local_v1", Context.MODE_PRIVATE)
@@ -57,6 +58,16 @@ class LocalFamilyStore(context: Context) {
             put("dailyLimitMinutes", state.usage.dailyLimitMinutes); put("sessionLimitMinutes", state.usage.sessionLimitMinutes)
             put("usedMinutes", state.usage.usedMinutes); put("usageDate", state.usage.usageDate)
         })
+        put("experience", JSONObject().apply {
+            put("birthDate", state.experience.birthDate)
+            put("recommendedStage", state.experience.recommendedStage.name)
+            state.experience.stageOverride?.let { put("stageOverride", it.name) }
+            put("effectiveStage", state.experience.effectiveStage.name)
+            put("overrideReason", state.experience.overrideReason)
+            put("hapticsEnabled", state.experience.hapticsEnabled)
+            put("version", state.experience.version)
+            put("source", state.experience.source.name)
+        })
     }
 
     private fun decode(text: String): FamilyLocalState {
@@ -64,6 +75,7 @@ class LocalFamilyStore(context: Context) {
         val wallet = root.optJSONObject("wallet") ?: JSONObject()
         val fund = root.optJSONObject("fund") ?: JSONObject()
         val usage = root.optJSONObject("usage") ?: JSONObject()
+        val experience = root.optJSONObject("experience")
         return FamilyLocalState(
             tasks = root.optJSONArray("tasks").mapObjects { value -> LocalGrowthTask(
                 id = value.getString("id"), title = value.getString("title"), minutes = value.getInt("minutes"),
@@ -97,6 +109,22 @@ class LocalFamilyStore(context: Context) {
                 dailyLimitMinutes = usage.optInt("dailyLimitMinutes", 20), sessionLimitMinutes = usage.optInt("sessionLimitMinutes", 10),
                 usedMinutes = usage.optInt("usedMinutes", 0), usageDate = usage.optString("usageDate", java.time.LocalDate.now().toString()),
             ),
+            experience = experience?.let { value ->
+                val birthDate = value.optString("birthDate", LocalDate.now().minusYears(4).toString())
+                val recommended = runCatching { SchoolStage.valueOf(value.optString("recommendedStage")) }
+                    .getOrElse { ChildExperiencePolicy.recommendedStage(LocalDate.parse(birthDate)) }
+                val override = value.optString("stageOverride").takeIf(String::isNotBlank)?.let { SchoolStage.valueOf(it) }
+                ChildExperienceSettings(
+                    birthDate = birthDate,
+                    recommendedStage = recommended,
+                    stageOverride = override,
+                    effectiveStage = runCatching { SchoolStage.valueOf(value.optString("effectiveStage")) }.getOrDefault(override ?: recommended),
+                    overrideReason = value.optString("overrideReason"),
+                    hapticsEnabled = value.optBoolean("hapticsEnabled", true),
+                    version = value.optLong("version", 0),
+                    source = runCatching { ExperienceSource.valueOf(value.optString("source")) }.getOrDefault(ExperienceSource.LOCAL),
+                )
+            } ?: ChildExperiencePolicy.localSettings(LocalDate.now().minusYears(4), null, "", true),
         )
     }
 

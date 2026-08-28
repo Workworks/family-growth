@@ -127,3 +127,8 @@
 | 25 | 待立项 | 审计全面教学与全部剩余事项 | 用户指出当前不足以支撑全面教学；代码核对确认仅有基础任务闭环和 3 个内置短视频。登记 REQ-030/P0，按教学核心、原始产品深度、外部真机验收列出 T-01–22、P-01–21、E-01–06，并建议 Stage 20–24 分步实施 | `requirements/teaching-and-project-backlog.md`、TODO/current/验收报告 |
 | 26 | 待立项 | 按四学段重排教学与前端主线 | 登记 REQ-031/P0；固化家长年龄配置与服务端学段事实源，设计幼儿园故事舞台、小学探索手册、初中学科实验台、高中自主学习室；将明显反馈限定为短促可关闭的适龄动效/触觉，并建立纪录片权利来源分级，建议 Stage 20–26 | `AGENTS.md`、`design/39-age-stage-teaching-experience.md`、教学剩余清单/TODO/current |
 | 27 | 待立项 | 完成四学段规划文档门禁 | `git diff --check` 通过；87 份 Markdown 本地链接通过，19 份 evidence JSON 与 45 个 OpenAPI paths 解析通过；本轮仅完成规划与治理文档，未把 Stage 20 或运行时能力标记为已实现 | 本轮验证输出、TODO/current |
+| 28 | 20 | 用户要求直接进行下一步并启动 Stage 20 | 登记 REQ-032/P0；在实现前固化目标、边界、WP20-1–6、V20-01–06 和 AC20-01–06。四学段采用不同信息结构，第三方纪录片只先建设权利目录，不以骨架或链接冒充完整教学能力 | `stages/stage-20-report.md`、REQ-032、TODO/current/BLOCKERS |
+| 29 | 20 | 完成 V9 与服务端学段/权利闭环 | 新增四张表；实现出生日期推荐、家长覆盖/触觉配置、乐观版本、不可变审计、RBAC，以及纪录片来源 DRAFT/APPROVED/WITHDRAWN、幂等动作、到期过滤和儿童 URL/权利元数据剥离 | Stage20 domain/application/infrastructure/web、V9 |
+| 30 | 20 | 完成四学段 Android 两遍设计与实现 | 将通用卡片仪表盘拆为幼儿园故事舞台、小学探索手册、初中学科实验台和高中自主学习室；接入本机旧 JSON 兼容、服务端配置、家长设置与短促反馈引擎，遵守三入口、Reduced Motion 和触觉关闭 | `ui/AgeStageExperienceScreens.kt`、Android core/remote |
+| 31 | 20 | 完成全量门禁并收敛状态 | H2 17+20 测试通过（PG 条件项按设计跳过）；PostgreSQL 16.15 上同组测试零跳过、V1–V9/39 表通过；Android debug/release 各 24 项 JVM、lint 和构建通过；文档/OpenAPI 通过。临时 PG 容器已移除；因无目标平板，Stage 20 标记 `BLOCKED` | `evidence/stage-20/acceptance.json`、Stage 20/TODO/current/BLOCKERS |
+| 32 | 20–21 | 用户要求继续连续推进 | 登记 REQ-033/P0；先完成 Stage 20 最终审查、提交和推送，再按 Spec 驱动协议启动 Stage 21，不吞掉 Stage 20 的目标平板阻塞 | REQ-033、Stage 20/21 |

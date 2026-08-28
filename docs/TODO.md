@@ -1,6 +1,6 @@
 # 待办执行账本
 
-**最后更新：2026-08-26。**
+**最后更新：2026-08-28。**
 
 本文件只维护**尚未完成且可以继续执行的事项**，按优先级和推进责任排序。历史交付查看 [Stage 路线图](stages/stage-roadmap.md)和各 Stage 报告；缺陷查看 [bugList](bug/bugList.md)；问题查看 [AQ](aq/aq.md)；外部阻塞的详细解除条件查看 [BLOCKERS](BLOCKERS.md)。
 
@@ -11,7 +11,7 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P0 | 待立项（建议 20） | `NOT_STARTED` | 以 REQ-030/031 建立“学段底座与家长配置”Spec：年龄推荐、家长覆盖与审计、四学段路由、分层反馈档案、纪录片权利目录 | Agent | `design/39-age-stage-teaching-experience.md`、`requirements/teaching-and-project-backlog.md` |
+| P0 | 20 | `BLOCKED` | 用目标平板回放四学段、触觉开关、Reduced Motion、TalkBack、旋转、重启和真实服务同步 | 用户提供设备；Agent 回放 | `stages/stage-20-report.md`、`evidence/stage-20/acceptance.json` |
 | P0 | 18 | `BLOCKED` | 在平板用 v0.3.3→v0.3.4 更新链同时测试双视角、视频计时、奖励兴趣和重启保留 | 用户测试；Agent 根据反馈修复 | Stage 18/19 真机证据 |
 | P0 | 16 | `BLOCKED` | 在平板覆盖安装 v0.3.3，验证儿童图标及原有数据保留 | 用户提供设备；Agent 回放 | Stage 16/19 真机证据 |
 | P0 | 10 | `BLOCKED` | 用平板连接可访问 HTTPS 家庭服务，回放首装、全链路、TalkBack、重启与 v0.2.2→v0.3.0 更新 | 用户提供设备/服务；Agent 回放 | Stage 10 真机证据 |
@@ -24,7 +24,7 @@
 
 ## 2. 可由 Agent 继续推进
 
-REQ-030 已确认现有“通用任务 + 3 个短视频”不足以支撑全面教学；REQ-031 已明确幼儿园、小学、初中、高中四学段、家长配置年龄和分层页面，不再等待年龄范围产品决策。Agent 可立即建立建议 Stage 20 Spec，先实现学段事实源、家长配置、页面路由、反馈档案和纪录片权利目录，再按 Stage 21–26 推进共用教学引擎和四学段体验。LIM-013 数据权利/完整时段审计仍为并行 P0 安全事项。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
+Stage 20 可离线工程与门禁已经收口，只剩目标平板验收。下一项可由 Agent 推进的产品工作是先建立 Stage 21 共用教学引擎 Spec，再建设 Course/Unit/Lesson/Activity、题库、证据与掌握度；LIM-013 数据权利/完整时段审计仍为并行 P0 安全事项。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
 
 ## 3. 只能由外部条件解除
 
@@ -35,6 +35,7 @@ REQ-030 已确认现有“通用任务 + 3 个短视频”不足以支撑全面�
 | P0 | 11/14 | 启用 USB 调试的 Android 真机/平板；仓库、签名和三版 Release 已具备 |
 | P0 | 15 | 启用 USB 调试的 Android 平板/真机，用于儿童端触控和无障碍验收 |
 | P0 | 18 | Android 平板/真机，用于双视角、视频、奖励兴趣、重启和 v0.3.3→v0.3.4 更新验收 |
+| P0 | 20 | Android 平板/真机与可访问测试服务，用于四学段布局、触觉/Reduced Motion/TalkBack、旋转、重启和配置同步验收 |
 | P0 | 8 | 启用 USB 调试的 Android 平板/真机，用于生产登录、同步、写入和恢复验收 |
 | P0 | 10 | 启用 USB 调试的 Android 平板/真机，以及设备可访问并信任证书的 HTTPS 家庭服务 |
 

@@ -10,6 +10,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.familygrowth.android.core.*
 import com.familygrowth.android.update.UpdateViewModel
@@ -63,6 +65,7 @@ fun FamilyGrowthApp(appViewModel: FamilyAppViewModel = viewModel(), updateViewMo
 
 @Composable
 private fun TabletNavigation(viewModel: FamilyAppViewModel, modifier: Modifier, onParentRequest: () -> Unit) {
+    val haptic = LocalHapticFeedback.current
     Surface(modifier, color = MaterialTheme.colorScheme.surface, border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline)) {
         Column(Modifier.statusBarsPadding().navigationBarsPadding().padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(if (viewModel.mode == AppMode.CHILD) "一起成长" else "Family", style = MaterialTheme.typography.headlineMedium, color = MaterialTheme.colorScheme.primary)
@@ -71,9 +74,9 @@ private fun TabletNavigation(viewModel: FamilyAppViewModel, modifier: Modifier, 
             navigationItemsFor(viewModel.mode).forEach { item ->
                 val selected = viewModel.section == item.section
                 NavigationDrawerItem(
-                    label = { Text(if (viewModel.mode == AppMode.PARENT) item.parentLabel else item.childLabel) },
+                    label = { Text(if (viewModel.mode == AppMode.PARENT) item.parentLabel else childNavigationLabel(item.section, viewModel.state.experience.effectiveStage)) },
                     selected = selected,
-                    onClick = { selectNav(viewModel, item.section, onParentRequest) },
+                    onClick = { if (viewModel.mode == AppMode.CHILD && viewModel.state.experience.hapticsEnabled) haptic.performHapticFeedback(HapticFeedbackType.LongPress); selectNav(viewModel, item.section, onParentRequest) },
                     icon = { Icon(item.icon, null) },
                     badge = { if (viewModel.mode == AppMode.PARENT && item.section == AppSection.TASKS && viewModel.state.tasks.count { it.status == TaskStatus.SUBMITTED } > 0) Badge { Text(viewModel.state.tasks.count { it.status == TaskStatus.SUBMITTED }.toString()) } },
                     colors = NavigationDrawerItemDefaults.colors(selectedContainerColor = MaterialTheme.colorScheme.primaryContainer),
@@ -93,13 +96,14 @@ private fun TabletNavigation(viewModel: FamilyAppViewModel, modifier: Modifier, 
 
 @Composable
 private fun BottomNavigation(viewModel: FamilyAppViewModel, onParentRequest: () -> Unit) {
+    val haptic = LocalHapticFeedback.current
     NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 0.dp) {
         navigationItemsFor(viewModel.mode).forEach { item ->
             NavigationBarItem(
                 selected = viewModel.section == item.section,
-                onClick = { selectNav(viewModel, item.section, onParentRequest) },
+                onClick = { if (viewModel.mode == AppMode.CHILD && viewModel.state.experience.hapticsEnabled) haptic.performHapticFeedback(HapticFeedbackType.LongPress); selectNav(viewModel, item.section, onParentRequest) },
                 icon = { BadgedBox(badge = { if (viewModel.mode == AppMode.PARENT && item.section == AppSection.TASKS && viewModel.state.tasks.count { it.status == TaskStatus.SUBMITTED } > 0) Badge() }) { Icon(item.icon, null) } },
-                label = { Text(if (viewModel.mode == AppMode.PARENT) item.parentLabel else item.childLabel) },
+                label = { Text(if (viewModel.mode == AppMode.PARENT) item.parentLabel else childNavigationLabel(item.section, viewModel.state.experience.effectiveStage)) },
             )
         }
     }
@@ -146,8 +150,8 @@ private fun GrowthTopBar(viewModel: FamilyAppViewModel, showModeSwitch: Boolean,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Column {
-                Text(sectionTitle(viewModel.section, viewModel.mode), style = MaterialTheme.typography.titleLarge)
-                Text(if (viewModel.mode == AppMode.PARENT) "家长视角 · 本机基础版" else "一次做一件小事", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(sectionTitle(viewModel.section, viewModel.mode, viewModel.state.experience.effectiveStage), style = MaterialTheme.typography.titleLarge)
+                Text(if (viewModel.mode == AppMode.PARENT) "家长视角 · 本机与家庭服务" else "${viewModel.state.experience.effectiveStage.displayName()} · 一次做好当前一步", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if (showModeSwitch) ModeSwitcher(viewModel, onParentRequest)
         }
@@ -156,6 +160,7 @@ private fun GrowthTopBar(viewModel: FamilyAppViewModel, showModeSwitch: Boolean,
 
 @Composable
 private fun ModeSwitcher(viewModel: FamilyAppViewModel, onParentRequest: () -> Unit) {
+    val childFeedback = rememberChildControlFeedback(viewModel.state.experience)
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.large,
@@ -168,7 +173,7 @@ private fun ModeSwitcher(viewModel: FamilyAppViewModel, onParentRequest: () -> U
                     Icon(Icons.Rounded.ChildCare, null, Modifier.size(18.dp)); Spacer(Modifier.width(4.dp)); Text("孩子视角")
                 }
             } else {
-                TextButton(onClick = viewModel::enterChild, modifier = Modifier.weight(1f).heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)) {
+                TextButton(onClick = { childFeedback(viewModel::enterChild) }, modifier = Modifier.weight(1f).heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)) {
                     Icon(Icons.Rounded.ChildCare, null, Modifier.size(18.dp)); Spacer(Modifier.width(4.dp)); Text("孩子视角")
                 }
             }
@@ -177,7 +182,7 @@ private fun ModeSwitcher(viewModel: FamilyAppViewModel, onParentRequest: () -> U
                     Icon(Icons.Rounded.SupervisorAccount, null, Modifier.size(18.dp)); Spacer(Modifier.width(4.dp)); Text("家长视角")
                 }
             } else {
-                TextButton(onClick = onParentRequest, modifier = Modifier.weight(1f).heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)) {
+                TextButton(onClick = { childFeedback(onParentRequest) }, modifier = Modifier.weight(1f).heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)) {
                     Icon(Icons.Rounded.SupervisorAccount, null, Modifier.size(18.dp)); Spacer(Modifier.width(4.dp)); Text("家长视角")
                 }
             }
@@ -185,23 +190,24 @@ private fun ModeSwitcher(viewModel: FamilyAppViewModel, onParentRequest: () -> U
     }
 }
 
-private fun sectionTitle(section: AppSection, mode: AppMode) = when (section) {
-    AppSection.TODAY -> if (mode == AppMode.PARENT) "家庭成长总览" else "今天，一起成长"
-    AppSection.TASKS -> if (mode == AppMode.PARENT) "成长任务" else "我的小任务"
+private fun sectionTitle(section: AppSection, mode: AppMode, stage: SchoolStage) = when (section) {
+    AppSection.TODAY -> if (mode == AppMode.PARENT) "家庭成长总览" else childNavigationLabel(section, stage)
+    AppSection.TASKS -> if (mode == AppMode.PARENT) "成长任务" else childNavigationLabel(section, stage)
     AppSection.WALLET -> "成长钱包"
-    AppSection.GROWTH -> if (mode == AppMode.PARENT) "奖励与财商" else "我的成长"
+    AppSection.GROWTH -> if (mode == AppMode.PARENT) "奖励与财商" else childNavigationLabel(section, stage)
     AppSection.PARENT -> "家长管理"
 }
 
 @Composable
 private fun ChildLimitScreen(viewModel: FamilyAppViewModel, onParentRequest: () -> Unit) {
+    val feedback = rememberChildControlFeedback(viewModel.state.experience)
     Column(Modifier.fillMaxSize().padding(28.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Text("🌙", style = MaterialTheme.typography.displaySmall)
         Spacer(Modifier.height(12.dp))
         Text("现在休息一下", style = MaterialTheme.typography.headlineMedium)
         Text("小任务已经帮你保存好了。放下平板，动一动，或者找家长聊聊天。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
-        Button(onClick = onParentRequest, modifier = Modifier.heightIn(min = 60.dp)) { Text("请家长帮忙") }
+        Button(onClick = { feedback(onParentRequest) }, modifier = Modifier.heightIn(min = 60.dp)) { Text("请家长帮忙") }
     }
 }
 
