@@ -252,6 +252,7 @@ fun TasksScreen(viewModel: FamilyAppViewModel) {
                 if (viewModel.mode == AppMode.PARENT) Button(onClick = { showAdd = true }) { Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(6.dp)); Text("创建任务") }
             }
         }
+        item { ParentLearningReviews(viewModel) }
         if (tasks.isEmpty()) {
             item { GrowthCard { EmptyInvitation("✓", "任务板还是空的", if (viewModel.mode == AppMode.PARENT) "创建第一个任务，写清时间和三类奖励。" else "请家长创建任务后再回来。", if (viewModel.mode == AppMode.PARENT) "创建任务" else null) { showAdd = true } } }
         } else {
@@ -270,6 +271,7 @@ private fun ChildTasksScreen(viewModel: FamilyAppViewModel) {
     val supportsSelfLearning = viewModel.state.experience.effectiveStage in setOf(SchoolStage.PRIMARY, SchoolStage.JUNIOR_MIDDLE, SchoolStage.SENIOR_HIGH)
     var selfLearning by remember(viewModel.state.experience.effectiveStage) { mutableStateOf(false) }
     val todo = viewModel.state.tasks.filter { it.status == TaskStatus.TODO }.take(3)
+    val hasActiveLearning = viewModel.learningAssignments.any { it.status != "COMPLETED" }
     val waitingCount = viewModel.state.tasks.count { it.status == TaskStatus.SUBMITTED }
     val doneCount = viewModel.state.tasks.count { it.status == TaskStatus.APPROVED }
     Column(Modifier.fillMaxSize()) {
@@ -296,13 +298,14 @@ private fun ChildTasksScreen(viewModel: FamilyAppViewModel) {
                 Text("先做第一件。后面的事情不着急。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        if (todo.isEmpty()) {
+        item { ChildLearningPath(viewModel) }
+        if (todo.isEmpty() && !hasActiveLearning) {
             item {
                 GrowthCard {
                     EmptyInvitation("✓", if (waitingCount > 0) "正在等家长看看" else "现在没有小任务", if (waitingCount > 0) "你已经完成这一步了。" else "去玩、去读书，或者请家长一起想一件小事。")
                 }
             }
-        } else {
+        } else if (todo.isNotEmpty() && !hasActiveLearning) {
             item { ChildTaskCard(todo.first(), primary = true) { feedback { viewModel.submitTask(todo.first().id) } } }
             if (todo.size > 1) {
                 item {
@@ -313,6 +316,19 @@ private fun ChildTasksScreen(viewModel: FamilyAppViewModel) {
                                 Icon(Icons.Rounded.RadioButtonUnchecked, null, tint = ChildColors.Moss)
                                 Text(task.title, Modifier.padding(start = 12.dp), style = MaterialTheme.typography.bodyLarge)
                             }
+                        }
+                    }
+                }
+            }
+        } else if (todo.isNotEmpty()) {
+            item {
+                GrowthCard {
+                    Text("后来再做", style = MaterialTheme.typography.titleLarge)
+                    Text("先完成上面的学习。这里的小任务会替你留着。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    todo.forEach { task ->
+                        Row(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Rounded.RadioButtonUnchecked, null, tint = ChildColors.Moss)
+                            Text(task.title, Modifier.padding(start = 12.dp), style = MaterialTheme.typography.bodyLarge)
                         }
                     }
                 }

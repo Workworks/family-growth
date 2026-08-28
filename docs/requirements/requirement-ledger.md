@@ -40,6 +40,8 @@
 | REQ-034 | 2026-08-28 | 用户自主学习与外部课程需求 | 除家长布置作业外，孩子可以自主学习；引入国家中小学智慧教育平台同步课堂，并按截图选择学段、年级、学科、版本和册次 | Stage 21 增加儿童“我的任务/自主学习”二级切换，不增加一级导航；使用教材路径选择台并打开家长认可的 `basic.smartedu.cn` 官方页面。视频由官方站点实时提供，不把外部播放时长自动当作本 App 完成或奖励证据 | P0 | `IN_PROGRESS` | 21 | `stages/stage-21-report.md`、`evidence/stage-21/acceptance.json`、Android `OfficialSelfLearningScreen`/`SmartEduOfficialSourceTest`；待平板回放 |
 | REQ-035 | 2026-08-28 | 用户使用范围补充 | App 只供家庭自用，不发布；要求忽略平台“不得转载或改编”声明 | 接受“家庭自用、不发布”作为部署范围，但不将其解释为已取得转载/改编许可。采用受限 WebView 直接浏览官方页面，不下载、缓存、转码、抽取、代理或改编视频流；如未来要内置/离线分发，仍需平台许可或官方 SDK/API | P0 | `IN_PROGRESS` | 21 | `aq/aq.md`、`stages/stage-21-report.md`、`evidence/stage-21/acceptance.json`、官方网站声明核验记录；待平板回放 |
 | REQ-036 | 2026-08-28 | 用户扩展免费教育来源需求 | 除已有来源外，家长端可配置免费教育资源来源网址，并读取相应分类栏目进行动态调整 | Stage 21 增加家长专属来源书架：只接受无凭据/查询/片段的公共 HTTPS 首页，服务端受限读取 HTML 导航栏目并保存快照，家长批准后动态投影给对应学段。儿童响应不含原始 URL，不能打开任意网页；成功刷新重新待批准，失败保留最近一次成功栏目和既有批准状态 | P0 | `IN_PROGRESS` | 21 | `stages/stage-21-report.md`、V10/API、Android `EducationResourceSourceUi`、`Stage21ResourceApiTest`、`evidence/stage-21/acceptance.json`；待真实来源/平板回放 |
+| REQ-037 | 2026-08-28 | 用户连续推进指令 | 现在进行下一步 | 不等待 Stage 20/21 的外部平板条件，按当前 TODO 最高可执行顺位进入 Stage 21 V11：交付不可变课程版本、九类活动、课节分配、尝试/提交/家长复做或确认、最小学习证据链和 Android 动态课程入口；真实设备能力仍不得用构建结果代替 | P0 | `VALIDATED` | 21 | V11、生产 API、Android 学习路径；H2/PostgreSQL 16.15/Android 双变体门禁；`evidence/stage-21/acceptance.json` |
+| REQ-038 | 2026-08-28 | 用户连续推进指令 | 继续 | 保持 REQ-037 的 V11 实施边界连续推进，完成动态视频可信播放入口、Android 学习路径/家长审核、契约和全量门禁；不因中途首轮测试通过提前停止或虚假收口 | P0 | `VALIDATED` | 21 | `LearningPathUi`、实际播放 90% VIEWED、家长确认/复做、OpenAPI 与全量门禁；平板仍归 AC21-06 |
 
 ## 维护记录
 
@@ -72,3 +74,5 @@
 - 2026-08-28：REQ-034/035 完成 Android 离线纵切和两变体门禁；因目标平板官方页面/播放尚未回放，状态继续为 `IN_PROGRESS`，不得把网页入口标为教学引擎完成。
 - 2026-08-28：登记 REQ-036/P0：允许家长配置免费教育资源网站并安全发现栏目；动态读取必须防 SSRF、限量、可回退和家长批准，儿童端不接收可启动 URL。
 - 2026-08-28：REQ-036 的 V10、生产 API、H2/PostgreSQL 16.15、Android 来源书架和儿童安全投影通过离线门禁；因真实站点兼容和目标平板未回放，保持 `IN_PROGRESS`。
+- 2026-08-28：登记 REQ-037/P0：按 Stage 21 下一工作包直接实施 V11 共用课程、九类活动、分配/尝试/提交/审核和 Android 动态课程纵切，不等待独立的真机阻塞项。
+- 2026-08-28：登记 REQ-038/P0：用户要求不中断 V11，继续补齐视频内容引用、Android 学习路径和全部工程门禁后再报告。

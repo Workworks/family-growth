@@ -2,76 +2,74 @@
   "stage": 21,
   "status": "IN_PROGRESS",
   "passed": false,
-  "capturedAt": "2026-08-28T12:34:36+08:00",
-  "command": "multiple Stage 21 backend, PostgreSQL 16.15, Android and documentation gates; see checks",
+  "capturedAt": "2026-08-28T19:10:00+08:00",
+  "command": "Stage 21 V10/V11 backend, PostgreSQL 16.15, Android and governance gates; see checks",
   "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
   "shellType": "PowerShell",
   "exitCode": 0,
-  "scope": "REQ-034/REQ-035 autonomous learning and REQ-036 configurable free education source vertical slices",
-  "summary": "The age-stage textbook selector, restricted official SmartEdu WebView, V10 configurable education sources, bounded HTML category discovery, parent approval lifecycle and child URL-free dynamic catalogue passed offline gates. The shared production teaching engine, real-site compatibility and target-tablet playback remain unfinished.",
+  "scope": "REQ-034 through REQ-038: official autonomous learning, configurable education sources, immutable teaching versions, nine activities and learning evidence vertical slices",
+  "summary": "V11 now provides immutable Course/Version/Unit/Lesson/Activity content, nine explicit activity rules, server-only answer keys, assignment/attempt/completion/evidence facts, rework and optimistic concurrency. Android renders a single-lesson learning path in the existing child navigation, records bundled video VIEWED only after 90% actual playback, submits activities and lets parents approve or request rework. Persistent outbox/process-restart recovery, dedicated 401/409 UX, parent visual course authoring, real public-site compatibility and target-tablet runtime remain unfinished, so Stage 21 stays IN_PROGRESS.",
   "checks": [
     {
-      "id": "V21-04A-source",
-      "passed": true,
-      "result": "Read-only inspection confirmed the official sync classroom exposes autonomous learning and stage, grade, subject, edition and volume selection. The user-provided exact selection is preserved as the only verified deep link."
-    },
-    {
-      "id": "V21-04A-unit",
-      "passed": true,
-      "command": ".\\gradlew.bat clean testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease",
-      "result": "Exit 0; BUILD SUCCESSFUL; 112 actionable tasks; debug 29 tests and release 29 tests passed after adding source repository coverage."
-    },
-    {
-      "id": "V21-04A-policy",
-      "passed": true,
-      "result": "SmartEduOfficialSourceTest covers the verified URL, generic fallback for unknown textbook combinations, and rejection of HTTP, non-official hosts and non-course navigation."
-    },
-    {
-      "id": "V21-04B-h2",
+      "id": "V21-01-domain",
       "passed": true,
       "command": ".\\mvnw.cmd test",
-      "result": "Exit 0. H2 full regression passed with 19 domain, 2 infrastructure discovery and 21 Boot tests; five PostgreSQL-only tests were conditionally skipped. Flyway V1-V10 and Hibernate validate passed."
+      "result": "H2 full regression exit 0: 21 domain, 2 infrastructure and 23 Boot tests; six PostgreSQL-only tests were conditionally skipped. Stage21TeachingModelsTest proves all nine activity types have explicit non-MASTERED requirements and rejects invalid answer-key payloads."
     },
     {
-      "id": "V21-04B-postgres",
+      "id": "V21-02-api",
       "passed": true,
-      "command": "start exact isolated localhost PostgreSQL 16.15 container; export datasource only for Maven; .\\mvnw.cmd test; inspect and remove the exact container in finally",
-      "result": "The first run correctly failed because PostgresSchemaValidationTest still expected 9 migrations; the assertion/table inventory was updated for V10. The final rerun passed 42 tests with zero failures and zero skips, validated 10 migrations and 43 production tables, and removed the exact temporary container without a volume."
+      "result": "Stage21TeachingApiTest creates and replays a nested draft, publishes it, creates a separate V2 draft, assigns one lesson, hides answer keys from the child, records all nine activity types, rejects incomplete evidence, rejects immediate resubmission after REWORK_REQUIRED, accepts resubmission only after a fresh Attempt, and completes only after parent confirmation. Attempt, submit and review idempotency replays also remain successful after the assignment has advanced to a later state. Parent/child RBAC and cross-family hiding pass."
     },
     {
-      "id": "V21-04B-security-and-lifecycle",
+      "id": "V21-03-postgres",
       "passed": true,
-      "result": "Tests reject HTTP, IP literals, credentials, query/fragment and non-default ports; reject private/documentation DNS ranges; keep only same-origin HTML navigation; enforce parent RBAC and cross-family hiding; require refresh then approval; reset successful refreshes to DRAFT; retain approved categories after failed refresh; and omit all URLs from child responses."
+      "command": "start exact localhost postgres:16.15 container without a volume; set test datasource; .\\mvnw.cmd -q -Dspring.datasource.hikari.maximum-pool-size=2 test; stop exact container",
+      "result": "Exit 0 after one recorded capacity-only retry with Hikari pools capped at two. PostgreSQL 16.15 full regression passed 46 tests with zero failures, zero errors and zero skips; Flyway V1-V11, Hibernate validate and 55 production tables passed. After the final rework and post-transition idempotency guards, the Stage21 API/concurrency/schema subset was rerun against a fresh PostgreSQL 16.15 container and passed; the exact temporary container was stopped and auto-removed. Concurrent APPROVE and REWORK using one expectedVersion accepted exactly one outcome and created at most one MASTERED fact."
     },
     {
-      "id": "V21-06-governance",
+      "id": "V21-04-android",
       "passed": true,
-      "result": "Documentation link gate passed for 86 Markdown files and 85 indexed documents; 21 evidence JSON files parsed; OpenAPI 3.1.0 parsed with 56 paths; git diff whitespace and scoped secret scans passed."
+      "command": ".\\gradlew.bat :app:testDebugUnitTest :app:testReleaseUnitTest; .\\gradlew.bat :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease",
+      "result": "Both commands exited 0. Debug and release each passed 31 JVM tests; both variants compiled, linted and assembled. LearningAssignmentModelsTest covers VIEWED/CHECKED/PARENT_CONFIRMED readiness and submit states. LearningPathUi keeps the existing three child destinations, exposes one current lesson and one primary action, moves ordinary tasks to 'later' while a lesson is active, fails closed for unknown contentRef, and counts actual VideoView playback before remote VIEWED submission."
     },
     {
-      "id": "V21-05-device",
+      "id": "V21-04A-official-source",
+      "passed": true,
+      "result": "The existing age-stage textbook selector and restricted official SmartEdu WebView remain covered; external official playback does not create V11 VIEWED or MASTERED evidence."
+    },
+    {
+      "id": "V21-04B-configurable-sources",
+      "passed": true,
+      "result": "The existing V10 public-HTTPS/DNS/same-origin/size/timeout discovery, parent approval lifecycle and child URL-free category projection remain covered by the full regressions."
+    },
+    {
+      "id": "V21-05-contract",
+      "passed": true,
+      "result": "OpenAPI 3.1 documents course creation/versioning/publish, assignment, attempt, submit and review and parsed successfully with 63 paths. V11 stores twelve new teaching/evidence tables, write-only answer keys and idempotent actions. The documentation link gate passed across 86 Markdown files/85 indexed documents, all evidence JSON parsed, and git diff --check returned exit 0."
+    },
+    {
+      "id": "V21-06-device-and-recovery",
       "passed": false,
-      "result": "NOT_RUN: target Android tablet is required to verify official page loading, media playback, in-site navigation, back handling, rotation, TalkBack and network recovery."
+      "result": "BLOCKED/PARTIAL: no target tablet or device-reachable service was available. Persistent Android outbox, process-restart recovery and dedicated 401/409 reconciliation UI are not yet implemented; official page playback, real public source discovery, rotation and TalkBack also remain runtime work."
     }
   ],
   "security": {
-    "extractsMediaStreams": false,
-    "downloadsOrTranscodesThirdPartyMedia": false,
-    "allowsArbitraryTopLevelHosts": false,
-    "autoplaysMedia": false,
-    "createsLearningCompletionOrRewards": false,
-    "kindergartenExternalWebEnabled": false,
-    "customSourceAllowsCredentialsOrQuery": false,
-    "customSourceChildReceivesUrl": false,
-    "customSourceExecutesJavascriptOrDownloadsMedia": false,
-    "successfulRefreshRequiresReapproval": true,
-    "failedRefreshDeletesLastSnapshot": false
+    "publishedVersionHasMutationApi": false,
+    "childReceivesAnswerKey": false,
+    "videoPlaybackCreatesMastery": false,
+    "videoViewedRequiresNinetyPercentPlayback": true,
+    "parentRequiredActivityCanAutoMaster": false,
+    "learningCompletionChangesMoneyOrCoin": false,
+    "unknownBundledContentRefPlays": false,
+    "extractsOrTranscodesThirdPartyMedia": false,
+    "customSourceChildReceivesUrl": false
   },
   "remaining": [
-    "Implement V11 and the production Course/Unit/Lesson/Activity evidence engine.",
-    "Run representative parent-approved public education sites through the deployed service and target tablet; static HTML navigation is not universally compatible with JavaScript, login or anti-bot sites.",
-    "Enforce deployment-level outbound firewall or proxy policy in addition to application DNS validation.",
-    "Run the official learning flow on the target tablet and record runtime evidence.",
-    "Obtain platform permission or an official SDK/API before any future media extraction, offline distribution, page adaptation or trusted completion callback."
+    "Implement persistent Android learning outbox, process-restart recovery and explicit 401/409 refresh/retry states.",
+    "Add parent Android visual authoring and assignment screens over the production V11 API; current authoring is API-first.",
+    "Run representative parent-approved public education sites through the deployed service and keep deployment-level outbound firewall/proxy controls.",
+    "Run official autonomous learning and V11 multi-activity flows on the target tablet with rotation, TalkBack, playback, network loss and restart evidence.",
+    "Build sufficient stage-specific curriculum and content in Stages 22-25; V11 is a shared engine vertical slice, not a complete teaching library."
   ]
 }

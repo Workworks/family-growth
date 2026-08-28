@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Family Growth API
   version: 1.0.0
-  description: Stage 3–9、17 与 20 的生产认证、成长任务、家庭账本、纯模拟基金、冻结式零钱回收、Android 同步、家庭报告及儿童学段体验配置 API。
+  description: Stage 3–9、17、20–21 的生产认证、成长任务、家庭账本、纯模拟基金、冻结式零钱回收、Android 同步、学段体验和课程学习证据 API。
 servers:
   - url: /api/v1
 security:
@@ -700,6 +700,83 @@ paths:
       description: Returns approved sources for the effective school stage as labels only. Source and category URLs, usage notes and refresh errors are omitted; kindergarten returns an empty list.
       parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
       responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/teaching/courses:
+    get:
+      operationId: listTeachingCourses
+      description: Parent-only list of all immutable course versions in the family.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      operationId: createTeachingCourse
+      description: Parent-only atomic creation of a course and its first DRAFT version. Objective answer keys remain server-side and are never included in child projections.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/TeachingCourseRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/teaching/courses/{courseId}/versions:
+    post:
+      operationId: createTeachingCourseVersion
+      description: Creates a new DRAFT instead of mutating a published version.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - { name: courseId, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/TeachingVersionRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/teaching/course-versions/{versionId}/publish:
+    post:
+      operationId: publishTeachingCourseVersion
+      description: Idempotent DRAFT to PUBLISHED transition. Published units, lessons, activities and questions have no mutation API.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - { name: versionId, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/learning/assignments:
+    get:
+      operationId: listChildLearningAssignments
+      description: Parent or owning child reads only published assignments matching the server-authoritative effective stage. Answer keys and rights metadata are omitted.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      operationId: assignTeachingLesson
+      description: Parent-only idempotent assignment of one lesson from a published version matching the child's effective stage.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/LessonAssignmentRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/activities/{activityId}/attempts:
+    post:
+      operationId: recordLearningActivityAttempt
+      description: Owning child only. Video requires at least 90% actual playback counters and produces VIEWED; objective answers are checked on the server; parent-required activities produce ATTEMPTED.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - { name: assignmentId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: activityId, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/LearningAttemptRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/submit:
+    post:
+      operationId: submitLearningAssignment
+      description: Owning child only; all child-side required evidence must exist, expectedVersion must match, and a reworked assignment requires a new attempt after the rework request.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - { name: assignmentId, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ExpectedVersionRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/review:
+    post:
+      operationId: reviewLearningAssignment
+      description: Parent-only APPROVE or REWORK. Approval appends PARENT_CONFIRMED where required and a lesson-level MASTERED fact; it does not grant Money or Coin.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - { name: assignmentId, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/LearningReviewRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
 components:
   securitySchemes:
     bearerAuth:
@@ -816,6 +893,80 @@ components:
           uniqueItems: true
           items: { $ref: '#/components/schemas/SchoolStage' }
         usageNote: { type: string, minLength: 1, maxLength: 500 }
+    ActivityType:
+      type: string
+      enum: [SHORT_VIDEO, PARENT_CHILD_READING, LISTEN_CHOOSE, SINGLE_CHOICE, MATCHING, SORTING, ORAL_RESPONSE, OFFLINE_PRACTICE, PARENT_CONFIRMATION]
+    TeachingOptionRequest:
+      type: object
+      required: [value, label]
+      properties:
+        value: { type: string, minLength: 1, maxLength: 160 }
+        label: { type: string, minLength: 1, maxLength: 240 }
+    TeachingActivityRequest:
+      type: object
+      required: [type, title, instruction, expectedMinutes]
+      properties:
+        type: { $ref: '#/components/schemas/ActivityType' }
+        title: { type: string, minLength: 1, maxLength: 160 }
+        instruction: { type: string, minLength: 1, maxLength: 500 }
+        contentRef: { type: [string, 'null'], enum: [lesson_color_garden, lesson_count_to_five, lesson_shape_home, null], description: Required only for SHORT_VIDEO and must name a bundled reviewed asset. }
+        expectedMinutes: { type: integer, minimum: 1, maximum: 60 }
+        prompt: { type: [string, 'null'], maxLength: 500 }
+        hint: { type: [string, 'null'], maxLength: 300 }
+        options: { type: array, maxItems: 20, items: { $ref: '#/components/schemas/TeachingOptionRequest' } }
+        answerKey: { type: [string, 'null'], maxLength: 1000, writeOnly: true }
+    TeachingLessonRequest:
+      type: object
+      required: [title, summary, activities]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 160 }
+        summary: { type: string, minLength: 1, maxLength: 500 }
+        activities: { type: array, minItems: 1, maxItems: 20, items: { $ref: '#/components/schemas/TeachingActivityRequest' } }
+    TeachingUnitRequest:
+      type: object
+      required: [title, lessons]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 160 }
+        lessons: { type: array, minItems: 1, maxItems: 30, items: { $ref: '#/components/schemas/TeachingLessonRequest' } }
+    TeachingVersionRequest:
+      type: object
+      required: [summary, rightsBasis, units]
+      properties:
+        summary: { type: string, minLength: 1, maxLength: 500 }
+        rightsBasis: { type: string, minLength: 1, maxLength: 500 }
+        units: { type: array, minItems: 1, maxItems: 12, items: { $ref: '#/components/schemas/TeachingUnitRequest' } }
+    TeachingCourseRequest:
+      type: object
+      required: [schoolStage, subjectCode, title, version]
+      properties:
+        schoolStage: { $ref: '#/components/schemas/SchoolStage' }
+        subjectCode: { type: string, pattern: '^[A-Za-z0-9_-]+$', maxLength: 40 }
+        title: { type: string, minLength: 1, maxLength: 160 }
+        version: { $ref: '#/components/schemas/TeachingVersionRequest' }
+    LessonAssignmentRequest:
+      type: object
+      required: [courseVersionId, lessonId]
+      properties:
+        courseVersionId: { type: string, format: uuid }
+        lessonId: { type: string, format: uuid }
+    LearningAttemptRequest:
+      type: object
+      properties:
+        responseText: { type: [string, 'null'], maxLength: 1000 }
+        playedSeconds: { type: [integer, 'null'], minimum: 0 }
+        durationSeconds: { type: [integer, 'null'], minimum: 1 }
+    ExpectedVersionRequest:
+      type: object
+      required: [expectedVersion]
+      properties:
+        expectedVersion: { type: integer, format: int64, minimum: 0 }
+    LearningReviewRequest:
+      type: object
+      required: [decision, expectedVersion]
+      properties:
+        decision: { type: string, enum: [APPROVE, REWORK] }
+        note: { type: [string, 'null'], maxLength: 500 }
+        expectedVersion: { type: integer, format: int64, minimum: 0 }
     BootstrapRequest:
       type: object
       required: [familyName, parentName, pin]

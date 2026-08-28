@@ -9,6 +9,13 @@ data class RemoteExperienceProfile(val birthDate:String,val recommendedStage:Str
 data class RemoteResourceCategory(val id:String,val title:String,val displayOrder:Int,val categoryUrl:String?=null)
 data class RemoteEducationSource(val id:String,val title:String,val sourceUrl:String,val schoolStages:List<String>,val usageNote:String,val status:String,val refreshStatus:String,val refreshError:String,val lastRefreshedAt:String?,val categories:List<RemoteResourceCategory>)
 data class RemoteChildEducationSource(val id:String,val title:String,val categories:List<RemoteResourceCategory>,val lastRefreshedAt:String?,val parentActionRequired:Boolean)
+data class RemoteQuestionOption(val value:String,val label:String)
+data class RemoteLearningActivity(val id:String,val type:String,val title:String,val instruction:String,val contentRef:String,val expectedMinutes:Int,val prompt:String,val hint:String,val options:List<RemoteQuestionOption>,val requiredEvidence:String,val evidence:Set<String>,val checkedCorrect:Boolean?) {
+ fun childReady():Boolean = if(requiredEvidence=="PARENT_CONFIRMED") "ATTEMPTED" in evidence else requiredEvidence in evidence && (requiredEvidence!="CHECKED" || checkedCorrect==true)
+}
+data class RemoteLearningAssignment(val id:String,val courseTitle:String,val unitTitle:String,val lessonTitle:String,val lessonSummary:String,val schoolStage:String,val subjectCode:String,val status:String,val version:Long,val activities:List<RemoteLearningActivity>,val reviewNote:String) {
+ fun canSubmit():Boolean = status=="IN_PROGRESS" && activities.isNotEmpty() && activities.all(RemoteLearningActivity::childReady)
+}
 data class RemoteSnapshot(val familyId:String,val childId:String,val childName:String,val money:BigDecimal,val coin:Int,val tasks:List<RemoteTask>,val pendingReviews:Int,val approvedToday:Int,val experience:RemoteExperienceProfile?=null)
 data class RemoteSession(val baseUrl:String,val familyId:String,val parentId:String,val childId:String,val parentToken:String,val childToken:String)
 sealed interface ConnectionState{data object Disconnected:ConnectionState;data object Connecting:ConnectionState;data class Connected(val snapshot:RemoteSnapshot):ConnectionState;data class Error(val message:String):ConnectionState;data object Expired:ConnectionState}

@@ -137,3 +137,11 @@
 | 35 | 21 | 完成自主学习 Android 纵切和离线门禁 | 小学/初中/高中在现有学习页切换任务/自主学习；学段锁定家长配置，教材书脊式五级选择，精确核验组合使用官方深链、其余安全回退官方选择页；WebView 限域、禁文件/第三方 Cookie/自动播放/缓存。debug/release 各 28 项 JVM、两变体 lint/assemble、86 份 Markdown 链接、21 份证据 JSON 和 OpenAPI 解析通过，真机播放仍阻塞 | `core/OfficialLearningModels.kt`、`ui/OfficialSelfLearningScreen.kt`、`evidence/stage-21/acceptance.json` |
 | 36 | 21 | 用户要求家长配置免费来源并动态读取栏目 | 登记 REQ-036；把任意抓取收敛为公共 HTTPS、公共 DNS、逐跳同源、512 KiB/8 秒/3 重定向/30 栏目，不执行 JS/登录/媒体；儿童不收 URL，成功刷新需重新批准，失败保留旧快照 | Stage 21 Spec、AQ-10、设计/API 文档 |
 | 37 | 21 | 完成 V10 免费来源纵切和离线门禁 | 新增四表、来源领域/服务/JDBC/API、jsoup 1.23.2 受控 HTML 解析、家长资源书架和儿童动态标签；首次 PostgreSQL 回归暴露迁移数硬编码并修复，复跑 42 项零失败/零跳过，Android 双变体各 29 项和 lint/assemble 通过 | `V10__stage21_education_resource_sources.sql`、Stage21 resource code/tests、Stage 21 evidence |
+| 38 | 21 | 用户要求继续当前最高顺位任务 | 登记 REQ-037/P0；在不冒充平板验收的前提下启动 V11，不可变课程版本、九类活动、课节分配、尝试/提交/审核证据链与 Android 动态课程纵切先写入 Stage 验收规格 | `requirements/requirement-ledger.md`、`stages/stage-21-report.md` |
+| 39 | 21 | 用户要求继续 V11 实施 | 登记 REQ-038/P0；首轮 H2 领域/API 测试通过后继续补视频内容引用和 Android 动态学习路径，不把后端单点通过冒充 Stage 纵切完成 | V11 code/tests、Stage 21 |
+| 40 | 21 | 完成 V11 生产教学事实链 | 新增 12 张表、不可变版本、九类活动、服务端答案、90% 视频 VIEWED、分配/尝试/提交/复做/确认和五类证据；孩子投影按家庭/本人/学段/发布过滤且不含答案键 | V11、Stage21Teaching domain/application/JDBC/API |
+| 41 | 21 | 完成 Android 学习路径纵切 | 在既有“小任务”页加入单课节路径条和当前行动，客观题/亲子/线下活动可提交，三个安装包审核视频累计实际播放后上报；家长可确认或温和复做，不增加儿童一级导航 | `LearningPathUi.kt`、remote/view-model/tests |
+| 42 | 21 | 完成 H2/PostgreSQL/Android V11 门禁 | H2 46 项通过且 6 项 PG 条件跳过；首次 PG 全量因默认多上下文连接池耗尽失败，未改产品代码，重建隔离容器并将测试池限制为 2 后 46 项零失败/零跳过、V1–V11/55 表和并发审核通过；Android 双变体各 31 项、lint/assemble 通过，临时容器已移除 | `evidence/stage-21/acceptance.json` |
+| 43 | 21 | 执行儿童最佳利益与返工完整性收口 | Android 在活动课节期间只保留一个主要行动，普通任务移入“后来再做”；Completion 记录返工时间，返工后无新 Attempt 的立即重交返回 409，H2 与新建 PostgreSQL 16.15 隔离容器复验通过 | `TodayAndTasksScreens.kt`、V11、`Stage21TeachingApiTest` |
+| 44 | 21 | 完成 V11 最终治理门禁 | H2 报告 46 项零失败（6 项 PostgreSQL 条件跳过），Android debug/release 各 31 项零失败，两变体 lint/assemble 通过；86 个 Markdown、全部证据 JSON、OpenAPI 63 paths 与 diff whitespace 门禁通过，Stage 21 因 V12/平板事项仍保持 IN_PROGRESS | `evidence/stage-21/acceptance.json`、Stage 21 报告 |
+| 45 | 21 | 收紧写入幂等回放 | Attempt、Submit、Review 在资源进入后续状态后仍先按幂等键和载荷校验回放，不因当前状态门禁误报冲突；API 测试覆盖提交后 Attempt/Submit 重放和完成后 Review 重放，全量 H2 46 项复跑通过 | `Stage21TeachingService`、`Stage21TeachingApiTest` |

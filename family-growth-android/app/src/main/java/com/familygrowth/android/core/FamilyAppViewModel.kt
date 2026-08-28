@@ -40,6 +40,8 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     var childEducationCatalog by mutableStateOf<List<RemoteChildEducationSource>>(emptyList())
         private set
+    var learningAssignments by mutableStateOf<List<RemoteLearningAssignment>>(emptyList())
+        private set
 
     val isChildLocked: Boolean get() = mode == AppMode.CHILD &&
         (state.usage.usedMinutes >= state.usage.dailyLimitMinutes || sessionUsedMinutes >= state.usage.sessionLimitMinutes)
@@ -149,6 +151,42 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     fun approveEducationSource(id: String) = changeEducationSource(id, "approve", "来源已批准，孩子目录会动态更新")
     fun withdrawEducationSource(id: String) = changeEducationSource(id, "withdraw", "来源已撤回，不再显示给孩子")
     fun requestParentForResource() { message = "这个栏目需要家长一起打开" }
+    fun attemptLearningActivity(assignmentId: String, activityId: String, response: String) {
+        viewModelScope.launch {
+            when (val result = remote.learningAttempt(assignmentId, activityId, response)) {
+                is RemoteResult.Ok -> { replaceLearning(result.value); message = if (result.value.activities.firstOrNull { it.id == activityId }?.checkedCorrect == false) "再看一看，可以慢慢试" else "这一步记下了" }
+                RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+                is RemoteResult.Failure -> message = result.message
+            }
+        }
+    }
+    fun completeLearningVideo(assignmentId: String, activityId: String, playedSeconds: Int, durationSeconds: Int) {
+        viewModelScope.launch {
+            when (val result = remote.learningAttempt(assignmentId, activityId, "VIEWED", playedSeconds, durationSeconds)) {
+                is RemoteResult.Ok -> { replaceLearning(result.value); message = "这段已经看完，记下的是观看，不代表全部学会" }
+                RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+                is RemoteResult.Failure -> message = result.message
+            }
+        }
+    }
+    fun submitLearningAssignment(assignmentId: String, version: Long) {
+        viewModelScope.launch {
+            when (val result = remote.learningSubmit(assignmentId, version)) {
+                is RemoteResult.Ok -> { replaceLearning(result.value); message = "已经交给家长看了" }
+                RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+                is RemoteResult.Failure -> { message = result.message; syncLearningAssignments() }
+            }
+        }
+    }
+    fun reviewLearningAssignment(assignmentId: String, approve: Boolean, note: String, version: Long) {
+        viewModelScope.launch {
+            when (val result = remote.learningReview(assignmentId, if (approve) "APPROVE" else "REWORK", note, version)) {
+                is RemoteResult.Ok -> { replaceLearning(result.value); message = if (approve) "已确认孩子的努力" else "已温和地告诉孩子再试哪一步" }
+                RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+                is RemoteResult.Failure -> { message = result.message; syncLearningAssignments() }
+            }
+        }
+    }
     fun clearMessage() { message = null }
 
     fun connectService(baseUrl: String, familyId: String, parentId: String, childId: String, pin: String) {
@@ -168,7 +206,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             if (result is RemoteResult.Ok) { syncEducationResources(); flushUsageNow() }
         }
     }
-    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); connectionState = ConnectionState.Disconnected; message = "已断开；服务端 Token 已从内存清除" }
+    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); connectionState = ConnectionState.Disconnected; message = "已断开；服务端 Token 已从内存清除" }
 
     private fun changeEducationSource(id: String, action: String, success: String) {
         viewModelScope.launch {
@@ -197,6 +235,20 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
             is RemoteResult.Failure -> message = catalog.message
         }
+        syncLearningAssignments()
+    }
+
+    private suspend fun syncLearningAssignments() {
+        when (val result = remote.learningAssignments()) {
+            is RemoteResult.Ok -> learningAssignments = result.value
+            RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+            is RemoteResult.Failure -> message = result.message
+        }
+    }
+
+    private fun replaceLearning(updated: RemoteLearningAssignment) {
+        learningAssignments = (learningAssignments.filterNot { it.id == updated.id } + updated)
+            .sortedBy { if (it.status == "COMPLETED") 1 else 0 }
     }
 
     private fun handleRemote(result: RemoteResult<RemoteSnapshot>, success: String) {

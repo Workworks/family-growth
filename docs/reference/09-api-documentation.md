@@ -68,6 +68,13 @@
 | POST | `/families/{familyId}/education-resource-sources/{sourceId}/approve` | PARENT | 成功读取非空栏目后幂等批准，允许进入适龄儿童投影 |
 | POST | `/families/{familyId}/education-resource-sources/{sourceId}/withdraw` | PARENT | 幂等撤回并保留来源、栏目和动作历史 |
 | GET | `/families/{familyId}/children/{childId}/education-resource-catalog` | PARENT/CHILD 本人 | 只返回匹配有效学段的已批准来源名/栏目名/同步时间，不返回任何 URL 或使用说明；幼儿园为空 |
+| GET/POST | `/families/{familyId}/teaching/courses` | PARENT | 查询课程版本或原子创建 Course 与首个嵌套 DRAFT；活动答案键仅写入服务端 |
+| POST | `/families/{familyId}/teaching/courses/{courseId}/versions` | PARENT | 创建新 DRAFT 版本；不原地修改已发布内容 |
+| POST | `/families/{familyId}/teaching/course-versions/{versionId}/publish` | PARENT | 幂等发布课程版本并记录发布人/时间，发布后没有内容修改 API |
+| GET/POST | `/families/{familyId}/children/{childId}/learning/assignments` | PARENT/CHILD 本人 / PARENT | 查询本人适龄已发布课节，或由家长分配一个课节；孩子响应不含答案键和权利依据 |
+| POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/activities/{activityId}/attempts` | CHILD 本人 | 幂等记录活动尝试；视频须报告至少 90% 实际播放计数，客观题由服务端判定，现实活动只记 ATTEMPTED |
+| POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/submit` | CHILD 本人 | required evidence 齐备且 `expectedVersion` 一致时提交课节；返工后还必须先产生新的 Attempt |
+| POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/review` | PARENT | `APPROVE` 追加家长确认与 MASTERED，或 `REWORK` 温和要求复做；不旁路增加 Money/Coin |
 
 批准审核会锁定 Completion 与 Wallet；Coin/Money 流水先追加，再在同一事务更新余额和 Completion。重复提交返回首次结果；重复/冲突审核返回 409，不能重复发奖。XP 的奖励事实保存在 Completion 快照并更新 `child_progress`。
 
@@ -78,6 +85,8 @@
 学段推荐边界为 0–2 岁 `PARENT_ONLY`、3–5 岁 `KINDERGARTEN`、6–11 岁 `PRIMARY`、12–14 岁 `JUNIOR_MIDDLE`、15 岁及以上 `SENIOR_HIGH`。家长覆盖不能选择 `PARENT_ONLY`，且必须说明原因；更新使用 `expectedVersion` 防止并发覆盖并追加审计。纪录片 `OFFICIAL_LINK` 只接受无凭据 HTTPS 地址且始终要求家长操作；原创离线和已授权离线内容分别只接受 `asset://`、`content-package://` 引用。目录仅证明来源已登记和审批，不证明第三方内容已获下载、剪辑或再分发授权。
 
 免费教育来源发现不是通用爬虫：服务端不执行 JavaScript、不提交表单、不携带 Cookie/认证，只读取最多 512 KiB HTML，最多跟随 3 次同源重定向并保存 30 个同源导航栏目。URL 创建、DNS 结果和每次重定向均拒绝 loopback、私网、链路本地、组播、保留地址和 IP 字面量。成功刷新会把来源重新置为 `DRAFT`，必须由家长再次批准新快照；失败返回 `FAILED`、保留最近成功快照和既有批准状态。不同站点的栏目结构可能无法自动识别，由家长更换为该站稳定的栏目首页。
+
+课程版本采用 `DRAFT → PUBLISHED`，发布内容不提供更新/删除入口；新内容创建下一版本，历史 Assignment 始终引用原版本。九类活动分别要求 `VIEWED`、`CHECKED` 或 `PARENT_CONFIRMED`；视频观看本身不等于掌握，客观题答案不下发 Android，亲子阅读、口头和线下实践由家长最终确认。Assignment 使用 `ASSIGNED → IN_PROGRESS → SUBMITTED → COMPLETED`，并支持 `SUBMITTED → REWORK_REQUIRED → IN_PROGRESS`；返工后必须新增一次 Attempt 才可再提交。所有写入带幂等键，提交/审核还使用乐观版本。
 
 ## 响应与错误
 

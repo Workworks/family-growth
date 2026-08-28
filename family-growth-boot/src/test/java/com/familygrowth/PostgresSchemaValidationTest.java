@@ -31,9 +31,11 @@ class PostgresSchemaValidationTest {
                 "'usage_policy','usage_event','withdrawal_rule','withdrawal_quote','withdrawal_request','withdrawal_action'," +
                 "'child_experience_profile','child_experience_audit','documentary_source','documentary_source_action'," +
                 "'education_resource_source','education_resource_source_stage','education_resource_category'," +
-                "'education_resource_action')",
+                "'education_resource_action','teaching_course','teaching_course_version','teaching_unit','teaching_lesson'," +
+                "'learning_activity','learning_question','learning_question_option','lesson_assignment','activity_attempt'," +
+                "'learning_completion','mastery_evidence','teaching_action')",
             Integer.class);
-        assertThat(successfulMigrations).isEqualTo(10);
-        assertThat(productionTables).isEqualTo(43);
+        assertThat(successfulMigrations).isEqualTo(11);
+        assertThat(productionTables).isEqualTo(55);
     }
 }
