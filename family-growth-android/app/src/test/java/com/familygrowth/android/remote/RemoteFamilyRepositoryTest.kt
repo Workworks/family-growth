@@ -78,7 +78,13 @@ class RemoteFamilyRepositoryTest {
         val transport = FakeTransport()
         val repository = RemoteFamilyRepository(transport, MemorySessionStore(), false)
         assertTrue(repository.connect("https://family.example", FAMILY, PARENT, CHILD, "123456") is RemoteResult.Ok)
-        assertTrue(repository.createTeachingCourse("PRIMARY","FAMILY","自然课","找叶子","去户外观察","OFFLINE_PRACTICE","找一找","找到三种叶子",null) is RemoteResult.Ok)
+        val draft = RemoteTeachingCourseDraft(stage="KINDERGARTEN",courseTitle="自然课",
+            lessonTitle="找叶子",lessonSummary="去户外观察",activityType="OFFLINE_PRACTICE",
+            activityTitle="找一找",instruction="找到三种叶子",expectedMinutes=6,
+            rightsBasis="Family Growth 原创亲子活动 · KG-PACK-1.0.0",
+            kindergartenAgeBand="SHARED_3_4",kindergartenDomains=listOf("SCIENCE"))
+        assertTrue(repository.createTeachingCourse(draft) is RemoteResult.Ok)
+        assertEquals(draft, transport.teachingDraft)
         assertTrue(repository.publishTeachingVersion("version") is RemoteResult.Ok)
         assertTrue(repository.assignTeachingVersion("version") is RemoteResult.Ok)
         assertEquals(listOf("create:parent-token","publish:parent-token","detail:parent-token","assign:parent-token"), transport.teachingCalls)
@@ -93,6 +99,7 @@ class RemoteFamilyRepositoryTest {
         var learningKey = ""
         var learningToken = ""
         val teachingCalls = mutableListOf<String>()
+        var teachingDraft: RemoteTeachingCourseDraft? = null
         override suspend fun login(base:String,family:String,parent:String,pin:String)=RemoteResult.Ok("parent-token")
         override suspend fun childSession(base:String,parentToken:String,child:String)=RemoteResult.Ok("child-token")
         override suspend fun snapshot(base:String,token:String,family:String,child:String):RemoteResult<RemoteSnapshot> = if(expire) RemoteResult.Unauthorized else RemoteResult.Ok(RemoteSnapshot(family,child,"小树",BigDecimal("12.00"),30,emptyList(),0,0))
@@ -103,7 +110,7 @@ class RemoteFamilyRepositoryTest {
         override suspend fun educationSourceAction(base:String,token:String,family:String,source:String,action:String,key:String):RemoteResult<RemoteEducationSource>{resourceCalls += action;return RemoteResult.Ok(RemoteEducationSource(source,"公益课堂","https://learn.example.org",listOf("PRIMARY"),"免费浏览","DRAFT","READY","",null,emptyList()))}
         override suspend fun childEducationCatalog(base:String,token:String,family:String,child:String):RemoteResult<List<RemoteChildEducationSource>>{resourceCalls += "child-catalog";return RemoteResult.Ok(emptyList())}
         override suspend fun learningAttempt(base:String,token:String,family:String,child:String,assignment:String,activity:String,response:String,playedSeconds:Int?,durationSeconds:Int?,key:String):RemoteResult<RemoteLearningAssignment>{learningKey=key;learningToken=token;return RemoteResult.Ok(learningAssignment())}
-        override suspend fun createTeachingCourse(base:String,token:String,family:String,stage:String,subject:String,courseTitle:String,lessonTitle:String,lessonSummary:String,activityType:String,activityTitle:String,instruction:String,contentRef:String?,key:String):RemoteResult<RemoteTeachingVersion>{teachingCalls += "create:$token";return RemoteResult.Ok(version("DRAFT"))}
+        override suspend fun createTeachingCourse(base:String,token:String,family:String,draft:RemoteTeachingCourseDraft,key:String):RemoteResult<RemoteTeachingVersion>{teachingCalls += "create:$token";teachingDraft=draft;return RemoteResult.Ok(version("DRAFT"))}
         override suspend fun publishTeachingVersion(base:String,token:String,family:String,version:String,key:String):RemoteResult<RemoteTeachingVersion>{teachingCalls += "publish:$token";return RemoteResult.Ok(version("PUBLISHED"))}
         override suspend fun teachingVersion(base:String,token:String,family:String,version:String):RemoteResult<RemoteTeachingVersion>{teachingCalls += "detail:$token";return RemoteResult.Ok(version("PUBLISHED"))}
         override suspend fun assignTeachingLesson(base:String,token:String,family:String,child:String,version:String,lesson:String,key:String):RemoteResult<RemoteLearningAssignment>{teachingCalls += "assign:$token";return RemoteResult.Ok(learningAssignment())}

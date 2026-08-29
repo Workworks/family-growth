@@ -2,7 +2,7 @@
   "stage": 22,
   "capturedAt": "2026-08-29",
   "status": "IN_PROGRESS",
-  "scope": "WP22-1 through WP22-3 specification, Android safe projection and server publication policy",
+  "scope": "WP22-1 through WP22-5 specification, Android safe projection, server publication policy, original content pack and parent response templates",
   "results": [
     {
       "id": "V22-01",
@@ -55,6 +55,26 @@
       "result": "22 domain and 24 Spring/API tests passed with zero skips; Flyway V1-V12, 55-table schema baseline and Hibernate validate passed; temporary container removed"
     },
     {
+      "id": "V22-04",
+      "status": "PASS_OFFLINE",
+      "command": "family-growth-android\\gradlew.bat testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease --no-daemon",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "KG-PACK-1.0.0 contains 10 unique original activities covering two age bands by five domains; debug and release each passed 43 JVM tests, including duration, activity type, rights version and no-URL audit"
+    },
+    {
+      "id": "V22-05-OFFLINE",
+      "status": "PASS_OFFLINE",
+      "command": "family-growth-android\\gradlew.bat testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease --no-daemon",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Parent kindergarten foldout compiles for both variants, forwards age band/domain/duration/rights metadata, and requires a concrete observation before review; no reward or ranking field is present"
+    },
+    {
       "id": "V22-05",
       "status": "BLOCKED",
       "command": "NOT_RUN: target tablet parent-child acceptance",
@@ -66,8 +86,7 @@
     }
   ],
   "remaining": [
-    "WP22-4 audited original parent-child content pack",
-    "WP22-5 parent kindergarten authoring templates",
-    "WP22-6 PostgreSQL and target-tablet acceptance"
+    "WP22-6 target-tablet parent-child acceptance",
+    "a future release requires a separate version increment and release gate"
   ]
 }

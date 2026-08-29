@@ -11,6 +11,22 @@ import java.util.UUID
 import java.time.LocalDate
 import com.familygrowth.android.core.SchoolStage
 
+data class RemoteTeachingCourseDraft(
+ val stage:String,
+ val subject:String="FAMILY",
+ val courseTitle:String,
+ val lessonTitle:String,
+ val lessonSummary:String,
+ val activityType:String,
+ val activityTitle:String,
+ val instruction:String,
+ val contentRef:String?=null,
+ val expectedMinutes:Int=8,
+ val rightsBasis:String="家庭原创学习活动",
+ val kindergartenAgeBand:String?=null,
+ val kindergartenDomains:List<String> = emptyList(),
+)
+
 interface FamilyApiTransport{
  suspend fun login(base:String,family:String,parent:String,pin:String):RemoteResult<String>
  suspend fun childSession(base:String,parentToken:String,child:String):RemoteResult<String>
@@ -27,7 +43,7 @@ interface FamilyApiTransport{
  suspend fun learningReview(base:String,token:String,family:String,child:String,assignment:String,decision:String,note:String,expectedVersion:Long,key:String):RemoteResult<RemoteLearningAssignment> = RemoteResult.Failure("课程审核暂不可用")
  suspend fun teachingCourses(base:String,token:String,family:String):RemoteResult<List<RemoteCourseSummary>> = RemoteResult.Failure("课程工作台暂不可用")
  suspend fun teachingVersion(base:String,token:String,family:String,version:String):RemoteResult<RemoteTeachingVersion> = RemoteResult.Failure("课程版本暂不可用")
- suspend fun createTeachingCourse(base:String,token:String,family:String,stage:String,subject:String,courseTitle:String,lessonTitle:String,lessonSummary:String,activityType:String,activityTitle:String,instruction:String,contentRef:String?,key:String):RemoteResult<RemoteTeachingVersion> = RemoteResult.Failure("建课暂不可用")
+ suspend fun createTeachingCourse(base:String,token:String,family:String,draft:RemoteTeachingCourseDraft,key:String):RemoteResult<RemoteTeachingVersion> = RemoteResult.Failure("建课暂不可用")
  suspend fun publishTeachingVersion(base:String,token:String,family:String,version:String,key:String):RemoteResult<RemoteTeachingVersion> = RemoteResult.Failure("课程发布暂不可用")
  suspend fun assignTeachingLesson(base:String,token:String,family:String,child:String,version:String,lesson:String,key:String):RemoteResult<RemoteLearningAssignment> = RemoteResult.Failure("课程分配暂不可用")
  suspend fun submit(base:String,childToken:String,family:String,child:String,task:String,key:String):RemoteResult<Unit>
@@ -51,13 +67,15 @@ class HttpFamilyApiTransport:FamilyApiTransport{
  override suspend fun learningReview(base:String,token:String,family:String,child:String,assignment:String,decision:String,note:String,expectedVersion:Long,key:String)=request(base,"/api/v1/families/$family/children/$child/learning/assignments/$assignment/review","POST",token,JSONObject().put("decision",decision).put("note",note).put("expectedVersion",expectedVersion),key){decodeLearningAssignment(it.getJSONObject("data"))}
  override suspend fun teachingCourses(base:String,token:String,family:String)=request(base,"/api/v1/families/$family/teaching/courses","GET",token,null){root->decodeCourseSummaries(root.getJSONArray("data"))}
  override suspend fun teachingVersion(base:String,token:String,family:String,version:String)=request(base,"/api/v1/families/$family/teaching/course-versions/$version","GET",token,null){decodeTeachingVersion(it.getJSONObject("data"))}
- override suspend fun createTeachingCourse(base:String,token:String,family:String,stage:String,subject:String,courseTitle:String,lessonTitle:String,lessonSummary:String,activityType:String,activityTitle:String,instruction:String,contentRef:String?,key:String):RemoteResult<RemoteTeachingVersion>{
-  val activity=JSONObject().put("type",activityType).put("title",activityTitle).put("instruction",instruction).put("expectedMinutes",if(activityType=="SHORT_VIDEO")3 else 8)
-  if(contentRef!=null)activity.put("contentRef",contentRef)
-  val lesson=JSONObject().put("title",lessonTitle).put("summary",lessonSummary).put("activities",org.json.JSONArray().put(activity))
+ override suspend fun createTeachingCourse(base:String,token:String,family:String,draft:RemoteTeachingCourseDraft,key:String):RemoteResult<RemoteTeachingVersion>{
+  val activity=JSONObject().put("type",draft.activityType).put("title",draft.activityTitle).put("instruction",draft.instruction).put("expectedMinutes",draft.expectedMinutes)
+  if(draft.contentRef!=null)activity.put("contentRef",draft.contentRef)
+  val lesson=JSONObject().put("title",draft.lessonTitle).put("summary",draft.lessonSummary).put("activities",org.json.JSONArray().put(activity))
   val unit=JSONObject().put("title","家庭学习夹").put("lessons",org.json.JSONArray().put(lesson))
-  val version=JSONObject().put("summary",lessonSummary).put("rightsBasis",if(activityType=="SHORT_VIDEO")"应用内原创审核视频" else "家庭原创学习活动").put("units",org.json.JSONArray().put(unit))
-  val body=JSONObject().put("schoolStage",stage).put("subjectCode",subject).put("title",courseTitle).put("version",version)
+  val version=JSONObject().put("summary",draft.lessonSummary).put("rightsBasis",draft.rightsBasis).put("units",org.json.JSONArray().put(unit))
+  draft.kindergartenAgeBand?.let { version.put("kindergartenAgeBand",it) }
+  if(draft.kindergartenDomains.isNotEmpty()) version.put("kindergartenDomains",org.json.JSONArray(draft.kindergartenDomains))
+  val body=JSONObject().put("schoolStage",draft.stage).put("subjectCode",draft.subject).put("title",draft.courseTitle).put("version",version)
   return request(base,"/api/v1/families/$family/teaching/courses","POST",token,body,key){decodeTeachingVersion(it.getJSONObject("data"))}
  }
  override suspend fun publishTeachingVersion(base:String,token:String,family:String,version:String,key:String)=request(base,"/api/v1/families/$family/teaching/course-versions/$version/publish","POST",token,null,key){decodeTeachingVersion(it.getJSONObject("data"))}
@@ -95,7 +113,7 @@ class RemoteFamilyRepository(private val transport:FamilyApiTransport,private va
  suspend fun learningAssignments():RemoteResult<List<RemoteLearningAssignment>>{val s=sessions.get()?:return RemoteResult.Failure("尚未连接家庭服务");return when(val r=transport.learningAssignments(s.baseUrl,s.childToken,s.familyId,s.childId)){RemoteResult.Unauthorized->expired();else->r}}
  suspend fun executeLearning(action:PendingLearningAction):RemoteResult<RemoteLearningAssignment>{val s=sessions.get()?:return RemoteResult.Failure("请家长重新连接后同步",RemoteFailureKind.RETRYABLE);if(s.familyId!=action.familyId||s.childId!=action.childId)return RemoteResult.Failure("待同步记录属于另一个家庭或孩子");val result=when(action.type){LearningActionType.ATTEMPT->transport.learningAttempt(s.baseUrl,s.childToken,s.familyId,s.childId,action.assignmentId,action.activityId,action.responseText,action.playedSeconds,action.durationSeconds,action.idempotencyKey);LearningActionType.SUBMIT->transport.learningSubmit(s.baseUrl,s.childToken,s.familyId,s.childId,action.assignmentId,action.expectedVersion?:return RemoteResult.Failure("待提交版本缺失"),action.idempotencyKey);LearningActionType.REVIEW->transport.learningReview(s.baseUrl,s.parentToken,s.familyId,s.childId,action.assignmentId,action.decision,action.note,action.expectedVersion?:return RemoteResult.Failure("待审核版本缺失"),action.idempotencyKey)};return when(result){RemoteResult.Unauthorized->expired();else->result}}
  suspend fun teachingCourses():RemoteResult<List<RemoteCourseSummary>>{val s=sessions.get()?:return RemoteResult.Failure("请先连接家庭服务");return when(val r=transport.teachingCourses(s.baseUrl,s.parentToken,s.familyId)){RemoteResult.Unauthorized->expired();else->r}}
- suspend fun createTeachingCourse(stage:String,subject:String,courseTitle:String,lessonTitle:String,lessonSummary:String,activityType:String,activityTitle:String,instruction:String,contentRef:String?):RemoteResult<RemoteTeachingVersion>{val s=sessions.get()?:return RemoteResult.Failure("请先连接家庭服务");return when(val r=transport.createTeachingCourse(s.baseUrl,s.parentToken,s.familyId,stage,subject,courseTitle,lessonTitle,lessonSummary,activityType,activityTitle,instruction,contentRef,UUID.randomUUID().toString())){RemoteResult.Unauthorized->expired();else->r}}
+ suspend fun createTeachingCourse(draft:RemoteTeachingCourseDraft):RemoteResult<RemoteTeachingVersion>{val s=sessions.get()?:return RemoteResult.Failure("请先连接家庭服务");return when(val r=transport.createTeachingCourse(s.baseUrl,s.parentToken,s.familyId,draft,UUID.randomUUID().toString())){RemoteResult.Unauthorized->expired();else->r}}
  suspend fun publishTeachingVersion(version:String):RemoteResult<RemoteTeachingVersion>{val s=sessions.get()?:return RemoteResult.Failure("请先连接家庭服务");return when(val r=transport.publishTeachingVersion(s.baseUrl,s.parentToken,s.familyId,version,UUID.randomUUID().toString())){RemoteResult.Unauthorized->expired();else->r}}
  suspend fun assignTeachingVersion(version:String):RemoteResult<RemoteLearningAssignment>{val s=sessions.get()?:return RemoteResult.Failure("请先连接家庭服务");val detail=when(val r=transport.teachingVersion(s.baseUrl,s.parentToken,s.familyId,version)){is RemoteResult.Ok->r.value;RemoteResult.Unauthorized->return expired();is RemoteResult.Failure->return r};val lesson=detail.lessonIds.firstOrNull()?:return RemoteResult.Failure("课程版本没有可分配课节");return when(val r=transport.assignTeachingLesson(s.baseUrl,s.parentToken,s.familyId,s.childId,version,lesson,UUID.randomUUID().toString())){RemoteResult.Unauthorized->expired();else->r}}
  suspend fun createEducationSource(title:String,url:String,stages:List<SchoolStage>,note:String):RemoteResult<List<RemoteEducationSource>>{val s=sessions.get()?:return RemoteResult.Failure("请先连接家庭服务");return when(val r=transport.createEducationSource(s.baseUrl,s.parentToken,s.familyId,title,url,stages,note,UUID.randomUUID().toString())){is RemoteResult.Ok->educationSources();RemoteResult.Unauthorized->expired();is RemoteResult.Failure->r}}

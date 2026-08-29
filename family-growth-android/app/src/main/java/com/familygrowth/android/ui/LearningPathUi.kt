@@ -193,14 +193,30 @@ fun ParentLearningReviews(viewModel: FamilyAppViewModel) {
     val submitted = viewModel.learningAssignments.filter { it.status == "SUBMITTED" }
     if (submitted.isEmpty()) return
     submitted.forEach { assignment ->
+        var observation by remember(assignment.id) { mutableStateOf("") }
+        val kindergarten = assignment.schoolStage == "KINDERGARTEN"
         GrowthCard {
             SectionTitle("课节待回应", "${assignment.courseTitle} · ${assignment.lessonTitle}")
-            Text("孩子已完成客户端要求的步骤；亲子、口头和线下活动仍由你确认。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(if (kindergarten) "写一句你看到的行动或表达，不评价聪明、落后或输赢。"
+                else "孩子已完成客户端要求的步骤；亲子、口头和线下活动仍由你确认。",
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (kindergarten) OutlinedTextField(
+                value=observation,
+                onValueChange={ observation=it.take(240) },
+                label={ Text("我看到孩子……") },
+                supportingText={ Text("例如：他先猜球会滚，再自己把方盒放上斜坡。") },
+                modifier=Modifier.fillMaxWidth(),
+                minLines=2,
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                OutlinedButton(onClick = { viewModel.reviewLearningAssignment(assignment.id, false, "请再慢慢完成一次需要回应的步骤", assignment.version) }, Modifier.weight(1f).heightIn(min = 52.dp)) {
-                    Icon(Icons.Rounded.Refresh, null); Spacer(Modifier.width(6.dp)); Text("请再试")
+                OutlinedButton(onClick = { viewModel.reviewLearningAssignment(assignment.id, false,
+                    if(kindergarten) observation.trim() else "请再慢慢完成一次需要回应的步骤", assignment.version) },
+                    Modifier.weight(1f).heightIn(min = 52.dp), enabled=!kindergarten||observation.isNotBlank()) {
+                    Icon(Icons.Rounded.Refresh, null); Spacer(Modifier.width(6.dp)); Text(if(kindergarten) "再陪一次" else "请再试")
                 }
-                Button(onClick = { viewModel.reviewLearningAssignment(assignment.id, true, "看见你认真完成了每一步", assignment.version) }, Modifier.weight(1f).heightIn(min = 52.dp)) {
+                Button(onClick = { viewModel.reviewLearningAssignment(assignment.id, true,
+                    if(kindergarten) observation.trim() else "看见你认真完成了每一步", assignment.version) },
+                    Modifier.weight(1f).heightIn(min = 52.dp), enabled=!kindergarten||observation.isNotBlank()) {
                     Icon(Icons.Rounded.Check, null); Spacer(Modifier.width(6.dp)); Text("确认完成")
                 }
             }

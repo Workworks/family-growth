@@ -190,9 +190,37 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         updateTeachingActionState(true)
         viewModelScope.launch {
             try {
-                when (val result = remote.createTeachingCourse(stage.name, "FAMILY", courseTitle.trim(), lessonTitle.trim(),
-                    lessonSummary.trim(), activityType, activityTitle.trim(), instruction.trim(), contentRef)) {
+                val draft = RemoteTeachingCourseDraft(stage=stage.name, courseTitle=courseTitle.trim(),
+                    lessonTitle=lessonTitle.trim(), lessonSummary=lessonSummary.trim(), activityType=activityType,
+                    activityTitle=activityTitle.trim(), instruction=instruction.trim(), contentRef=contentRef,
+                    expectedMinutes=if(activityType=="SHORT_VIDEO") 3 else 8,
+                    rightsBasis=if(activityType=="SHORT_VIDEO") "应用内原创审核视频" else "家庭原创学习活动")
+                when (val result = remote.createTeachingCourse(draft)) {
                     is RemoteResult.Ok -> { message = "课程草稿已保存"; syncTeachingCourses() }
+                    RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+                    is RemoteResult.Failure -> message = result.message
+                }
+            } finally {
+                updateTeachingActionState(false)
+            }
+        }
+    }
+    fun createKindergartenTeachingCourse(template: KindergartenCourseTemplate) {
+        if (state.experience.effectiveStage != SchoolStage.KINDERGARTEN)
+            return failUnit("当前学段不是幼儿园，请刷新家长配置")
+        if (teachingActionRunningInternal) return
+        updateTeachingActionState(true)
+        viewModelScope.launch {
+            try {
+                val draft = RemoteTeachingCourseDraft(stage=SchoolStage.KINDERGARTEN.name,
+                    courseTitle=template.courseTitle, lessonTitle=template.lessonTitle,
+                    lessonSummary=template.lessonSummary, activityType=template.activityType,
+                    activityTitle=template.activityTitle, instruction=template.childAction,
+                    expectedMinutes=template.expectedMinutes, rightsBasis=template.rightsBasis,
+                    kindergartenAgeBand=template.ageBand.apiValue,
+                    kindergartenDomains=listOf(template.domain.apiValue))
+                when (val result = remote.createTeachingCourse(draft)) {
+                    is RemoteResult.Ok -> { message = "亲子活动草稿已保存"; syncTeachingCourses() }
                     RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
                     is RemoteResult.Failure -> message = result.message
                 }

@@ -1,7 +1,9 @@
 package com.familygrowth.android.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AssignmentTurnedIn
 import androidx.compose.material.icons.rounded.Book
@@ -16,6 +18,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.familygrowth.android.core.FamilyAppViewModel
+import com.familygrowth.android.core.KindergartenAgeBand
+import com.familygrowth.android.core.KindergartenCourseTemplates
+import com.familygrowth.android.core.KindergartenDomain
 import com.familygrowth.android.core.SchoolStage
 import com.familygrowth.android.remote.ConnectionState
 import com.familygrowth.android.remote.LearningActionState
@@ -111,6 +116,85 @@ private fun LearningOutboxParentStatus(viewModel: FamilyAppViewModel) {
 
 @Composable
 private fun CreateTeachingCourseDialog(viewModel: FamilyAppViewModel, dismiss: () -> Unit) {
+    if (viewModel.state.experience.effectiveStage == SchoolStage.KINDERGARTEN) {
+        CreateKindergartenTemplateDialog(viewModel, dismiss)
+        return
+    }
+    CreateGeneralTeachingCourseDialog(viewModel, dismiss)
+}
+
+@Composable
+private fun CreateKindergartenTemplateDialog(viewModel: FamilyAppViewModel, dismiss: () -> Unit) {
+    var ageBand by remember { mutableStateOf(KindergartenAgeBand.SHARED_3_4) }
+    var domain by remember { mutableStateOf(KindergartenDomain.HEALTH) }
+    val template = KindergartenCourseTemplates.find(ageBand, domain)
+    AlertDialog(
+        onDismissRequest = dismiss,
+        title = {
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text("选一个今天的亲子活动")
+                Text("幼儿园 · 原创内容包 KG-PACK-1.0.0", style=MaterialTheme.typography.bodySmall,
+                    color=MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        },
+        text = {
+            Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("年龄带", style=MaterialTheme.typography.labelLarge)
+                FlowRow(horizontalArrangement=Arrangement.spacedBy(7.dp), verticalArrangement=Arrangement.spacedBy(7.dp)) {
+                    KindergartenAgeBand.entries.forEach { value ->
+                        FilterChip(selected=ageBand==value, onClick={ ageBand=value }, label={ Text(value.label) })
+                    }
+                }
+                Text("发展领域", style=MaterialTheme.typography.labelLarge)
+                FlowRow(horizontalArrangement=Arrangement.spacedBy(7.dp), verticalArrangement=Arrangement.spacedBy(7.dp)) {
+                    KindergartenDomain.entries.forEach { value ->
+                        FilterChip(selected=domain==value, onClick={ domain=value }, label={ Text(value.label) })
+                    }
+                }
+                Surface(shape=MaterialTheme.shapes.large, color=MaterialTheme.colorScheme.surface,
+                    border=BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
+                    Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement=Arrangement.spacedBy(12.dp)) {
+                        Row(Modifier.fillMaxWidth(), verticalAlignment=Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f)) {
+                                Text(template.courseTitle, style=MaterialTheme.typography.titleLarge, fontWeight=FontWeight.Bold)
+                                Text("${template.domain.label} · ${template.expectedMinutes} 分钟 · 现实亲子活动",
+                                    style=MaterialTheme.typography.bodySmall, color=MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            Surface(shape=MaterialTheme.shapes.small, color=MaterialTheme.colorScheme.tertiaryContainer) {
+                                Text("陪伴折页", Modifier.padding(horizontal=10.dp, vertical=6.dp),
+                                    style=MaterialTheme.typography.labelMedium)
+                            }
+                        }
+                        HorizontalDivider(color=MaterialTheme.colorScheme.outlineVariant)
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.spacedBy(12.dp)) {
+                            FoldoutSide("给家长", template.adultGuide, Modifier.weight(1f))
+                            FoldoutSide("和孩子去做", template.childAction, Modifier.weight(1f))
+                        }
+                        Text("完成后回来记一句你看到的行动或表达。", style=MaterialTheme.typography.bodySmall,
+                            color=MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(onClick={ viewModel.createKindergartenTeachingCourse(template); dismiss() }) {
+                Text("使用这个亲子活动")
+            }
+        },
+        dismissButton = { TextButton(onClick=dismiss) { Text("取消") } },
+    )
+}
+
+@Composable
+private fun FoldoutSide(title:String, body:String, modifier:Modifier=Modifier) {
+    Column(modifier, verticalArrangement=Arrangement.spacedBy(5.dp)) {
+        Text(title, style=MaterialTheme.typography.labelLarge, color=MaterialTheme.colorScheme.primary)
+        Text(body, style=MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun CreateGeneralTeachingCourseDialog(viewModel: FamilyAppViewModel, dismiss: () -> Unit) {
     var courseTitle by remember { mutableStateOf("") }
     var lessonTitle by remember { mutableStateOf("") }
     var lessonSummary by remember { mutableStateOf("") }

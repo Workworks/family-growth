@@ -33,6 +33,7 @@
 - [37 儿童舒适品牌图标基线](design/37-child-comfort-brand-icon.md)
 - [38 儿童奖励浏览与教学视频交互](design/38-child-reward-video-interaction.md)
 - [39 四学段教学体验与内容分层](design/39-age-stage-teaching-experience.md)
+- [40 幼儿园原创亲子活动包](design/40-kindergarten-original-parent-child-pack.md)
 
 ## 接口参考 · `reference/`
 

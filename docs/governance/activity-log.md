@@ -154,3 +154,5 @@
 | 52 | 22 | 完成 WP22-1/2 离线门禁 | Android debug/release JVM、lint、assemble 共 111 个 Gradle 任务成功；87 份 Markdown 链接、Stage evidence JSON 和 OpenAPI 64 paths 解析通过，目标平板未执行并保留阻塞 | `evidence/stage-22/acceptance.json`、本轮验证输出 |
 | 53 | 22 | 用户要求开始下一步并实施 WP22-3 | 登记 REQ-042/P0；V12 在不可变课程版本保存幼儿园年龄带/五领域，发布前逐课校验活动数、总时长、屏幕时长、单活动、选择数和亲子/离屏出口；小学以上课程保持原契约 | V12、domain/application/JDBC/API/OpenAPI |
 | 54 | 22 | 完成服务端与目标数据库门禁 | H2 全量 22 个领域、24 个 Boot（6 个 PG 条件跳过）通过；PostgreSQL 首轮因默认多上下文连接池耗尽失败，按既有测试策略限制池为 2 后全量 22+24 零失败/零跳过，V1–V12/55 表通过，临时容器已清理 | Stage 22 evidence、PostgresSchemaValidationTest |
+| 55 | 22 | 用户要求开始下一步并完成 WP22-4/5 可离线纵切 | 登记 REQ-043/P0；建立 `KG-PACK-1.0.0` 十条原创目录，完整覆盖 2 个年龄带 × 5 领域；家长建课改为单个“陪伴折页”，请求携带年龄带/领域/时长/权利版本，幼儿园审核必须写一句具体行为观察 | 内容审计清单、Android template/remote/view-model/UI/tests |
+| 56 | 22 | 完成内容、Android 与 H2 联合门禁 | Android debug/release 各 43 项、两变体 lint/assemble 通过；Maven H2 全量 22 个领域、2 个基础设施和 24 个 Boot 测试通过，6 个 PostgreSQL 条件测试按预期跳过；目标平板未连接，Stage 22 转为 BLOCKED | Stage 22 report/evidence、TODO/current/BLOCKERS |
