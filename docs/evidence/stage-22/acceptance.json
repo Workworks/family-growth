@@ -2,28 +2,70 @@
   "stage": 22,
   "capturedAt": "2026-08-29",
   "status": "IN_PROGRESS",
-  "scope": "WP22-1 and WP22-2 Android kindergarten safe projection",
+  "scope": "WP22-1 through WP22-3 specification, Android safe projection and server publication policy",
   "results": [
     {
       "id": "V22-01",
       "status": "PASS_OFFLINE",
       "command": "family-growth-android\\gradlew.bat testDebugUnitTest testReleaseUnitTest",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
       "result": "KindergartenActivityPolicy covers 1-8 minute and at-most-two-choice projection; both variants passed"
     },
     {
       "id": "V22-02",
       "status": "PASS_OFFLINE",
       "command": "family-growth-android\\gradlew.bat lintDebug lintRelease assembleDebug assembleRelease",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
       "result": "BUILD SUCCESSFUL; debug and release lint/assemble passed"
+    },
+    {
+      "id": "V22-03-H2",
+      "status": "PASS_OFFLINE",
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am test",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "22 domain tests and 24 Spring/API tests passed; 6 PostgreSQL-only tests skipped by condition; Flyway V1-V12 and Hibernate validate passed on H2"
+    },
+    {
+      "id": "V22-03-POSTGRES-FIRST",
+      "status": "FAIL_ENVIRONMENT_RETRIED",
+      "command": "isolated PostgreSQL 16.15 container plus full Maven test suite (credentials redacted)",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 1,
+      "passed": false,
+      "result": "Stage8/9 contexts exceeded the temporary PostgreSQL connection limit with default per-context pools; test container was removed and no product assertion failed"
+    },
+    {
+      "id": "V22-03-POSTGRES",
+      "status": "PASS_POSTGRESQL",
+      "command": "isolated PostgreSQL 16.15 container plus .\\mvnw.cmd -pl family-growth-boot -am -Dspring.datasource.hikari.maximum-pool-size=2 test (credentials redacted)",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "22 domain and 24 Spring/API tests passed with zero skips; Flyway V1-V12, 55-table schema baseline and Hibernate validate passed; temporary container removed"
     },
     {
       "id": "V22-05",
       "status": "BLOCKED",
+      "command": "NOT_RUN: target tablet parent-child acceptance",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": null,
+      "passed": false,
       "result": "No target Android tablet was connected; touch, TalkBack, reduced motion and parent-child runtime flow were not executed"
     }
   ],
   "remaining": [
-    "WP22-3 server-side age-band and five-domain publication policy",
     "WP22-4 audited original parent-child content pack",
     "WP22-5 parent kindergarten authoring templates",
     "WP22-6 PostgreSQL and target-tablet acceptance"

@@ -152,3 +152,5 @@
 | 50 | 22 | 用户要求继续下一步并启动幼儿园深度教学 | 登记 REQ-041/P0；依据教育部、WHO、AAP、NAEYC 固化目标/非目标、两遍视觉、3–4/5–6 内容带、证据语义、WP/V/AC，不提前制作小学以上模板 | `stages/stage-22-report.md`、需求账本 |
 | 51 | 22 | 实现 Android 幼儿园安全投影第一切片 | 幼儿园课程改为成长路标和单一当前活动，不再显示横向活动轮播；活动限制 1–8 分钟、最多两个同级选择，违规内容 fail-safe 请家长处理，短视频仍只记 VIEWED | `LearningPathUi.kt`、`KindergartenActivityPolicy` 与 JVM 测试 |
 | 52 | 22 | 完成 WP22-1/2 离线门禁 | Android debug/release JVM、lint、assemble 共 111 个 Gradle 任务成功；87 份 Markdown 链接、Stage evidence JSON 和 OpenAPI 64 paths 解析通过，目标平板未执行并保留阻塞 | `evidence/stage-22/acceptance.json`、本轮验证输出 |
+| 53 | 22 | 用户要求开始下一步并实施 WP22-3 | 登记 REQ-042/P0；V12 在不可变课程版本保存幼儿园年龄带/五领域，发布前逐课校验活动数、总时长、屏幕时长、单活动、选择数和亲子/离屏出口；小学以上课程保持原契约 | V12、domain/application/JDBC/API/OpenAPI |
+| 54 | 22 | 完成服务端与目标数据库门禁 | H2 全量 22 个领域、24 个 Boot（6 个 PG 条件跳过）通过；PostgreSQL 首轮因默认多上下文连接池耗尽失败，按既有测试策略限制池为 2 后全量 22+24 零失败/零跳过，V1–V12/55 表通过，临时容器已清理 | Stage 22 evidence、PostgresSchemaValidationTest |

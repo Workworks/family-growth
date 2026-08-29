@@ -14,6 +14,8 @@ import com.familygrowth.domain.Stage21TeachingModels.CourseVersion;
 import com.familygrowth.domain.Stage21TeachingModels.CourseVersionStatus;
 import com.familygrowth.domain.Stage21TeachingModels.EvidenceType;
 import com.familygrowth.domain.Stage21TeachingModels.LearningAssignment;
+import com.familygrowth.domain.Stage21TeachingModels.KindergartenAgeBand;
+import com.familygrowth.domain.Stage21TeachingModels.KindergartenDomain;
 import com.familygrowth.domain.Stage21TeachingModels.LessonContent;
 import com.familygrowth.domain.Stage21TeachingModels.ParentCourseSummary;
 import com.familygrowth.domain.Stage21TeachingModels.QuestionOption;
@@ -75,9 +77,11 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
     private UUID insertVersion(UUID courseId, int versionNumber, VersionDraft draft, UUID actorId, Instant now) {
         UUID versionId = UUID.randomUUID();
         jdbc.update("""
-            INSERT INTO teaching_course_version(id,course_id,version_number,summary,rights_basis,status,created_by,created_at)
-            VALUES (?,?,?,?,?,'DRAFT',?,?)
-            """, versionId, courseId, versionNumber, draft.summary(), draft.rightsBasis(), actorId, Timestamp.from(now));
+            INSERT INTO teaching_course_version(id,course_id,version_number,summary,rights_basis,kindergarten_age_band,kindergarten_domains,status,created_by,created_at)
+            VALUES (?,?,?,?,?,?,?,'DRAFT',?,?)
+            """, versionId, courseId, versionNumber, draft.summary(), draft.rightsBasis(),
+            draft.kindergartenAgeBand() == null ? null : draft.kindergartenAgeBand().name(), encodeDomains(draft.kindergartenDomains()),
+            actorId, Timestamp.from(now));
         for (int unitOrder = 0; unitOrder < draft.units().size(); unitOrder++) {
             var unit = draft.units().get(unitOrder);
             UUID unitId = UUID.randomUUID();
@@ -129,7 +133,7 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
     public Optional<CourseVersion> version(UUID familyId, UUID versionId) {
         return jdbc.query("""
             SELECT c.id course_id,c.family_id,c.school_stage,c.subject_code,c.title,
-                   v.id version_id,v.version_number,v.summary,v.rights_basis,v.status,v.published_at
+                   v.id version_id,v.version_number,v.summary,v.rights_basis,v.kindergarten_age_band,v.kindergarten_domains,v.status,v.published_at
             FROM teaching_course_version v JOIN teaching_course c ON c.id=v.course_id
             WHERE c.family_id=? AND v.id=?
             """, (rs, row) -> mapVersion(rs), familyId, versionId).stream().findFirst().map(this::hydrateVersion);
@@ -138,7 +142,7 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
     private CourseVersion versionByCourse(UUID courseId, int versionNumber) {
         return jdbc.query("""
             SELECT c.id course_id,c.family_id,c.school_stage,c.subject_code,c.title,
-                   v.id version_id,v.version_number,v.summary,v.rights_basis,v.status,v.published_at
+                   v.id version_id,v.version_number,v.summary,v.rights_basis,v.kindergarten_age_band,v.kindergarten_domains,v.status,v.published_at
             FROM teaching_course_version v JOIN teaching_course c ON c.id=v.course_id
             WHERE c.id=? AND v.version_number=?
             """, (rs, row) -> mapVersion(rs), courseId, versionNumber).stream().findFirst().map(this::hydrateVersion).orElseThrow();
@@ -150,7 +154,8 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
             """, (rs, row) -> new UnitContent(rs.getObject("id", UUID.class), rs.getString("title"), List.of()), bare.versionId())
             .stream().map(unit -> new UnitContent(unit.id(), unit.title(), lessons(unit.id()))).toList();
         return new CourseVersion(bare.courseId(), bare.versionId(), bare.familyId(), bare.schoolStage(), bare.subjectCode(),
-            bare.title(), bare.versionNumber(), bare.summary(), bare.rightsBasis(), bare.status(), units, bare.publishedAt());
+            bare.title(), bare.versionNumber(), bare.summary(), bare.rightsBasis(), bare.kindergartenAgeBand(),
+            bare.kindergartenDomains(), bare.status(), units, bare.publishedAt());
     }
 
     private List<LessonContent> lessons(UUID unitId) {
@@ -390,8 +395,22 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
         return new CourseVersion(rs.getObject("course_id", UUID.class), rs.getObject("version_id", UUID.class),
             rs.getObject("family_id", UUID.class), SchoolStage.valueOf(rs.getString("school_stage")),
             rs.getString("subject_code"), rs.getString("title"), rs.getInt("version_number"),
-            rs.getString("summary"), rs.getString("rights_basis"), CourseVersionStatus.valueOf(rs.getString("status")),
+            rs.getString("summary"), rs.getString("rights_basis"), ageBand(rs.getString("kindergarten_age_band")),
+            decodeDomains(rs.getString("kindergarten_domains")), CourseVersionStatus.valueOf(rs.getString("status")),
             List.of(), instant(rs, "published_at"));
+    }
+
+    private static String encodeDomains(List<KindergartenDomain> domains) {
+        return domains.stream().map(Enum::name).sorted().collect(java.util.stream.Collectors.joining(","));
+    }
+
+    private static List<KindergartenDomain> decodeDomains(String value) {
+        if (value == null || value.isBlank()) return List.of();
+        return java.util.Arrays.stream(value.split(",")).map(KindergartenDomain::valueOf).toList();
+    }
+
+    private static KindergartenAgeBand ageBand(String value) {
+        return value == null || value.isBlank() ? null : KindergartenAgeBand.valueOf(value);
     }
 
     private static Instant instant(ResultSet rs, String column) throws SQLException {

@@ -942,6 +942,16 @@ components:
       properties:
         summary: { type: string, minLength: 1, maxLength: 500 }
         rightsBasis: { type: string, minLength: 1, maxLength: 500 }
+        kindergartenAgeBand:
+          type: [string, 'null']
+          enum: [SHARED_3_4, TRANSITION_5_6, null]
+          description: Required at publication for KINDERGARTEN and forbidden for other stages.
+        kindergartenDomains:
+          type: array
+          maxItems: 5
+          uniqueItems: true
+          items: { type: string, enum: [HEALTH, LANGUAGE, SOCIAL, SCIENCE, ARTS] }
+          description: At least one value is required at publication for KINDERGARTEN and forbidden for other stages.
         units: { type: array, minItems: 1, maxItems: 12, items: { $ref: '#/components/schemas/TeachingUnitRequest' } }
     TeachingCourseRequest:
       type: object

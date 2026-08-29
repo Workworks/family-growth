@@ -17,6 +17,8 @@ public final class Stage21TeachingModels {
     public enum AssignmentStatus { ASSIGNED, IN_PROGRESS, SUBMITTED, COMPLETED, REWORK_REQUIRED }
     public enum EvidenceType { VIEWED, ATTEMPTED, CHECKED, PARENT_CONFIRMED, MASTERED }
     public enum ReviewDecision { APPROVE, REWORK }
+    public enum KindergartenAgeBand { SHARED_3_4, TRANSITION_5_6 }
+    public enum KindergartenDomain { HEALTH, LANGUAGE, SOCIAL, SCIENCE, ARTS }
 
     public enum ActivityType {
         SHORT_VIDEO(EvidenceType.VIEWED, false),
@@ -97,12 +99,17 @@ public final class Stage21TeachingModels {
         }
     }
 
-    public record VersionDraft(String summary, String rightsBasis, List<UnitDraft> units) {
+    public record VersionDraft(String summary, String rightsBasis, KindergartenAgeBand kindergartenAgeBand,
+                               List<KindergartenDomain> kindergartenDomains, List<UnitDraft> units) {
         public VersionDraft {
             summary = text(summary, "version summary", 500);
             rightsBasis = text(rightsBasis, "rightsBasis", 500);
+            kindergartenDomains = kindergartenDomains == null ? List.of() : kindergartenDomains.stream().distinct().toList();
             units = units == null ? List.of() : List.copyOf(units);
             if (units.isEmpty() || units.size() > 12) throw new IllegalArgumentException("Version requires 1 to 12 units");
+        }
+        public VersionDraft(String summary, String rightsBasis, List<UnitDraft> units) {
+            this(summary, rightsBasis, null, List.of(), units);
         }
     }
 
@@ -112,8 +119,14 @@ public final class Stage21TeachingModels {
     public record UnitContent(UUID id, String title, List<LessonContent> lessons) { }
     public record CourseVersion(UUID courseId, UUID versionId, UUID familyId, SchoolStage schoolStage,
                                 String subjectCode, String title, int versionNumber, String summary,
-                                String rightsBasis, CourseVersionStatus status, List<UnitContent> units,
-                                Instant publishedAt) { }
+                                String rightsBasis, KindergartenAgeBand kindergartenAgeBand,
+                                List<KindergartenDomain> kindergartenDomains, CourseVersionStatus status, List<UnitContent> units,
+                                Instant publishedAt) {
+        public CourseVersion {
+            kindergartenDomains = kindergartenDomains == null ? List.of() : List.copyOf(kindergartenDomains);
+            units = units == null ? List.of() : List.copyOf(units);
+        }
+    }
     public record ParentCourseSummary(UUID courseId, String title, SchoolStage schoolStage, String subjectCode,
                                       UUID versionId, int versionNumber, CourseVersionStatus status, int lessonCount,
                                       Instant publishedAt) { }
@@ -134,6 +147,44 @@ public final class Stage21TeachingModels {
         }
         return activity.evidence().contains(activity.requiredEvidence())
             && (activity.requiredEvidence() != EvidenceType.CHECKED || Boolean.TRUE.equals(activity.checkedCorrect()));
+    }
+
+    public static void validateForPublish(CourseVersion version) {
+        if (version.schoolStage() != SchoolStage.KINDERGARTEN) {
+            if (version.kindergartenAgeBand() != null || !version.kindergartenDomains().isEmpty()) {
+                throw new IllegalArgumentException("Kindergarten metadata is only valid for kindergarten courses");
+            }
+            return;
+        }
+        if (version.kindergartenAgeBand() == null) {
+            throw new IllegalArgumentException("Kindergarten course requires an age band");
+        }
+        if (version.kindergartenDomains() == null || version.kindergartenDomains().isEmpty()) {
+            throw new IllegalArgumentException("Kindergarten course requires at least one learning domain");
+        }
+        for (UnitContent unit : version.units()) {
+            for (LessonContent lesson : unit.lessons()) validateKindergartenLesson(lesson);
+        }
+    }
+
+    private static void validateKindergartenLesson(LessonContent lesson) {
+        if (lesson.activities().size() > 3) {
+            throw new IllegalArgumentException("Kindergarten lesson supports at most three activities");
+        }
+        int totalMinutes = lesson.activities().stream().mapToInt(ActivityContent::expectedMinutes).sum();
+        if (totalMinutes > 15) throw new IllegalArgumentException("Kindergarten lesson must not exceed 15 minutes");
+        int screenMinutes = lesson.activities().stream().filter(activity -> !activity.type().parentConfirmed())
+            .mapToInt(ActivityContent::expectedMinutes).sum();
+        if (screenMinutes > 8) throw new IllegalArgumentException("Kindergarten screen activities must not exceed 8 minutes");
+        if (lesson.activities().stream().anyMatch(activity -> activity.expectedMinutes() > 8)) {
+            throw new IllegalArgumentException("Kindergarten activity must not exceed 8 minutes");
+        }
+        if (lesson.activities().stream().anyMatch(activity -> activity.options().size() > 2)) {
+            throw new IllegalArgumentException("Kindergarten activity supports at most two choices");
+        }
+        if (lesson.activities().stream().noneMatch(activity -> activity.type().parentConfirmed())) {
+            throw new IllegalArgumentException("Kindergarten lesson requires a parent-child or offline activity");
+        }
     }
 
     private static String text(String value, String field, int max) {

@@ -45,6 +45,7 @@
 | REQ-039 | 2026-08-28 | 用户连续推进指令 | 进行下一步 | 按 TODO 进入 Stage 21 V12：加密持久化最小学习 outbox，保留原幂等键并在重新连接后恢复；401 保留队列等待家长登录，409 刷新服务端事实后显式合并，不静默覆盖或丢弃。家长端增加“一课一活动”的可视化建课、发布与分配纵切；足量课程、多课节自由编排和目标平板仍不冒充完成 | P0 | `VALIDATED` | 21 | `LearningOutbox.kt`、`TeachingStudioUi.kt`、课程版本读取 API、Android 双变体 40 项与 Stage 21 evidence；真机运行态仍归 AC21-06 |
 | REQ-040 | 2026-08-29 | 用户发布要求 | 本次完成后，发布新版本 | 在已完成 Stage 21 V12 后立即发布下一稳定版本：从 v0.3.4/10 递增为 v0.3.5/11，使用既有稳定 release 身份和公开 GitHub Release tag workflow；验证测试/lint/构建、tag/版本一致、GitHub digest、包名、版本与同证书。目标平板覆盖升级仍单独保留，不以远端 Release 冒充设备验收 | P0 | `VALIDATED` | 21 | [v0.3.5 Release](https://github.com/Workworks/family-growth/releases/tag/v0.3.5)、run 33190582209、SHA-256/包名/版本/稳定证书复验、Stage 21 evidence |
 | REQ-041 | 2026-08-29 | 用户连续推进指令 | 继续下一步 | 按 TODO 最高顺位启动 Stage 22 幼儿园深度教学；先固化 3–5 岁亲子现实活动、单一行动、最少屏幕时间、原创内容权利和完成证据 Spec，再实现幼儿园专用安全投影。不得提前制作小学以上模板或把界面骨架冒充足量课程 | P0 | `IN_PROGRESS` | 22 | `stages/stage-22-report.md`、Android `KindergartenActivityPolicy`/幼儿园学习投影；完整内容与真机验收待后续 WP |
+| REQ-042 | 2026-08-29 | 用户连续推进指令 | 开始下一步任务 | 按 Stage 22 WP22-3 实现服务端幼儿园内容发布规则：持久保存 3–4/5–6 岁内容带和健康/语言/社会/科学/艺术标签，并在发布时拒绝超时、活动过多、选择过多或缺少亲子/离屏活动的课程；小学以上契约不受影响 | P0 | `VALIDATED` | 22 | Flyway V12、`Stage21TeachingModels.validateForPublish`、H2/PostgreSQL 16.15 全量测试与 Stage 22 evidence |
 
 ## 维护记录
 
@@ -84,3 +85,4 @@
 - 2026-08-29：登记 REQ-040/P0：Stage 21 V12 完成后发布 v0.3.5/11，必须复用稳定签名并完成公开 Release 摘要、包名、版本和证书复验；设备覆盖升级证据继续独立保留。
 - 2026-08-29：REQ-040 完成：v0.3.5/11 已由 tag workflow 使用稳定 release 证书发布为 GitHub latest，公开资产 digest、下载 SHA-256、大小、包名、版本与证书复验一致；真机 v0.3.4→v0.3.5 仍单独阻塞。
 - 2026-08-29：登记 REQ-041/P0：按最高顺位启动 Stage 22，先交付幼儿园深度教学 Spec 与单一行动安全投影，足量原创内容、服务端内容带和目标平板验收继续真实追踪。
+- 2026-08-29：登记并完成 REQ-042/P0：V12 持久化幼儿园年龄带/五领域标签，发布用例强制三活动、15 分钟总时长、8 分钟屏幕活动、两个选择和亲子/离屏活动门禁；H2/PostgreSQL 16.15 通过。

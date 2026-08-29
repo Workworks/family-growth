@@ -78,6 +78,7 @@ public class Stage21TeachingService {
         }
         CourseVersion version = version(familyId, versionId);
         if (version.status() != CourseVersionStatus.DRAFT) throw new Stage3Service.ConflictException("Course version is already published");
+        com.familygrowth.domain.Stage21TeachingModels.validateForPublish(version);
         return store.publish(familyId, versionId, actor.actorId(), key, payload, clock.instant());
     }
 

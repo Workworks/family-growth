@@ -6,6 +6,8 @@ import com.familygrowth.domain.Stage21TeachingModels.ActivityDraft;
 import com.familygrowth.domain.Stage21TeachingModels.ActivityType;
 import com.familygrowth.domain.Stage21TeachingModels.CourseVersion;
 import com.familygrowth.domain.Stage21TeachingModels.LearningAssignment;
+import com.familygrowth.domain.Stage21TeachingModels.KindergartenAgeBand;
+import com.familygrowth.domain.Stage21TeachingModels.KindergartenDomain;
 import com.familygrowth.domain.Stage21TeachingModels.LessonDraft;
 import com.familygrowth.domain.Stage21TeachingModels.ParentCourseSummary;
 import com.familygrowth.domain.Stage21TeachingModels.QuestionOption;
@@ -123,8 +125,12 @@ class Stage21TeachingController {
     record CourseRequest(@NotNull SchoolStage schoolStage, @NotBlank @Size(max=40) String subjectCode,
                          @NotBlank @Size(max=160) String title, @NotNull @Valid VersionRequest version) { }
     record VersionRequest(@NotBlank @Size(max=500) String summary, @NotBlank @Size(max=500) String rightsBasis,
+                          KindergartenAgeBand kindergartenAgeBand,
+                          @Size(max=5) List<KindergartenDomain> kindergartenDomains,
                           @NotEmpty @Size(max=12) List<@Valid UnitRequest> units) {
-        VersionDraft toDomain() { return new VersionDraft(summary, rightsBasis, units.stream().map(UnitRequest::toDomain).toList()); }
+        VersionDraft toDomain() { return new VersionDraft(summary, rightsBasis, kindergartenAgeBand,
+            kindergartenDomains == null ? List.of() : kindergartenDomains,
+            units.stream().map(UnitRequest::toDomain).toList()); }
     }
     record UnitRequest(@NotBlank @Size(max=160) String title,
                        @NotEmpty @Size(max=30) List<@Valid LessonRequest> lessons) {

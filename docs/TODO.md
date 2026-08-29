@@ -11,7 +11,7 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P0 | 22 | `IN_PROGRESS` | 完成 WP22-2–5：先验证 Android 单一行动投影，再补服务端 3–4/5–6 内容带、五领域/离屏活动发布校验、首批原创亲子活动和家长模板；不提前制作小学以上模板 | Agent | Stage 22 报告、代码/测试、`evidence/stage-22/` |
+| P0 | 22 | `IN_PROGRESS` | 完成 WP22-4/5：制作首批可审计原创亲子活动包，并提供带年龄带、五领域、陪同说明和观察回应的家长幼儿园模板；不提前制作小学以上模板 | Agent | Stage 22 报告、内容清单/代码/测试、`evidence/stage-22/` |
 | P0 | 21 | `BLOCKED` | v0.3.5/11 已发布；在目标平板从 v0.3.4 应用内覆盖升级并回放 AndroidKeyStore 写前队列、杀进程/断网、重新登录、401/409、真实来源/官方播放和 TalkBack/旋转 | 用户提供平板/可访问服务；Agent 回放 | `stages/stage-21-report.md`、`evidence/stage-21/acceptance.json`、v0.3.5 Release |
 | P0 | 20 | `BLOCKED` | 用目标平板回放四学段、触觉开关、Reduced Motion、TalkBack、旋转、重启和真实服务同步 | 用户提供设备；Agent 回放 | `stages/stage-20-report.md`、`evidence/stage-20/acceptance.json` |
 | P0 | 18 | `BLOCKED` | 在平板用 v0.3.3→v0.3.4 更新链同时测试双视角、视频计时、奖励兴趣和重启保留 | 用户测试；Agent 根据反馈修复 | Stage 18/19 真机证据 |
@@ -26,7 +26,7 @@
 
 ## 2. 可由 Agent 继续推进
 
-Stage 20/21 可离线工程与门禁已经收口，只剩目标平板/服务验收。Stage 21 的自主学习选择台、受限官方 WebView、家长来源书架、共用课程/九类活动/证据链、Android 学习路径，以及 V12 加密 outbox、401/409 合并和家庭备课夹均已通过离线门禁。Agent 下一顺位是先建立 Stage 22 幼儿园深度教学 Spec；LIM-013 数据权利/完整时段审计仍为并行 P0 安全事项。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
+Stage 20/21 可离线工程与门禁已经收口，只剩目标平板/服务验收。Stage 22 已完成 Spec、Android 单一行动投影和服务端年龄带/五领域发布门禁；Agent 下一顺位是 WP22-4/5 的首批原创亲子活动与家长模板。LIM-013 数据权利/完整时段审计仍为并行 P0 安全事项。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
 
 ## 3. 只能由外部条件解除
 

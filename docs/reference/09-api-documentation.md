@@ -89,6 +89,8 @@
 
 课程版本采用 `DRAFT → PUBLISHED`，发布内容不提供更新/删除入口；新内容创建下一版本，历史 Assignment 始终引用原版本。九类活动分别要求 `VIEWED`、`CHECKED` 或 `PARENT_CONFIRMED`；视频观看本身不等于掌握，客观题答案不下发 Android，亲子阅读、口头和线下实践由家长最终确认。Assignment 使用 `ASSIGNED → IN_PROGRESS → SUBMITTED → COMPLETED`，并支持 `SUBMITTED → REWORK_REQUIRED → IN_PROGRESS`；返工后必须新增一次 Attempt 才可再提交。所有写入带幂等键，提交/审核还使用乐观版本。
 
+幼儿园课程版本在 DRAFT 中增加 `kindergartenAgeBand=SHARED_3_4|TRANSITION_5_6` 和一个或多个 `kindergartenDomains=HEALTH|LANGUAGE|SOCIAL|SCIENCE|ARTS`。发布时服务端逐课节强制：最多 3 个活动、总预计时长不超过 15 分钟、屏幕活动累计不超过 8 分钟、单活动不超过 8 分钟、客观题最多两个选择，并且至少包含一个亲子或离屏活动。非幼儿园课程不得携带上述幼儿园元数据；不满足时返回 400 且版本继续保持 DRAFT。
+
 ## 响应与错误
 
 成功与失败统一为 `{data,error,traceId}`。当前错误码：

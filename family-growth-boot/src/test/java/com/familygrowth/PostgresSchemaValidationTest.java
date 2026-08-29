@@ -35,7 +35,7 @@ class PostgresSchemaValidationTest {
                 "'learning_activity','learning_question','learning_question_option','lesson_assignment','activity_attempt'," +
                 "'learning_completion','mastery_evidence','teaching_action')",
             Integer.class);
-        assertThat(successfulMigrations).isEqualTo(11);
+        assertThat(successfulMigrations).isEqualTo(12);
         assertThat(productionTables).isEqualTo(55);
     }
 }
