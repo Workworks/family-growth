@@ -3,6 +3,7 @@ package com.familygrowth.android.ui
 import android.net.Uri
 import android.widget.VideoView
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -18,12 +19,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.familygrowth.android.R
 import com.familygrowth.android.core.FamilyAppViewModel
 import com.familygrowth.android.core.SchoolStage
 import com.familygrowth.android.remote.KindergartenActivityPolicy
+import com.familygrowth.android.remote.PrimaryLearningBand
+import com.familygrowth.android.remote.PrimaryLearningPolicy
 import com.familygrowth.android.remote.RemoteLearningActivity
 import com.familygrowth.android.remote.RemoteLearningAssignment
 import kotlinx.coroutines.delay
@@ -41,6 +46,15 @@ fun ChildLearningPath(viewModel: FamilyAppViewModel) {
     } else assignment.activities.firstOrNull { !it.childReady() }
     if (viewModel.state.experience.effectiveStage == SchoolStage.KINDERGARTEN) {
         KindergartenLearningPath(viewModel, assignment, active) { video = it }
+        video?.let { activity ->
+            DynamicLearningVideoDialog(activity, { video = null }) { played, duration ->
+                viewModel.completeLearningVideo(assignment.id, activity.id, played, duration)
+            }
+        }
+        return
+    }
+    if (viewModel.state.experience.effectiveStage == SchoolStage.PRIMARY) {
+        PrimaryLearningPath(viewModel, assignment, active) { video = it }
         video?.let { activity ->
             DynamicLearningVideoDialog(activity, { video = null }) { played, duration ->
                 viewModel.completeLearningVideo(assignment.id, activity.id, played, duration)
@@ -106,6 +120,151 @@ fun ChildLearningPath(viewModel: FamilyAppViewModel) {
     video?.let { activity ->
         DynamicLearningVideoDialog(activity, { video = null }) { played, duration ->
             viewModel.completeLearningVideo(assignment.id, activity.id, played, duration)
+        }
+    }
+}
+
+private object PrimaryNotebookColors {
+    val Paper = Color(0xFFFBFCF7)
+    val Ink = Color(0xFF263A45)
+    val Lake = Color(0xFF3C7891)
+    val Grid = Color(0xFFCFE0E7)
+    val Note = Color(0xFFD98245)
+}
+
+@Composable
+private fun PrimaryLearningPath(
+    viewModel: FamilyAppViewModel,
+    assignment: RemoteLearningAssignment,
+    active: RemoteLearningActivity?,
+    playVideo: (RemoteLearningActivity) -> Unit,
+) {
+    val band = remember(viewModel.state.experience.birthDate) {
+        PrimaryLearningPolicy.bandFor(viewModel.state.experience.birthDate)
+    }
+    val facts = remember(assignment) { PrimaryLearningPolicy.facts(assignment) }
+    var needsHelp by remember(assignment.id, active?.id) { mutableStateOf(false) }
+    Surface(
+        shape=MaterialTheme.shapes.extraLarge,
+        color=PrimaryNotebookColors.Paper,
+        border=BorderStroke(1.dp, PrimaryNotebookColors.Grid),
+    ) {
+        Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min)) {
+            Box(Modifier.width(10.dp).fillMaxHeight().background(PrimaryNotebookColors.Lake))
+            Column(Modifier.weight(1f).padding(22.dp), verticalArrangement=Arrangement.spacedBy(16.dp)) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment=Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f), verticalArrangement=Arrangement.spacedBy(3.dp)) {
+                        Text("${band.label}探索夹页", style=MaterialTheme.typography.labelLarge, color=PrimaryNotebookColors.Lake)
+                        Text(assignment.lessonTitle, style=MaterialTheme.typography.headlineSmall,
+                            color=PrimaryNotebookColors.Ink, fontWeight=FontWeight.Bold)
+                        Text("${PrimaryLearningPolicy.subjectLabel(assignment.subjectCode)} · ${assignment.courseTitle}",
+                            color=MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    LearningStatus(assignment.status)
+                }
+                if (band == PrimaryLearningBand.LOWER_PRIMARY) {
+                    PrimaryLowerSteps(assignment, active)
+                } else {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.spacedBy(9.dp)) {
+                        PrimaryFact("要做", facts.toDo, PrimaryNotebookColors.Lake, Modifier.weight(1f))
+                        PrimaryFact("在做", facts.inProgress, PrimaryNotebookColors.Note, Modifier.weight(1f))
+                        PrimaryFact("再练", facts.rework, PrimaryNotebookColors.Ink, Modifier.weight(1f))
+                    }
+                    Text(band.guide, style=MaterialTheme.typography.labelLarge, color=PrimaryNotebookColors.Lake)
+                }
+                HorizontalDivider(color=PrimaryNotebookColors.Grid)
+                when (assignment.status) {
+                    "SUBMITTED" -> GentleNotice("已经交给家长看。现在可以休息或去做别的事。")
+                    "COMPLETED" -> GentleNotice("这次探索完成了。记录的是你做过的步骤，不是和别人比较。")
+                    else -> active?.let { activity ->
+                        Column(verticalArrangement=Arrangement.spacedBy(11.dp)) {
+                            Text(if(band==PrimaryLearningBand.LOWER_PRIMARY) "这页只做这一项" else "当前探索",
+                                style=MaterialTheme.typography.labelLarge, color=PrimaryNotebookColors.Note)
+                            Text(activity.title, style=MaterialTheme.typography.titleLarge, color=PrimaryNotebookColors.Ink,
+                                fontWeight=FontWeight.Bold)
+                            Text(activity.instruction, style=MaterialTheme.typography.bodyLarge,
+                                color=MaterialTheme.colorScheme.onSurfaceVariant)
+                            activity.prompt.takeIf(String::isNotBlank)?.let {
+                                Surface(shape=MaterialTheme.shapes.medium, color=PrimaryNotebookColors.Grid.copy(alpha=.42f)) {
+                                    Text(it, Modifier.fillMaxWidth().padding(14.dp), style=MaterialTheme.typography.bodyLarge,
+                                        color=PrimaryNotebookColors.Ink)
+                                }
+                            }
+                            when {
+                                activity.type == "SHORT_VIDEO" -> Button(
+                                    onClick={ playVideo(activity) },
+                                    modifier=Modifier.fillMaxWidth().heightIn(min=56.dp),
+                                    colors=ButtonDefaults.buttonColors(containerColor=PrimaryNotebookColors.Lake),
+                                ) { Icon(Icons.Rounded.PlayArrow,null); Spacer(Modifier.width(8.dp)); Text("播放这一小段") }
+                                activity.options.isNotEmpty() -> activity.options.forEach { option ->
+                                    OutlinedButton(
+                                        onClick={ viewModel.attemptLearningActivity(assignment.id,activity.id,option.value) },
+                                        modifier=Modifier.fillMaxWidth().heightIn(min=52.dp),
+                                    ) { Text(option.label) }
+                                }
+                                else -> Button(
+                                    onClick={ viewModel.attemptLearningActivity(assignment.id,activity.id,"我完成了这一步") },
+                                    modifier=Modifier.fillMaxWidth().heightIn(min=56.dp),
+                                    colors=ButtonDefaults.buttonColors(containerColor=PrimaryNotebookColors.Lake),
+                                ) { Text(if(band==PrimaryLearningBand.LOWER_PRIMARY) "我试过了" else "记录这次尝试") }
+                            }
+                            if (activity.checkedCorrect == false) {
+                                GentleNotice("这次还没对上。先找一找哪里不同，再试一次。${activity.hint}")
+                            }
+                            OutlinedButton(
+                                onClick={ needsHelp=true },
+                                modifier=Modifier.fillMaxWidth().heightIn(min=50.dp),
+                            ) { Icon(Icons.Rounded.SupervisorAccount,null); Spacer(Modifier.width(7.dp)); Text("我没看懂") }
+                            if (needsHelp) GentleNotice(PrimaryLearningPolicy.helpText(activity))
+                        }
+                    } ?: GentleNotice("这页暂时没有可做的活动，请家长检查课程内容。")
+                }
+                if (assignment.canSubmit()) Button(
+                    onClick={ viewModel.submitLearningAssignment(assignment.id,assignment.version) },
+                    modifier=Modifier.fillMaxWidth().heightIn(min=58.dp),
+                    colors=ButtonDefaults.buttonColors(containerColor=PrimaryNotebookColors.Lake),
+                ) { Text("交给家长看看") }
+                if (assignment.status=="REWORK_REQUIRED" && assignment.reviewNote.isNotBlank()) {
+                    GentleNotice("家长建议：${assignment.reviewNote}")
+                }
+                Text("“我没看懂”只会打开求助办法，不会把这一步记成完成。",
+                    style=MaterialTheme.typography.bodySmall, color=MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PrimaryLowerSteps(assignment:RemoteLearningAssignment, active:RemoteLearningActivity?) {
+    val activeIndex = when {
+        assignment.status in setOf("SUBMITTED","COMPLETED") || assignment.canSubmit() -> 2
+        active?.evidence?.isNotEmpty() == true || active?.checkedCorrect == false -> 1
+        else -> 0
+    }
+    val labels=listOf("读懂","试一试","说发现")
+    Row(Modifier.fillMaxWidth(), verticalAlignment=Alignment.CenterVertically) {
+        labels.forEachIndexed { index,label ->
+            Column(Modifier.weight(1f), horizontalAlignment=Alignment.CenterHorizontally) {
+                Surface(shape=androidx.compose.foundation.shape.CircleShape,
+                    color=if(index==activeIndex) PrimaryNotebookColors.Note else PrimaryNotebookColors.Grid) {
+                    Text("${index+1}", Modifier.padding(horizontal=13.dp,vertical=8.dp), color=PrimaryNotebookColors.Ink,
+                        fontWeight=FontWeight.Bold)
+                }
+                Spacer(Modifier.height(5.dp)); Text(label, style=MaterialTheme.typography.bodyMedium)
+            }
+            if(index<labels.lastIndex) HorizontalDivider(Modifier.weight(.28f),color=PrimaryNotebookColors.Grid)
+        }
+    }
+}
+
+@Composable
+private fun PrimaryFact(label:String,value:Int,color:Color,modifier:Modifier=Modifier) {
+    Surface(modifier,shape=MaterialTheme.shapes.medium,color=color.copy(alpha=.10f),
+        border=BorderStroke(1.dp,color.copy(alpha=.28f))) {
+        Column(Modifier.padding(horizontal=12.dp,vertical=10.dp),horizontalAlignment=Alignment.CenterHorizontally) {
+            Text(value.toString(),fontFamily=FontFamily.Monospace,style=MaterialTheme.typography.titleLarge,
+                color=color,fontWeight=FontWeight.Bold)
+            Text(label,style=MaterialTheme.typography.labelMedium,color=PrimaryNotebookColors.Ink)
         }
     }
 }

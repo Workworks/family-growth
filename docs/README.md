@@ -100,6 +100,7 @@
 - [Stage 20：学段底座、家长配置与分层体验路由](stages/stage-20-report.md)
 - [Stage 21：共用课程、活动与学习证据引擎](stages/stage-21-report.md)
 - [Stage 22：幼儿园故事舞台与亲子现实活动](stages/stage-22-report.md)
+- [Stage 23：小学探索手册](stages/stage-23-report.md)
 
 ## 项目计划与 Phase · `program/` `phases/`
 

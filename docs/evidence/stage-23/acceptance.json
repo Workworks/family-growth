@@ -1,0 +1,64 @@
+{
+  "stage": 23,
+  "capturedAt": "2026-08-29",
+  "status": "IN_PROGRESS",
+  "scope": "WP23-1 specification and WP23-2 Android lower/upper primary exploration projection",
+  "results": [
+    {
+      "id": "V23-01",
+      "status": "PASS_OFFLINE",
+      "command": ".\\gradlew.bat testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease --no-daemon",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "PrimaryLearningPolicy maps ages 6-8 to lower primary and 9-11 to upper primary; invalid/future birth dates fail safe to the lower-density view"
+    },
+    {
+      "id": "V23-02",
+      "status": "PASS_OFFLINE",
+      "command": ".\\gradlew.bat testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease --no-daemon",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Debug and release each passed 47 JVM tests. Lower primary renders one current notebook page; upper primary facts derive only from assignment evidence. Help expansion does not call an attempt or claim completion"
+    },
+    {
+      "id": "V23-03",
+      "status": "PASS_OFFLINE",
+      "command": ".\\gradlew.bat testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease --no-daemon",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "BUILD SUCCESSFUL; debug/release unit tests, lint and APK assembly passed with no new primary navigation, ranking, countdown or reward surface"
+    },
+    {
+      "id": "V23-04",
+      "status": "NOT_RUN_PLANNED",
+      "command": "NOT_RUN: server grade-band, help/reason and spaced-repractice APIs belong to WP23-3/5",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": null,
+      "passed": false,
+      "result": "No database or API change was made in WP23-1/2; H2/PostgreSQL evidence is not claimed"
+    },
+    {
+      "id": "V23-05",
+      "status": "BLOCKED",
+      "command": "NOT_RUN: target tablet primary learning acceptance",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": null,
+      "passed": false,
+      "result": "No target Android tablet was connected; rotation, TalkBack, large text, reduced motion and complete lower/upper primary flows were not executed"
+    }
+  ],
+  "remaining": [
+    "WP23-3 server grade-band facts and parent-protected audit",
+    "WP23-4 audited original subject activity pack",
+    "WP23-5 persisted misconception, help and repractice evidence",
+    "WP23-6 primary report, PostgreSQL and target-tablet acceptance"
+  ]
+}

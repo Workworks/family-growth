@@ -156,3 +156,5 @@
 | 54 | 22 | 完成服务端与目标数据库门禁 | H2 全量 22 个领域、24 个 Boot（6 个 PG 条件跳过）通过；PostgreSQL 首轮因默认多上下文连接池耗尽失败，按既有测试策略限制池为 2 后全量 22+24 零失败/零跳过，V1–V12/55 表通过，临时容器已清理 | Stage 22 evidence、PostgresSchemaValidationTest |
 | 55 | 22 | 用户要求开始下一步并完成 WP22-4/5 可离线纵切 | 登记 REQ-043/P0；建立 `KG-PACK-1.0.0` 十条原创目录，完整覆盖 2 个年龄带 × 5 领域；家长建课改为单个“陪伴折页”，请求携带年龄带/领域/时长/权利版本，幼儿园审核必须写一句具体行为观察 | 内容审计清单、Android template/remote/view-model/UI/tests |
 | 56 | 22 | 完成内容、Android 与 H2 联合门禁 | Android debug/release 各 43 项、两变体 lint/assemble 通过；Maven H2 全量 22 个领域、2 个基础设施和 24 个 Boot 测试通过，6 个 PostgreSQL 条件测试按预期跳过；目标平板未连接，Stage 22 转为 BLOCKED | Stage 22 report/evidence、TODO/current/BLOCKERS |
+| 57 | 23 | 用户要求继续下一步并启动小学深度 | 登记 REQ-044/P1；在代码前固化低/高年级、年龄非诊断、真实证据、非完成型求助、两遍探索夹页设计和 WP/V/AC；同步新 Stage 报告、路线图、索引、current、TODO 与 BLOCKERS | Stage 23 report、需求账本 |
+| 58 | 23 | 完成 WP23-2 Android 可离线首切 | 小学动态课程从初高中通用路径分离；低年级采用单一当前夹页和三步支架，高年级显示从 Assignment/Activity 推导的要做/在做/再练事实；“我没看懂”只展开帮助，不调用 Attempt。Android debug/release 各 47 项、lint/assemble 通过 | `PrimaryLearningPolicy`、`LearningPathUi`、JVM tests、Stage 23 evidence |
