@@ -161,3 +161,4 @@
 | 59 | 23 | 用户要求继续实施并发布，随后补充自主学习/奖励 | 登记 REQ-045/046；发布范围先完成服务端小学分段与 Android 自主课程/本机固定奖励纵切，生产自动选课和服务端奖励账本明确保留为下一 P0，不以本机能力冒充完成 | 需求账本、Stage 23 Spec/TODO/current |
 | 60 | 23 | 完成 V13 小学分段事实与 Android 纵切 | V13 保存小学分段覆盖和审计；服务端权限/版本/非法组合/历史 Attempt 保留通过。Android 家长可配小学分段和固定学习奖励，四学段各投影 3 个适龄表达课程，90% 播放只生成一次待审核任务 | Stage20 domain/application/JDBC/API、Android core/remote/UI/tests |
 | 61 | 23 | 完成发布前离线门禁 | Maven H2 全量通过；PostgreSQL 16.15 上 13 次迁移、Hibernate validate 与 Stage20 API 共 3 项零失败；Android debug/release 各 48 项、lint/assemble 通过。目标平板和服务端自动奖励保持未完成 | `evidence/stage-23/acceptance.json`、本轮验证输出 |
+| 62 | 23 | 完成 v0.3.6 稳定发布与公开复验 | 提交 `2563573` 和 tag v0.3.6 已推送；run 33292966665 成功。公开 APK 11,634,079 字节，GitHub digest 与下载 SHA-256 一致，包名 `com.familygrowth.android`、0.3.6/12 和稳定证书复验通过；目标平板与服务端自动奖励仍保持未完成 | [v0.3.6 Release](https://github.com/Workworks/family-growth/releases/tag/v0.3.6)、Stage 23 evidence、发布手册 |

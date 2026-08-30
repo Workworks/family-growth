@@ -2,7 +2,7 @@
   "stage": 23,
   "capturedAt": "2026-08-30",
   "status": "IN_PROGRESS",
-  "scope": "WP23-3 server primary grade band and WP23-8 Android stage-aware self-learning/reward offline slice; v0.3.6 release pending",
+  "scope": "WP23-3 server primary grade band, WP23-8 Android stage-aware self-learning/reward offline slice, and verified v0.3.6 public release",
   "results": [
     {
       "id": "V23-01/V23-02",
@@ -66,20 +66,19 @@
     },
     {
       "id": "V23-07",
-      "status": "NOT_RUN_PENDING_RELEASE",
-      "command": "Pending v0.3.6 tag workflow and public APK verification",
+      "status": "PASS",
+      "command": "gh run view 33292966665; gh release view v0.3.6; gh release download v0.3.6; Get-FileHash; aapt dump badging; apksigner verify --print-certs",
       "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
       "shellType": "PowerShell",
-      "exitCode": null,
-      "passed": false,
-      "result": "Release verification will be filled only after commit, push, tag workflow and public asset download complete."
+      "exitCode": 0,
+      "passed": true,
+      "result": "GitHub Actions run 33292966665 succeeded. Public family-growth-0.3.6.apk is 11634079 bytes; downloaded SHA-256 matches the GitHub digest 3b28e241ef0f68aa5a3e840a66407e1a6c78fa14d762402827bc85cd71ed29d5. aapt reported com.familygrowth.android, versionCode 12 and versionName 0.3.6; apksigner reported the established certificate SHA-256 9179a5da2973e8ff9115edd1fb74e21ad70d9540c1d33203c9af442106d2eacb."
     }
   ],
   "remaining": [
     "Server self-learning enrollment and transactional preset reward settlement",
     "WP23-4 audited original primary subject activity pack",
     "WP23-5 persisted misconception, help and repractice evidence",
-    "WP23-6 primary report and target-tablet acceptance",
-    "V23-07 public v0.3.6 asset verification"
+    "WP23-6 primary report and target-tablet acceptance"
   ]
 }

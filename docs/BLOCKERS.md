@@ -164,7 +164,7 @@
 
 已完成：孩子“我的任务/自主学习”、五级教材选择、受限官方 WebView、家长免费来源/动态栏目/儿童无 URL 投影、不可变课程版本、九类活动、题目/答案隔离、Assignment/Attempt/Completion/MasteryEvidence、生产 API 和 Android 学习路径均已通过离线门禁。V12 进一步完成 Android Keystore 加密 outbox、重建待登录恢复、401 保留、409 显式合并和家长“一课一活动”可视化建课/发布/分配。
 
-已发布：REQ-040 的 v0.3.5/11 已成为 GitHub latest；workflow、公开 digest、包名、版本和既有稳定证书复验通过。远端发布不替代下述设备验收。
+已发布：REQ-045 的 v0.3.6/12 已通过 GitHub workflow 发布；公开 digest、包名、版本和既有稳定证书复验通过。远端发布不替代下述设备验收。
 
 外部验收：需要可访问家庭服务和目标平板验证 AndroidKeyStore 写前保存、杀进程/断网、重新登录、401/409 和队列清空；同时回放真实免费来源的栏目兼容、官方平台加载/播放/返回、横竖屏、TalkBack 与家长/孩子 E2E。公共 DNS 预检必须配合部署侧出站防火墙/代理阻断内网和云元数据。若未来要求抽取视频直链、离线缓存、改编页面或自动回传完成证据，还需要平台许可或官方 SDK/API。
 
@@ -196,7 +196,7 @@
 
 ## 3. 当前已知限制
 
-- 现有 v0.2.0–v0.3.5 APK 使用同一稳定 release 身份；历史 debug APK 仅供内部证据，不能与 release 包互相覆盖。
+- 现有 v0.2.0–v0.3.6 APK 使用同一稳定 release 身份；历史 debug APK 仅供内部证据，不能与 release 包互相覆盖。
 - Stage 3 已实现生产认证/PIN/RBAC；家庭局域网正式部署仍需可信 TLS、备份和 Stage 4–10 业务闭环。
 - AGP 8.7.3 对 compileSdk 36 有兼容警告；构建通过，但应在后续 Android 依赖 Stage 对齐。
 - H2 只用于隔离测试；正式验收数据库基线是 PostgreSQL。
