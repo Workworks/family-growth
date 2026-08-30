@@ -6,6 +6,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
@@ -60,6 +61,13 @@ fun ChildLearningPath(viewModel: FamilyAppViewModel) {
                 viewModel.completeLearningVideo(assignment.id, activity.id, played, duration)
             }
         }
+        return
+    }
+    if (viewModel.state.experience.effectiveStage == SchoolStage.JUNIOR_MIDDLE) {
+        JuniorLearningPath(viewModel, assignment, active) { video = it }
+        video?.let { activity -> DynamicLearningVideoDialog(activity, { video=null }) { played,duration ->
+            viewModel.completeLearningVideo(assignment.id,activity.id,played,duration)
+        } }
         return
     }
     GrowthCard {
@@ -121,6 +129,80 @@ fun ChildLearningPath(viewModel: FamilyAppViewModel) {
     video?.let { activity ->
         DynamicLearningVideoDialog(activity, { video = null }) { played, duration ->
             viewModel.completeLearningVideo(assignment.id, activity.id, played, duration)
+        }
+    }
+}
+
+private object JuniorLabColors {
+    val Navy=Color(0xFF17324D); val Measure=Color(0xFF4E8799); val Evidence=Color(0xFFE2B44A)
+    val Paper=Color(0xFFF5F7F4); val Graphite=Color(0xFF27343D); val Correct=Color(0xFFC66A3D)
+}
+
+@Composable
+private fun JuniorLearningPath(viewModel:FamilyAppViewModel,assignment:RemoteLearningAssignment,
+                               active:RemoteLearningActivity?,playVideo:(RemoteLearningActivity)->Unit) {
+    val subjects=viewModel.learningAssignments.filter{it.schoolStage=="JUNIOR_MIDDLE"}.map{it.subjectCode}.distinct()
+    Surface(shape=MaterialTheme.shapes.extraLarge,color=JuniorLabColors.Paper,
+        border=BorderStroke(1.dp,JuniorLabColors.Measure.copy(alpha=.45f))) {
+        Column(Modifier.fillMaxWidth().padding(22.dp),verticalArrangement=Arrangement.spacedBy(16.dp)) {
+            Text("学科实验台",style=MaterialTheme.typography.labelLarge,color=JuniorLabColors.Measure,
+                fontFamily=FontFamily.Monospace)
+            LazyRow(horizontalArrangement=Arrangement.spacedBy(8.dp)) { items(subjects,key={it}) { subject ->
+                val selected=subject==assignment.subjectCode
+                Surface(shape=MaterialTheme.shapes.small,color=if(selected)JuniorLabColors.Navy else Color.Transparent,
+                    border=BorderStroke(1.dp,JuniorLabColors.Measure)) {
+                    Text(PrimaryLearningPolicy.subjectLabel(subject),Modifier.padding(horizontal=14.dp,vertical=9.dp),
+                        color=if(selected)Color.White else JuniorLabColors.Graphite)
+                }
+            } }
+            Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(assignment.unitTitle,style=MaterialTheme.typography.labelLarge,color=JuniorLabColors.Measure)
+                    Text(assignment.lessonTitle,style=MaterialTheme.typography.headlineSmall,
+                        color=JuniorLabColors.Graphite,fontWeight=FontWeight.Bold)
+                }
+                LearningStatus(assignment.status)
+            }
+            Text(assignment.lessonSummary,color=MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(7.dp)) {
+                assignment.activities.forEachIndexed { index,item ->
+                    val current=item.id==active?.id
+                    Surface(Modifier.weight(1f),shape=MaterialTheme.shapes.small,
+                        color=if(current)JuniorLabColors.Evidence.copy(alpha=.38f) else JuniorLabColors.Measure.copy(alpha=.10f)) {
+                        Column(Modifier.padding(9.dp),horizontalAlignment=Alignment.CenterHorizontally) {
+                            Text(if(item.childReady())"✓" else "${index+1}",fontFamily=FontFamily.Monospace,
+                                fontWeight=FontWeight.Bold,color=JuniorLabColors.Navy)
+                            Text(if(index==0)"问题" else if(index==assignment.activities.lastIndex)"解释" else "证据",
+                                style=MaterialTheme.typography.labelSmall,color=JuniorLabColors.Graphite)
+                        }
+                    }
+                }
+            }
+            LearningRewardPromise(assignment)
+            when(assignment.status) {
+                "SUBMITTED"->GentleNotice("已经交给家长回应。先停下来，稍后再看计划。")
+                "COMPLETED"->GentleNotice("这一段已经完成。这里记录行动和证据，不和别人比较。")
+                else->active?.let { activity -> Column(verticalArrangement=Arrangement.spacedBy(11.dp)) {
+                    Text("当前证据",style=MaterialTheme.typography.labelLarge,color=JuniorLabColors.Correct)
+                    Text(activity.title,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold)
+                    Text(activity.instruction,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                    when {
+                        activity.type=="SHORT_VIDEO"->Button(onClick={playVideo(activity)},Modifier.fillMaxWidth().heightIn(min=54.dp),
+                            colors=ButtonDefaults.buttonColors(containerColor=JuniorLabColors.Navy)){Text("播放并记录证据")}
+                        activity.options.isNotEmpty()->activity.options.forEach { option -> OutlinedButton(
+                            onClick={viewModel.attemptLearningActivity(assignment.id,activity.id,option.value)},
+                            modifier=Modifier.fillMaxWidth().heightIn(min=50.dp)){Text(option.label)} }
+                        else->Button(onClick={viewModel.attemptLearningActivity(assignment.id,activity.id,"我完成了这一步")},
+                            Modifier.fillMaxWidth().heightIn(min=54.dp),colors=ButtonDefaults.buttonColors(containerColor=JuniorLabColors.Navy)){Text("记录这一步")}
+                    }
+                    OutlinedButton(onClick={viewModel.requestLearningHelp(assignment.id,activity.id,"这条证据我还没理清，请和我一起看看。")},
+                        Modifier.fillMaxWidth().heightIn(min=50.dp)){Text("这一步需要帮助")}
+                } } ?: GentleNotice("当前没有可继续的证据步骤，请家长检查课程。")
+            }
+            if(assignment.canSubmit()) Button(onClick={viewModel.submitLearningAssignment(assignment.id,assignment.version)},
+                Modifier.fillMaxWidth().heightIn(min=56.dp),colors=ButtonDefaults.buttonColors(containerColor=JuniorLabColors.Navy)){Text("提交这段解释")}
+            Text("一次只完成一段，建议不超过 25 分钟；需要时直接休息。计划顺序将在服务端保存后开放调整。",
+                style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

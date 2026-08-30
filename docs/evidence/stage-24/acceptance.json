@@ -13,10 +13,20 @@
       "exitCode": 0,
       "passed": true,
       "result": "Goals, scope, two-pass visual direction, safety invariants, work packages, verification methods and acceptance criteria were fixed before Stage 24 implementation."
+    },
+    {
+      "id": "V24-01-ANDROID-DEBUG",
+      "status": "PASS_PARTIAL",
+      "command": ".\\gradlew.bat :app:testDebugUnitTest :app:lintDebug :app:assembleDebug",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Junior-middle now uses a distinct quiet subject laboratory with subject rail, current evidence nodes, one active action, help and a neutral 25-minute break cue. It does not add child navigation or fabricate ordering. Persistent accessible ordering remains WP24-4, so WP24-2 is not yet complete."
     }
   ],
   "remaining": [
-    "WP24-2 through WP24-7 implementation and verification",
+    "WP24-2 release variant and persistent ordering, then WP24-3 through WP24-7 implementation and verification",
     "Target-tablet runtime acceptance"
   ]
 }
