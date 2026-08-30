@@ -21,6 +21,9 @@ import com.familygrowth.android.core.FamilyAppViewModel
 import com.familygrowth.android.core.KindergartenAgeBand
 import com.familygrowth.android.core.KindergartenCourseTemplates
 import com.familygrowth.android.core.KindergartenDomain
+import com.familygrowth.android.core.PrimaryCourseTemplates
+import com.familygrowth.android.core.PrimarySubject
+import com.familygrowth.android.core.PrimaryGradeBand
 import com.familygrowth.android.core.SchoolStage
 import com.familygrowth.android.remote.ConnectionState
 import com.familygrowth.android.remote.LearningActionState
@@ -59,16 +62,19 @@ fun ParentTeachingStudio(viewModel: FamilyAppViewModel) {
                                     fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
-                            SuggestionChip(onClick = {}, enabled = false, label = { Text(if (course.status == "DRAFT") "草稿" else "已发布") })
+                            SuggestionChip(onClick = {}, enabled = false, label = { Text(when(course.status){"DRAFT"->"草稿";"WITHDRAWN"->"已撤回";else->"已发布"}) })
                         }
                         if (course.status == "DRAFT") {
                             Button(onClick = { viewModel.publishTeachingCourse(course.versionId) }, Modifier.fillMaxWidth().heightIn(min = 50.dp), enabled = !viewModel.teachingActionRunning) {
                                 Icon(Icons.Rounded.Publish, null); Spacer(Modifier.width(7.dp)); Text("发布这一版")
                             }
-                        } else {
+                        } else if(course.status=="PUBLISHED") {
                             OutlinedButton(onClick = { viewModel.assignTeachingCourse(course.versionId) }, Modifier.fillMaxWidth().heightIn(min = 50.dp), enabled = !viewModel.teachingActionRunning) {
                                 Icon(Icons.Rounded.AssignmentTurnedIn, null); Spacer(Modifier.width(7.dp)); Text("布置给当前孩子")
                             }
+                            TextButton(onClick={viewModel.withdrawTeachingCourse(course.versionId)},enabled=!viewModel.teachingActionRunning) { Text("撤回后续加入") }
+                        } else {
+                            Text("这版不再自动加入；已经产生的学习记录不会删除。",color=MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -120,7 +126,33 @@ private fun CreateTeachingCourseDialog(viewModel: FamilyAppViewModel, dismiss: (
         CreateKindergartenTemplateDialog(viewModel, dismiss)
         return
     }
+    if (viewModel.state.experience.effectiveStage == SchoolStage.PRIMARY) {
+        CreatePrimaryTemplateDialog(viewModel, dismiss)
+        return
+    }
     CreateGeneralTeachingCourseDialog(viewModel, dismiss)
+}
+
+@Composable
+private fun CreatePrimaryTemplateDialog(viewModel: FamilyAppViewModel, dismiss: () -> Unit) {
+    var band by remember { mutableStateOf(viewModel.state.experience.effectivePrimaryBand ?: PrimaryGradeBand.LOWER_PRIMARY) }
+    var subject by remember { mutableStateOf(PrimarySubject.CHINESE) }
+    val template = PrimaryCourseTemplates.find(band, subject)
+    AlertDialog(onDismissRequest=dismiss, title={ Column { Text("选一个小学探索活动"); Text("原创内容包 PRIMARY-PACK-1.0.0",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant) } },
+        text={ Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(12.dp)) {
+            Text("年级带",style=MaterialTheme.typography.labelLarge)
+            FlowRow(horizontalArrangement=Arrangement.spacedBy(7.dp)) { PrimaryGradeBand.entries.forEach { value -> FilterChip(selected=band==value,onClick={band=value},label={Text(value.label)}) } }
+            Text("学科",style=MaterialTheme.typography.labelLarge)
+            FlowRow(horizontalArrangement=Arrangement.spacedBy(7.dp),verticalArrangement=Arrangement.spacedBy(7.dp)) { PrimarySubject.entries.forEach { value -> FilterChip(selected=subject==value,onClick={subject=value},label={Text(value.label)}) } }
+            Surface(shape=MaterialTheme.shapes.large,border=BorderStroke(1.dp,MaterialTheme.colorScheme.outlineVariant)) { Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+                Text(template.courseTitle,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold)
+                Text("目标：${template.goal}")
+                Text("${template.subject.label} · ${template.expectedMinutes} 分钟 · ${template.activityTitle}",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                HorizontalDivider(); Text(template.instruction); Text("回到现实：${template.realityExit}",color=MaterialTheme.colorScheme.primary)
+            } }
+        } },
+        confirmButton={ Button(onClick={viewModel.createPrimaryTeachingCourse(template);dismiss()}){Text("保存为草稿")} },
+        dismissButton={TextButton(onClick=dismiss){Text("取消")}})
 }
 
 @Composable

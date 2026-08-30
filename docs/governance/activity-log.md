@@ -164,3 +164,15 @@
 | 62 | 23 | 完成 v0.3.6 稳定发布与公开复验 | 提交 `2563573` 和 tag v0.3.6 已推送；run 33292966665 成功。公开 APK 11,634,079 字节，GitHub digest 与下载 SHA-256 一致，包名 `com.familygrowth.android`、0.3.6/12 和稳定证书复验通过；目标平板与服务端自动奖励仍保持未完成 | [v0.3.6 Release](https://github.com/Workworks/family-growth/releases/tag/v0.3.6)、Stage 23 evidence、发布手册 |
 | 63 | 23 | 用户要求继续下一步并启动生产自主学习奖励闭环 | 登记 REQ-047/P0；实现前固化 V14 策略/快照/结算事实、显式自动同步、最新已发布同学段筛选、家长权限、GET 只读、同事务账本和并发/重放门禁 | 需求账本、Stage 23 WP23-9/V23-10/TODO |
 | 64 | 23 | 完成 WP23-9 生产自主学习奖励闭环 | V14 保存每孩固定策略/审计和 Assignment 奖励快照；显式同步只加入当前有效学段每门课最新已发布课节；90% 真实播放与全部证据后提交，家长批准才在同一事务增加 XP/Wallet 并写 Money/Coin 流水。Android 保存策略、刷新同步和适龄提示接入；H2 全量、PostgreSQL 16.15 schema/API/并发及双变体门禁通过 | Stage23 domain/application/JDBC/API/Android、OpenAPI、Stage 23 evidence |
+## 2026-08-30 · Activity 65 · Stage 23 WP23-4/5 启动
+
+- 用户要求进入并继续下一步；按当前 TODO 登记 REQ-048/P1，未扩大到初高中课程包或小学综合报告。
+- 先固化 `PRIMARY-PACK-1.0.0` 八个原创模板和持久学习支持证据链的权限、隐私、幂等、完成边界与 V23-11/12。
+- 求助明确不产生 Attempt、MasteryEvidence 或完成状态；错因使用具体过程类别，禁止人格/能力标签，家长私密说明与答案隔离于儿童投影。
+
+## 2026-08-30 · Activity 66 · Stage 23 WP23-4/5 可离线闭环
+
+- 新增 `PRIMARY-PACK-1.0.0` 八个原创模板，家长按服务端小学分段和四学科选择，只保存草稿；内容包含现实行动出口和权利依据。
+- Flyway V15 与生产 API 保存不可变学习支持事件；Android 求助进入设备密钥加密 outbox，家长页面读取求助/错误事实并可安排两天后再练。
+- 已发布课程可由家长留下不可变理由后撤回，停止未来手动/自动加入而不删除既有 Assignment、Attempt 或支持证据。
+- 全量 H2、PostgreSQL 16.15（15 migrations/60 tables）和 Android debug/release 各 50 项、lint/assemble 通过；目标平板未执行，未发布新 APK。

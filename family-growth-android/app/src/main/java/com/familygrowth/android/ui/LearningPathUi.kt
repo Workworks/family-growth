@@ -214,7 +214,7 @@ private fun PrimaryLearningPath(
                                 GentleNotice("这次还没对上。先找一找哪里不同，再试一次。${activity.hint}")
                             }
                             OutlinedButton(
-                                onClick={ needsHelp=true },
+                                onClick={ needsHelp=true; viewModel.requestLearningHelp(assignment.id,activity.id,"这里我没看懂，请和我一起看看。") },
                                 modifier=Modifier.fillMaxWidth().heightIn(min=50.dp),
                             ) { Icon(Icons.Rounded.SupervisorAccount,null); Spacer(Modifier.width(7.dp)); Text("我没看懂") }
                             if (needsHelp) GentleNotice(PrimaryLearningPolicy.helpText(activity))
@@ -229,7 +229,7 @@ private fun PrimaryLearningPath(
                 if (assignment.status=="REWORK_REQUIRED" && assignment.reviewNote.isNotBlank()) {
                     GentleNotice("家长建议：${assignment.reviewNote}")
                 }
-                Text("“我没看懂”只会打开求助办法，不会把这一步记成完成。",
+                Text("“我没看懂”会安全告诉家长，但不会把这一步记成尝试或完成。",
                     style=MaterialTheme.typography.bodySmall, color=MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
@@ -365,6 +365,18 @@ private fun KindergartenLearningSteps(active: Int) {
 @Composable
 fun ParentLearningReviews(viewModel: FamilyAppViewModel) {
     val submitted = viewModel.learningAssignments.filter { it.status == "SUBMITTED" }
+    val support = viewModel.learningSupportByAssignment
+    support.forEach { (assignmentId,events) ->
+        val assignment=viewModel.learningAssignments.firstOrNull { it.id==assignmentId } ?: return@forEach
+        val classified=events.filter { it.type=="MISCONCEPTION_CLASSIFIED" }.mapNotNull { it.parentEventId }.toSet()
+        val open=events.firstOrNull { it.type in setOf("HELP_REQUESTED","INCORRECT_OBSERVED") && it.id !in classified } ?: return@forEach
+        GrowthCard {
+            SectionTitle("孩子需要一起看看", "${assignment.courseTitle} · ${assignment.lessonTitle}")
+            Text(open.childMessage,color=MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("这不是成绩或能力判断；先理解卡在哪里，再安排一次短复习。",style=MaterialTheme.typography.bodySmall)
+            Button(onClick={viewModel.scheduleLearningRevisit(assignmentId,open.id)},Modifier.fillMaxWidth().heightIn(min=52.dp)) { Text("安排两天后再练") }
+        }
+    }
     if (submitted.isEmpty()) return
     submitted.forEach { assignment ->
         var observation by remember(assignment.id) { mutableStateOf("") }

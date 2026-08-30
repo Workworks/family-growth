@@ -3,6 +3,8 @@ package com.familygrowth.application;
 import com.familygrowth.domain.Stage20Models.SchoolStage;
 import com.familygrowth.domain.Stage21TeachingModels.LearningAssignment;
 import com.familygrowth.domain.Stage23LearningModels.RewardPolicy;
+import com.familygrowth.domain.Stage23LearningModels.MisconceptionCategory;
+import com.familygrowth.domain.Stage23LearningModels.SupportEvent;
 import com.familygrowth.domain.Stage3Models.Actor;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -10,6 +12,8 @@ import java.security.MessageDigest;
 import java.time.Clock;
 import java.util.HexFormat;
 import java.util.List;
+import java.time.Instant;
+import java.time.Duration;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,6 +65,45 @@ public class Stage23LearningService {
             store.syncAssignments(familyId, childId, stage, actor.actorId(), key, payload, clock.instant());
         }
         return teaching.assignments(familyId, childId, stage);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SupportEvent> supportEvents(Actor actor, UUID familyId, UUID childId, UUID assignmentId) {
+        auth.requireChildOrParent(actor, familyId, childId);
+        List<SupportEvent> events = store.supportEvents(familyId, childId, assignmentId);
+        return actor.role() == com.familygrowth.domain.Stage3Models.ActorRole.CHILD
+            ? events.stream().map(SupportEvent::childSafe).toList() : events;
+    }
+
+    public LearningAssignment requestHelp(Actor actor, UUID familyId, UUID childId, UUID assignmentId,
+                                          UUID activityId, String message, String rawKey) {
+        auth.requireChildOrParent(actor, familyId, childId);
+        if (actor.role() != com.familygrowth.domain.Stage3Models.ActorRole.CHILD) {
+            throw new Stage3Service.ForbiddenException();
+        }
+        String childMessage = message == null ? "" : message.trim();
+        if (childMessage.isBlank() || childMessage.length() > 160) throw new IllegalArgumentException("A short help message is required");
+        String key = key(rawKey); String payload = hash(assignmentId + "|" + activityId + "|" + childMessage);
+        store.requestHelp(familyId, childId, assignmentId, activityId, actor.actorId(), childMessage, key, payload, clock.instant());
+        return teaching.assignment(familyId, childId, assignmentId).orElseThrow(FamilyGrowthService.NotFoundException::new).projection();
+    }
+
+    public List<SupportEvent> classifySupport(Actor actor, UUID familyId, UUID childId, UUID assignmentId,
+                                              UUID sourceEventId, MisconceptionCategory category,
+                                              String privateNote, Instant revisitAt, String rawKey) {
+        auth.requireParent(actor, familyId); auth.requireChildOrParent(actor, familyId, childId);
+        String note = privateNote == null ? "" : privateNote.trim();
+        if (note.length() > 500) throw new IllegalArgumentException("Private note is too long");
+        Instant now = clock.instant();
+        if (revisitAt != null) {
+            if (revisitAt.isBefore(now.plus(Duration.ofHours(23))) || revisitAt.isAfter(now.plus(Duration.ofDays(30)))) {
+                throw new IllegalArgumentException("Revisit must be scheduled 1 to 30 days later");
+            }
+        }
+        String key = key(rawKey); String payload = hash(assignmentId + "|" + sourceEventId + "|" + category + "|" + note + "|" + revisitAt);
+        store.classifySupport(familyId, childId, assignmentId, sourceEventId, actor.actorId(), category,
+            note, revisitAt, key, payload, now);
+        return store.supportEvents(familyId, childId, assignmentId);
     }
 
     private static String key(String value) {

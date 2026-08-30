@@ -8,6 +8,7 @@ import com.familygrowth.domain.Stage21TeachingModels.EvidenceType;
 import com.familygrowth.domain.Stage21TeachingModels.LearningAssignment;
 import com.familygrowth.domain.Stage21TeachingModels.ParentCourseSummary;
 import com.familygrowth.domain.Stage21TeachingModels.VersionDraft;
+import com.familygrowth.domain.Stage21TeachingModels.ContentWithdrawal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +28,8 @@ public interface Stage21TeachingStore {
     List<ParentCourseSummary> courses(UUID familyId);
     CourseVersion publish(UUID familyId, UUID versionId, UUID actorId, String key,
                           String payloadHash, Instant now);
+    ContentWithdrawal withdraw(UUID familyId, UUID versionId, UUID actorId, String reason,
+                               String key, String payloadHash, Instant now);
 
     Optional<AssignmentFacts> assignment(UUID familyId, UUID childId, UUID assignmentId);
     List<LearningAssignment> assignments(UUID familyId, UUID childId, SchoolStage stage);

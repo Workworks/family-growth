@@ -7,6 +7,9 @@ import com.familygrowth.application.Stage3Store;
 import com.familygrowth.domain.Stage20Models.SchoolStage;
 import com.familygrowth.domain.Stage21TeachingModels.AssignmentStatus;
 import com.familygrowth.domain.Stage23LearningModels.RewardPolicy;
+import com.familygrowth.domain.Stage23LearningModels.MisconceptionCategory;
+import com.familygrowth.domain.Stage23LearningModels.SupportEvent;
+import com.familygrowth.domain.Stage23LearningModels.SupportEventType;
 import com.familygrowth.domain.Stage3Models.AssetType;
 import com.familygrowth.domain.Stage3Models.Wallet;
 import java.math.BigDecimal;
@@ -84,6 +87,7 @@ class JdbcStage23LearningStore implements Stage23LearningStore {
             FROM teaching_course c JOIN teaching_course_version v ON v.course_id=c.id
             JOIN teaching_unit u ON u.course_version_id=v.id JOIN teaching_lesson l ON l.unit_id=u.id
             WHERE c.family_id=? AND c.school_stage=? AND v.status='PUBLISHED'
+              AND NOT EXISTS (SELECT 1 FROM teaching_course_withdrawal w WHERE w.course_version_id=v.id)
               AND v.version_number=(SELECT MAX(v2.version_number) FROM teaching_course_version v2
                                     WHERE v2.course_id=c.id AND v2.status='PUBLISHED')
             ORDER BY c.created_at,u.display_order,l.display_order
@@ -156,6 +160,105 @@ class JdbcStage23LearningStore implements Stage23LearningStore {
         if (changed != 1) throw new Stage3Service.ConflictException("Learning reward was already settled");
     }
 
+    @Override
+    public List<SupportEvent> supportEvents(UUID familyId, UUID childId, UUID assignmentId) {
+        requireAssignment(familyId, childId, assignmentId, null, false);
+        return jdbc.query("SELECT * FROM learning_support_event WHERE family_id=? AND child_id=? AND assignment_id=? ORDER BY created_at,id",
+            (rs,row) -> new SupportEvent(rs.getObject("id",UUID.class), rs.getObject("assignment_id",UUID.class),
+                rs.getObject("activity_id",UUID.class), SupportEventType.valueOf(rs.getString("event_type")),
+                rs.getString("category") == null ? null : MisconceptionCategory.valueOf(rs.getString("category")),
+                rs.getString("child_message"), rs.getString("private_note"), instant(rs.getTimestamp("revisit_at")),
+                rs.getObject("parent_event_id",UUID.class), rs.getTimestamp("created_at").toInstant()),
+            familyId, childId, assignmentId);
+    }
+
+    @Override
+    public void requestHelp(UUID familyId, UUID childId, UUID assignmentId, UUID activityId, UUID actorId,
+                            String message, String key, String payloadHash, Instant now) {
+        requireAssignment(familyId, childId, assignmentId, activityId, true);
+        if (replay(familyId, key, payloadHash)) return;
+        insertSupport(UUID.randomUUID(), familyId, childId, assignmentId, activityId, SupportEventType.HELP_REQUESTED,
+            null, message, "", null, null, actorId, key, payloadHash, now);
+    }
+
+    @Override
+    public void classifySupport(UUID familyId, UUID childId, UUID assignmentId, UUID sourceEventId, UUID actorId,
+                                MisconceptionCategory category, String privateNote, Instant revisitAt,
+                                String key, String payloadHash, Instant now) {
+        requireAssignment(familyId, childId, assignmentId, null, false);
+        if (replay(familyId, key, payloadHash)) return;
+        SupportEvent source = supportEvents(familyId, childId, assignmentId).stream().filter(e -> e.id().equals(sourceEventId))
+            .findFirst().orElseThrow(FamilyGrowthService.NotFoundException::new);
+        if (source.type() != SupportEventType.HELP_REQUESTED && source.type() != SupportEventType.INCORRECT_OBSERVED) {
+            throw new Stage3Service.ConflictException("Only a help or incorrect fact can be classified");
+        }
+        UUID classified = UUID.randomUUID();
+        insertSupport(classified, familyId, childId, assignmentId, source.activityId(),
+            SupportEventType.MISCONCEPTION_CLASSIFIED, category, "家长已经看到，会一起找办法。", privateNote,
+            null, sourceEventId, actorId, key, payloadHash, now);
+        if (revisitAt != null) insertSupport(UUID.randomUUID(), familyId, childId, assignmentId, source.activityId(),
+            SupportEventType.REVISIT_SCHEDULED, category, "稍后再试一次。", "", revisitAt, classified,
+            actorId, key + ":revisit", payloadHash, now);
+    }
+
+    @Override
+    public void recordAttemptSupport(UUID familyId, UUID childId, UUID assignmentId, UUID activityId,
+                                     UUID actorId, Boolean correct, String attemptKey, Instant now) {
+        if (correct == null) return;
+        if (!correct) {
+            String key = "incorrect:" + attemptKey;
+            if (!replay(familyId, key, key)) insertSupport(UUID.randomUUID(), familyId, childId, assignmentId, activityId,
+                SupportEventType.INCORRECT_OBSERVED, null, "这次答案还没对上，可以慢慢找一找。", "", null, null,
+                actorId, key, key, now);
+            return;
+        }
+        List<UUID> due = jdbc.query("""
+            SELECT s.id FROM learning_support_event s
+            WHERE s.family_id=? AND s.child_id=? AND s.assignment_id=? AND s.activity_id=?
+              AND s.event_type='REVISIT_SCHEDULED' AND s.revisit_at<=?
+              AND NOT EXISTS (SELECT 1 FROM learning_support_event c WHERE c.parent_event_id=s.id AND c.event_type='REVISIT_COMPLETED')
+            ORDER BY s.revisit_at
+            """, (rs,row)->rs.getObject(1,UUID.class), familyId, childId, assignmentId, activityId, ts(now));
+        for (UUID scheduleId : due) {
+            String key = "revisit-complete:" + scheduleId;
+            if (!replay(familyId, key, key)) insertSupport(UUID.randomUUID(), familyId, childId, assignmentId, activityId,
+                SupportEventType.REVISIT_COMPLETED, null, "按计划又试了一次，并答对了。", "", null, scheduleId,
+                actorId, key, key, now);
+        }
+    }
+
+    private boolean replay(UUID familyId, String key, String payloadHash) {
+        List<String> hashes = jdbc.query("SELECT payload_hash FROM learning_support_event WHERE family_id=? AND idempotency_key=?",
+            (rs,row)->rs.getString(1), familyId, key);
+        if (hashes.isEmpty()) return false;
+        if (!hashes.get(0).equals(payloadHash)) throw new Stage3Service.ConflictException("Idempotency key payload mismatch");
+        return true;
+    }
+
+    private void insertSupport(UUID id, UUID familyId, UUID childId, UUID assignmentId, UUID activityId,
+                               SupportEventType type, MisconceptionCategory category, String childMessage,
+                               String privateNote, Instant revisitAt, UUID parentEventId, UUID actorId,
+                               String key, String payloadHash, Instant now) {
+        jdbc.update("""
+            INSERT INTO learning_support_event
+            (id,family_id,child_id,assignment_id,activity_id,event_type,category,child_message,private_note,
+             revisit_at,parent_event_id,actor_id,idempotency_key,payload_hash,created_at)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """, id, familyId, childId, assignmentId, activityId, type.name(), category == null ? null : category.name(),
+            childMessage, privateNote, revisitAt == null ? null : ts(revisitAt), parentEventId, actorId, key, payloadHash, ts(now));
+    }
+
+    private void requireAssignment(UUID familyId, UUID childId, UUID assignmentId, UUID activityId, boolean open) {
+        String sql = """
+            SELECT COUNT(*) FROM lesson_assignment a
+            WHERE a.family_id=? AND a.child_id=? AND a.id=?
+            """ + (activityId == null ? "" : " AND EXISTS (SELECT 1 FROM learning_activity x JOIN teaching_lesson l ON l.id=a.lesson_id WHERE x.lesson_id=l.id AND x.id=?)")
+            + (open ? " AND a.status IN ('ASSIGNED','IN_PROGRESS','REWORK_REQUIRED')" : "");
+        Object[] args = activityId == null ? new Object[]{familyId,childId,assignmentId} : new Object[]{familyId,childId,assignmentId,activityId};
+        Integer count = jdbc.queryForObject(sql, Integer.class, args);
+        if (count == null || count != 1) throw new FamilyGrowthService.NotFoundException();
+    }
+
     private void insertLedger(UUID familyId, UUID childId, UUID assignmentId, UUID groupId, UUID actorId,
                               AssetType asset, BigDecimal delta, BigDecimal before, BigDecimal after,
                               String key, Instant now) {
@@ -174,4 +277,5 @@ class JdbcStage23LearningStore implements Stage23LearningStore {
         }
     }
     private static Timestamp ts(Instant value) { return Timestamp.from(value); }
+    private static Instant instant(Timestamp value) { return value == null ? null : value.toInstant(); }
 }

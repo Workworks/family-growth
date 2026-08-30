@@ -18,6 +18,7 @@ import com.familygrowth.domain.Stage21TeachingModels.KindergartenAgeBand;
 import com.familygrowth.domain.Stage21TeachingModels.KindergartenDomain;
 import com.familygrowth.domain.Stage21TeachingModels.LessonContent;
 import com.familygrowth.domain.Stage21TeachingModels.ParentCourseSummary;
+import com.familygrowth.domain.Stage21TeachingModels.ContentWithdrawal;
 import com.familygrowth.domain.Stage21TeachingModels.QuestionOption;
 import com.familygrowth.domain.Stage21TeachingModels.UnitContent;
 import com.familygrowth.domain.Stage21TeachingModels.VersionDraft;
@@ -190,9 +191,11 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
     @Override
     public List<ParentCourseSummary> courses(UUID familyId) {
         return jdbc.query("""
-            SELECT c.id course_id,c.title,c.school_stage,c.subject_code,v.id version_id,v.version_number,v.status,v.published_at,
+            SELECT c.id course_id,c.title,c.school_stage,c.subject_code,v.id version_id,v.version_number,
+                   CASE WHEN w.course_version_id IS NULL THEN v.status ELSE 'WITHDRAWN' END status,v.published_at,
                    (SELECT COUNT(*) FROM teaching_lesson l JOIN teaching_unit u ON u.id=l.unit_id WHERE u.course_version_id=v.id) lesson_count
             FROM teaching_course c JOIN teaching_course_version v ON v.course_id=c.id
+            LEFT JOIN teaching_course_withdrawal w ON w.course_version_id=v.id
             WHERE c.family_id=? ORDER BY c.created_at,v.version_number
             """, (rs, row) -> new ParentCourseSummary(rs.getObject("course_id", UUID.class), rs.getString("title"),
                 SchoolStage.valueOf(rs.getString("school_stage")), rs.getString("subject_code"),
@@ -210,6 +213,38 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
         if (changed != 1) throw new Stage3Service.ConflictException("Course version cannot be published");
         action(familyId, versionId, versionId, actorId, "PUBLISH", key, payloadHash, now);
         return version(familyId, versionId).orElseThrow();
+    }
+
+    @Override
+    @Transactional
+    public ContentWithdrawal withdraw(UUID familyId, UUID versionId, UUID actorId, String reason,
+                                      String key, String payloadHash, Instant now) {
+        List<Object[]> replay = jdbc.query("SELECT course_version_id,payload_hash FROM teaching_course_withdrawal WHERE family_id=? AND idempotency_key=?",
+            (rs,row)->new Object[]{rs.getObject(1,UUID.class),rs.getString(2)}, familyId,key);
+        if (!replay.isEmpty()) {
+            if (!replay.get(0)[0].equals(versionId) || !replay.get(0)[1].equals(payloadHash)) {
+                throw new Stage3Service.ConflictException("Idempotency key payload mismatch");
+            }
+            return withdrawal(familyId, versionId);
+        }
+        Integer eligible = jdbc.queryForObject("""
+            SELECT COUNT(*) FROM teaching_course_version v JOIN teaching_course c ON c.id=v.course_id
+            WHERE c.family_id=? AND v.id=? AND v.status='PUBLISHED'
+            """, Integer.class, familyId, versionId);
+        if (eligible == null || eligible != 1) throw new FamilyGrowthService.NotFoundException();
+        try {
+            jdbc.update("INSERT INTO teaching_course_withdrawal(course_version_id,family_id,reason,actor_id,idempotency_key,payload_hash,created_at) VALUES (?,?,?,?,?,?,?)",
+                versionId,familyId,reason,actorId,key,payloadHash,Timestamp.from(now));
+        } catch (org.springframework.dao.DuplicateKeyException ex) {
+            throw new Stage3Service.ConflictException("Course version is already withdrawn");
+        }
+        return withdrawal(familyId, versionId);
+    }
+
+    private ContentWithdrawal withdrawal(UUID familyId, UUID versionId) {
+        return jdbc.query("SELECT reason,actor_id,created_at FROM teaching_course_withdrawal WHERE family_id=? AND course_version_id=?",
+            (rs,row)->new ContentWithdrawal(versionId,rs.getString(1),rs.getObject(2,UUID.class),rs.getTimestamp(3).toInstant()),
+            familyId,versionId).stream().findFirst().orElseThrow(FamilyGrowthService.NotFoundException::new);
     }
 
     @Override
@@ -252,6 +287,7 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
             SELECT COUNT(*) FROM teaching_lesson l JOIN teaching_unit u ON u.id=l.unit_id
             JOIN teaching_course_version v ON v.id=u.course_version_id JOIN teaching_course c ON c.id=v.course_id
             WHERE c.family_id=? AND v.id=? AND l.id=? AND v.status='PUBLISHED'
+              AND NOT EXISTS (SELECT 1 FROM teaching_course_withdrawal w WHERE w.course_version_id=v.id)
             """, Integer.class, familyId, versionId, lessonId);
         if (exists != 1) throw new FamilyGrowthService.NotFoundException();
         UUID id = UUID.randomUUID();

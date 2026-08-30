@@ -3,10 +3,22 @@ package com.familygrowth.android.remote
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class LearningOutboxTest {
+    @Test fun helpKeepsStableEncryptedQueuePayloadAndNeverNeedsCompletionEvidence() {
+        val store = MemoryOutboxStore()
+        val queue = LearningOutbox(store)
+        val help = PendingLearningAction(idempotencyKey="help-key", familyId="family", childId="child",
+            type=LearningActionType.HELP, assignmentId="assignment", activityId="activity", note="这里我没看懂")
+        queue.enqueue(help).getOrThrow()
+        val restored = LearningOutboxCodec.decode(LearningOutboxCodec.encode(queue.snapshot())).single()
+        assertEquals(LearningActionType.HELP, restored.type)
+        assertEquals("这里我没看懂", restored.note)
+        assertNull(restored.expectedVersion)
+    }
     @Test fun codecRoundTripKeepsMinimalActionAndIdempotencyKey() {
         val action = attempt("key-1", 10).copy(playedSeconds = 9, durationSeconds = 10, responseText = "VIEWED")
         val encoded = LearningOutboxCodec.encode(listOf(action))

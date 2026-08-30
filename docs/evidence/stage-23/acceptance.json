@@ -2,7 +2,7 @@
   "stage": 23,
   "capturedAt": "2026-08-30",
   "status": "IN_PROGRESS",
-  "scope": "WP23-3 primary grade band, WP23-8 Android stage-aware learning, WP23-9 production autonomous enrollment/reward ledger, and verified v0.3.6 public release",
+  "scope": "WP23-3 primary grade band, WP23-4/5 original primary pack and persistent support evidence, WP23-8/9 autonomous learning/reward ledger, and verified v0.3.6 public release",
   "results": [
     {
       "id": "V23-01/V23-02",
@@ -22,7 +22,7 @@
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "Both variants, lint and APK assembly passed. Connected parent reward changes use the production policy endpoint; child refresh calls explicit autonomous sync before replacing the retained catalog. Assignment reward snapshots decode safely, and kindergarten uses a simple star/parent phrase rather than financial terms."
+      "result": "Both variants, lint and APK assembly passed with 50 JVM tests per variant. Connected parent reward changes use the production policy endpoint; child refresh calls explicit autonomous sync. Help is durably queued before send, parent support facts are visible, and private notes remain out of the child projection."
     },
     {
       "id": "V23-04-H2",
@@ -32,7 +32,7 @@
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "All H2 domain, infrastructure and Boot tests passed: 24 domain, 2 infrastructure and 25 Boot tests with 6 PostgreSQL-only skips. Flyway V14, reward validation, permissions, optimistic policy conflict, stage filtering, 90 percent evidence, snapshot settlement and replay passed."
+      "result": "All H2 domain, infrastructure and Boot tests passed: 24 domain, 2 infrastructure and 26 Boot tests with 6 PostgreSQL-only skips. Flyway V15, reward settlement, support idempotency, cross-family isolation, child redaction, incorrect evidence and due revisit completion passed."
     },
     {
       "id": "V23-04-POSTGRES",
@@ -72,7 +72,27 @@
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "Disposable PostgreSQL 16.15 applied and validated 14 migrations and 58 production tables. Schema, autonomous API and concurrent approve/rework tests all passed with zero skips; ledger count and XP matched the single winning transition. The container was stopped and auto-removed."
+      "result": "Disposable PostgreSQL 16.15 applied and validated 15 migrations and 60 production tables. Schema and the complete Stage23 autonomous/support API test passed with zero skips, including content withdrawal, idempotent help, wrong-answer evidence, parent classification, child redaction and due revisit completion. The container was stopped and auto-removed."
+    },
+    {
+      "id": "V23-11",
+      "status": "PASS_OFFLINE",
+      "command": ".\\gradlew.bat :app:testDebugUnitTest :app:testReleaseUnitTest :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "PRIMARY-PACK-1.0.0 contains 8 unique templates covering lower/upper primary and Chinese/Math/English/Science. Every item has a goal, 1-15 minute duration, original rights basis and reality exit; the parent UI saves a draft rather than auto-publishing. Published versions can be withdrawn with an immutable reason, stop future assignment, and retain prior evidence."
+    },
+    {
+      "id": "V23-12",
+      "status": "PASS_OFFLINE",
+      "command": ".\\mvnw.cmd test; PostgreSQL 16.15 Stage23AutonomousLearningApiTest/PostgresSchemaValidationTest; Android two-variant gates",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Help leaves assignment ASSIGNED/version 0 and replays once; wrong objective attempts append immutable process facts. Parent classification schedules a revisit, child reads blank privateNote, a due correct attempt appends REVISIT_COMPLETED, and cross-family reads return 404."
     },
     {
       "id": "V23-07",
@@ -86,8 +106,6 @@
     }
   ],
   "remaining": [
-    "WP23-4 audited original primary subject activity pack",
-    "WP23-5 persisted misconception, help and repractice evidence",
     "WP23-6 primary report and target-tablet acceptance"
   ]
 }

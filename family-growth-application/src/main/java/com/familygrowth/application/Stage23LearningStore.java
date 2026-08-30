@@ -2,9 +2,12 @@ package com.familygrowth.application;
 
 import com.familygrowth.domain.Stage20Models.SchoolStage;
 import com.familygrowth.domain.Stage23LearningModels.RewardPolicy;
+import com.familygrowth.domain.Stage23LearningModels.MisconceptionCategory;
+import com.familygrowth.domain.Stage23LearningModels.SupportEvent;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 public interface Stage23LearningStore {
@@ -17,4 +20,12 @@ public interface Stage23LearningStore {
                         String payloadHash, Instant now);
     void snapshotAssignment(UUID familyId, UUID childId, UUID assignmentId, Instant now);
     void settleReward(UUID familyId, UUID childId, UUID assignmentId, UUID actorId, Instant now);
+    List<SupportEvent> supportEvents(UUID familyId, UUID childId, UUID assignmentId);
+    void requestHelp(UUID familyId, UUID childId, UUID assignmentId, UUID activityId, UUID actorId,
+                     String message, String key, String payloadHash, Instant now);
+    void classifySupport(UUID familyId, UUID childId, UUID assignmentId, UUID sourceEventId, UUID actorId,
+                         MisconceptionCategory category, String privateNote, Instant revisitAt,
+                         String key, String payloadHash, Instant now);
+    void recordAttemptSupport(UUID familyId, UUID childId, UUID assignmentId, UUID activityId,
+                              UUID actorId, Boolean correct, String attemptKey, Instant now);
 }

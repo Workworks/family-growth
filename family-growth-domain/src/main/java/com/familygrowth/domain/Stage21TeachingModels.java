@@ -15,7 +15,7 @@ public final class Stage21TeachingModels {
         "lesson_color_garden", "lesson_count_to_five", "lesson_shape_home");
     private Stage21TeachingModels() { }
 
-    public enum CourseVersionStatus { DRAFT, PUBLISHED }
+    public enum CourseVersionStatus { DRAFT, PUBLISHED, WITHDRAWN }
     public enum AssignmentStatus { ASSIGNED, IN_PROGRESS, SUBMITTED, COMPLETED, REWORK_REQUIRED }
     public enum EvidenceType { VIEWED, ATTEMPTED, CHECKED, PARENT_CONFIRMED, MASTERED }
     public enum ReviewDecision { APPROVE, REWORK }
@@ -132,6 +132,7 @@ public final class Stage21TeachingModels {
     public record ParentCourseSummary(UUID courseId, String title, SchoolStage schoolStage, String subjectCode,
                                       UUID versionId, int versionNumber, CourseVersionStatus status, int lessonCount,
                                       Instant publishedAt) { }
+    public record ContentWithdrawal(UUID courseVersionId, String reason, UUID actorId, Instant createdAt) { }
 
     public record ActivityProgress(UUID id, ActivityType type, String title, String instruction, String contentRef, int expectedMinutes,
                                    String prompt, String hint, List<QuestionOption> options,

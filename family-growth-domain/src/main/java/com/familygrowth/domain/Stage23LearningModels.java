@@ -3,12 +3,28 @@ package com.familygrowth.domain;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public final class Stage23LearningModels {
     private Stage23LearningModels() { }
 
     public enum AssignmentSource { PARENT, AUTONOMOUS }
+    public enum SupportEventType { HELP_REQUESTED, INCORRECT_OBSERVED, MISCONCEPTION_CLASSIFIED, REVISIT_SCHEDULED, REVISIT_COMPLETED }
+    public enum MisconceptionCategory { INSTRUCTION, CONCEPT, PROCEDURE, LANGUAGE, ATTENTION, OTHER }
+
+    public record SupportEvent(UUID id, UUID assignmentId, UUID activityId, SupportEventType type,
+                               MisconceptionCategory category, String childMessage, String privateNote,
+                               Instant revisitAt, UUID parentEventId, Instant createdAt) {
+        public SupportEvent childSafe() {
+            return new SupportEvent(id, assignmentId, activityId, type, category, childMessage, "",
+                revisitAt, parentEventId, createdAt);
+        }
+    }
+
+    public record SupportTimeline(List<SupportEvent> events) {
+        public SupportTimeline { events = events == null ? List.of() : List.copyOf(events); }
+    }
 
     public record RewardPolicy(UUID familyId, UUID childId, BigDecimal moneyReward,
                                long coinReward, long xpReward, long version, Instant updatedAt) {

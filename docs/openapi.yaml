@@ -739,6 +739,16 @@ paths:
         - { name: versionId, in: path, required: true, schema: { type: string, format: uuid } }
         - $ref: '#/components/parameters/IdempotencyKey'
       responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/teaching/course-versions/{versionId}/withdraw:
+    post:
+      operationId: withdrawTeachingCourseVersion
+      description: Parent-only immutable withdrawal audit. Stops future manual/automatic assignment without deleting existing assignments, attempts or support evidence.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - { name: versionId, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ContentWithdrawalRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
   /families/{familyId}/children/{childId}/learning/assignments:
     get:
       operationId: listChildLearningAssignments
@@ -769,6 +779,38 @@ paths:
       description: Parent or owning child idempotently enrolls missing lessons only from each course's latest published version matching the server-authoritative effective stage. Reward policy is snapshotted on creation; GET catalog remains read-only.
       parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
       responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/autonomous-learning/assignments/{assignmentId}/activities/{activityId}/help:
+    post:
+      operationId: requestLearningHelp
+      description: Owning child only. Appends an immutable help fact without creating an attempt, mastery evidence, assignment transition or version change.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - { name: assignmentId, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: activityId, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/LearningHelpRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/autonomous-learning/assignments/{assignmentId}/support-events:
+    get:
+      operationId: listLearningSupportEvents
+      description: Parent or owning child reads the immutable process timeline. Child responses always redact parent private notes and never include answer keys.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - { name: assignmentId, in: path, required: true, schema: { type: string, format: uuid } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/children/{childId}/autonomous-learning/assignments/{assignmentId}/support-events/classify:
+    post:
+      operationId: classifyLearningSupport
+      description: Parent-only classification of an existing help/incorrect fact, optionally scheduling a revisit 1 to 30 days later. Labels describe the learning process, not ability or personality.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - { name: assignmentId, in: path, required: true, schema: { type: string, format: uuid } }
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/LearningSupportClassifyRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
   /families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/activities/{activityId}/attempts:
     post:
       operationId: recordLearningActivityAttempt
@@ -998,6 +1040,24 @@ components:
         responseText: { type: [string, 'null'], maxLength: 1000 }
         playedSeconds: { type: [integer, 'null'], minimum: 0 }
         durationSeconds: { type: [integer, 'null'], minimum: 1 }
+    ContentWithdrawalRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    LearningHelpRequest:
+      type: object
+      required: [message]
+      properties:
+        message: { type: string, minLength: 1, maxLength: 160 }
+    LearningSupportClassifyRequest:
+      type: object
+      required: [sourceEventId, category]
+      properties:
+        sourceEventId: { type: string, format: uuid }
+        category: { type: string, enum: [INSTRUCTION, CONCEPT, PROCEDURE, LANGUAGE, ATTENTION, OTHER] }
+        privateNote: { type: [string, 'null'], maxLength: 500, writeOnly: true }
+        revisitAt: { type: [string, 'null'], format: date-time, description: Must be 1 to 30 days after the request. }
     ExpectedVersionRequest:
       type: object
       required: [expectedVersion]

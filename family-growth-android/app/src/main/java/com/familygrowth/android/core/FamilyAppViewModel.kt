@@ -45,6 +45,8 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     var learningAssignments by mutableStateOf<List<RemoteLearningAssignment>>(emptyList())
         private set
+    var learningSupportByAssignment by mutableStateOf<Map<String,List<RemoteSupportEvent>>>(emptyMap())
+        private set
     var teachingCourses by mutableStateOf<List<RemoteCourseSummary>>(emptyList())
         private set
     var pendingLearningActions by mutableStateOf(learningOutbox.snapshot())
@@ -178,6 +180,9 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     fun attemptLearningActivity(assignmentId: String, activityId: String, response: String) {
         enqueueLearning(LearningActionType.ATTEMPT, assignmentId, activityId=activityId, response=response)
     }
+    fun requestLearningHelp(assignmentId: String, activityId: String, message: String) {
+        enqueueLearning(LearningActionType.HELP, assignmentId, activityId=activityId, note=message)
+    }
     fun completeLearningVideo(assignmentId: String, activityId: String, playedSeconds: Int, durationSeconds: Int) {
         enqueueLearning(LearningActionType.ATTEMPT, assignmentId, activityId=activityId, response="VIEWED",
             playedSeconds=playedSeconds, durationSeconds=durationSeconds)
@@ -188,6 +193,16 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     fun reviewLearningAssignment(assignmentId: String, approve: Boolean, note: String, version: Long) {
         enqueueLearning(LearningActionType.REVIEW, assignmentId, expectedVersion=version,
             decision=if (approve) "APPROVE" else "REWORK", note=note)
+    }
+    fun scheduleLearningRevisit(assignmentId:String, sourceEventId:String) {
+        viewModelScope.launch {
+            val revisitAt=Instant.now().plus(java.time.Duration.ofDays(2)).toString()
+            when(val result=remote.scheduleLearningRevisit(assignmentId,sourceEventId,"OTHER","先一起重读要求，再用实物或例子试一次。",revisitAt)) {
+                is RemoteResult.Ok -> { learningSupportByAssignment=learningSupportByAssignment+(assignmentId to result.value); message="已安排两天后温和再练" }
+                RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized,"")
+                is RemoteResult.Failure -> message=result.message
+            }
+        }
     }
     fun retryLearningSync() { viewModelScope.launch { reconcileAndFlushLearning() } }
     fun discardLearningAction(key: String) {
@@ -243,10 +258,36 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             }
         }
     }
+    fun createPrimaryTeachingCourse(template: PrimaryCourseTemplate) {
+        if (state.experience.effectiveStage != SchoolStage.PRIMARY) return failUnit("当前学段不是小学，请刷新家长配置")
+        if (teachingActionRunningInternal) return
+        updateTeachingActionState(true)
+        viewModelScope.launch {
+            try {
+                val draft = RemoteTeachingCourseDraft(stage=SchoolStage.PRIMARY.name, subject=template.subject.apiValue,
+                    courseTitle=template.courseTitle, lessonTitle=template.lessonTitle,
+                    lessonSummary="${template.goal}；${template.realityExit}", activityType=template.activityType,
+                    activityTitle=template.activityTitle, instruction=template.instruction,
+                    expectedMinutes=template.expectedMinutes, rightsBasis=template.rightsBasis)
+                when (val result = remote.createTeachingCourse(draft)) {
+                    is RemoteResult.Ok -> { message="小学原创活动草稿已保存"; syncTeachingCourses() }
+                    RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+                    is RemoteResult.Failure -> message=result.message
+                }
+            } finally { updateTeachingActionState(false) }
+        }
+    }
     fun publishTeachingCourse(versionId:String) = runTeachingAction {
         when (val result=remote.publishTeachingVersion(versionId)) {
             is RemoteResult.Ok -> { message="课程已发布，可以布置给孩子"; syncTeachingCourses() }
             RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+            is RemoteResult.Failure -> message=result.message
+        }
+    }
+    fun withdrawTeachingCourse(versionId:String) = runTeachingAction {
+        when(val result=remote.withdrawTeachingVersion(versionId)) {
+            is RemoteResult.Ok -> { message="课程已撤回；历史学习记录仍保留"; syncTeachingCourses() }
+            RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized,"")
             is RemoteResult.Failure -> message=result.message
         }
     }
@@ -276,7 +317,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             if (result is RemoteResult.Ok) { syncEducationResources(); reconcileAndFlushLearning(refreshFirst=false); flushUsageNow() }
         }
     }
-    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); teachingCourses = emptyList(); connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
+    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); learningSupportByAssignment=emptyMap(); teachingCourses = emptyList(); connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
 
     private fun changeEducationSource(id: String, action: String, success: String) {
         viewModelScope.launch {
@@ -338,6 +379,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
                         message = when {
                             action.type == LearningActionType.REVIEW && action.decision == "APPROVE" -> "已确认孩子的努力"
                             action.type == LearningActionType.REVIEW -> "已温和地告诉孩子再试哪一步"
+                            action.type == LearningActionType.HELP -> "已经告诉家长：这里需要一起看看"
                             action.type == LearningActionType.SUBMIT -> "已经交给家长看了"
                             result.value.activities.firstOrNull { it.id == action.activityId }?.checkedCorrect == false -> "再看一看，可以慢慢试"
                             action.responseText == "VIEWED" -> "已记录观看；这不代表全部学会"
@@ -406,10 +448,22 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
 
     private suspend fun syncLearningAssignments():Boolean {
         return when (val result = remote.learningAssignments()) {
-            is RemoteResult.Ok -> { learningAssignments = result.value; true }
+            is RemoteResult.Ok -> { learningAssignments = result.value; syncLearningSupport(result.value); true }
             RemoteResult.Unauthorized -> { handleRemote(RemoteResult.Unauthorized, ""); false }
             is RemoteResult.Failure -> { message = result.message; false }
         }
+    }
+
+    private suspend fun syncLearningSupport(assignments:List<RemoteLearningAssignment>) {
+        val next=mutableMapOf<String,List<RemoteSupportEvent>>()
+        assignments.forEach { assignment ->
+            when(val result=remote.learningSupportEvents(assignment.id)) {
+                is RemoteResult.Ok -> if(result.value.isNotEmpty()) next[assignment.id]=result.value
+                RemoteResult.Unauthorized -> return
+                is RemoteResult.Failure -> Unit
+            }
+        }
+        learningSupportByAssignment=next
     }
 
     private suspend fun syncTeachingCourses() {

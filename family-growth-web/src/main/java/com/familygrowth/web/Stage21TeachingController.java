@@ -5,6 +5,7 @@ import com.familygrowth.domain.Stage20Models.SchoolStage;
 import com.familygrowth.domain.Stage21TeachingModels.ActivityDraft;
 import com.familygrowth.domain.Stage21TeachingModels.ActivityType;
 import com.familygrowth.domain.Stage21TeachingModels.CourseVersion;
+import com.familygrowth.domain.Stage21TeachingModels.ContentWithdrawal;
 import com.familygrowth.domain.Stage21TeachingModels.LearningAssignment;
 import com.familygrowth.domain.Stage21TeachingModels.KindergartenAgeBand;
 import com.familygrowth.domain.Stage21TeachingModels.KindergartenDomain;
@@ -71,6 +72,14 @@ class Stage21TeachingController {
         @PathVariable UUID familyId, @PathVariable UUID versionId,
         @RequestHeader("Idempotency-Key") String key
     ) { return ApiResponse.ok(service.publish(actor, familyId, versionId, key)); }
+
+    @PostMapping("/teaching/course-versions/{versionId}/withdraw")
+    ApiResponse<ContentWithdrawal> withdraw(
+        @RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE) Actor actor,
+        @PathVariable UUID familyId, @PathVariable UUID versionId,
+        @RequestHeader("Idempotency-Key") String key,
+        @Valid @RequestBody WithdrawalRequest request
+    ) { return ApiResponse.ok(service.withdraw(actor, familyId, versionId, request.reason(), key)); }
 
     @GetMapping("/teaching/courses")
     ApiResponse<List<ParentCourseSummary>> courses(
@@ -154,4 +163,5 @@ class Stage21TeachingController {
                           @Min(1) Integer durationSeconds) { }
     record VersionCheck(@Min(0) long expectedVersion) { }
     record ReviewRequest(@NotNull ReviewDecision decision, @Size(max=500) String note, @Min(0) long expectedVersion) { }
+    record WithdrawalRequest(@NotBlank @Size(max=500) String reason) { }
 }

@@ -16,7 +16,7 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-enum class LearningActionType { ATTEMPT, SUBMIT, REVIEW }
+enum class LearningActionType { ATTEMPT, HELP, SUBMIT, REVIEW }
 enum class LearningActionState { PENDING, NEEDS_REVIEW }
 
 data class PendingLearningAction(
@@ -111,6 +111,10 @@ class LearningOutbox(private val store: LearningOutboxStore, private val limit: 
                 progress?.childReady() == true -> true to action
                 else -> null
             }
+        }
+        LearningActionType.HELP -> when {
+            assignment.status in setOf("ASSIGNED", "IN_PROGRESS", "REWORK_REQUIRED") -> false to action.copy(state=LearningActionState.PENDING,lastError="")
+            else -> null
         }
         LearningActionType.SUBMIT -> when {
             assignment.status in setOf("SUBMITTED", "COMPLETED") -> true to action

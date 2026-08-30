@@ -123,6 +123,89 @@ class Stage23AutonomousLearningApiTest {
             Integer.class, parent.family, assignmentId)).isEqualTo(2);
     }
 
+    @Test
+    void helpIncorrectClassificationAndDueRevisitRemainProcessEvidence() throws Exception {
+        Session parent = bootstrap("学习支持家庭", "731428");
+        Session other = bootstrap("隔离支持家庭", "731429");
+        UUID child = child(parent, "小读者", "2017-08-26");
+        String childToken = childToken(parent, child);
+        String courseBody = "{\"schoolStage\":\"PRIMARY\",\"subjectCode\":\"MATH\",\"title\":\"分组练习\"," +
+            "\"version\":{\"summary\":\"先操作再解释\",\"rightsBasis\":\"Family Growth 原创 · PRIMARY-PACK-1.0.0\"," +
+            "\"units\":[{\"title\":\"数与分组\",\"lessons\":[{\"title\":\"十二个怎样分\",\"summary\":\"用实物验证\"," +
+            "\"activities\":[{\"type\":\"SINGLE_CHOICE\",\"title\":\"选择没有剩余的分法\",\"instruction\":\"先用积木分一分\"," +
+            "\"expectedMinutes\":8,\"prompt\":\"12 个每组几个能正好分完？\",\"hint\":\"摆成同样多的小组\"," +
+            "\"options\":[{\"value\":\"5\",\"label\":\"每组 5 个\"},{\"value\":\"3\",\"label\":\"每组 3 个\"}],\"answerKey\":\"3\"}]}]}]}}";
+        JsonNode created = data(mvc.perform(post("/api/v1/families/" + parent.family + "/teaching/courses")
+            .header("Authorization", bearer(parent.token)).header("Idempotency-Key", "support-course")
+            .contentType(MediaType.APPLICATION_JSON).content(courseBody)).andExpect(status().isCreated()).andReturn());
+        UUID version = uuid(created, "versionId");
+        mvc.perform(post("/api/v1/families/" + parent.family + "/teaching/course-versions/" + version + "/publish")
+            .header("Authorization", bearer(parent.token)).header("Idempotency-Key", "support-publish")).andExpect(status().isOk());
+        JsonNode published = data(mvc.perform(get("/api/v1/families/" + parent.family + "/teaching/course-versions/" + version)
+            .header("Authorization", bearer(parent.token))).andReturn());
+        UUID activity = uuid(published.path("units").get(0).path("lessons").get(0).path("activities").get(0), "id");
+        JsonNode withdrawn = createAndPublish(parent, "PRIMARY", "已撤回观察", "support-withdraw-course");
+        UUID withdrawnVersion = uuid(withdrawn, "versionId");
+        UUID withdrawnLesson = uuid(withdrawn.path("units").get(0).path("lessons").get(0), "id");
+        mvc.perform(post("/api/v1/families/" + parent.family + "/teaching/course-versions/" + withdrawnVersion + "/withdraw")
+            .header("Authorization", bearer(parent.token)).header("Idempotency-Key", "support-withdraw")
+            .contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"内容需要重新核对，停止后续加入\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data.courseVersionId").value(withdrawnVersion.toString()));
+        mvc.perform(post("/api/v1/families/" + parent.family + "/teaching/course-versions/" + withdrawnVersion + "/withdraw")
+            .header("Authorization", bearer(parent.token)).header("Idempotency-Key", "support-withdraw")
+            .contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"内容需要重新核对，停止后续加入\"}"))
+            .andExpect(status().isOk());
+        mvc.perform(post("/api/v1/families/" + parent.family + "/children/" + child + "/learning/assignments")
+            .header("Authorization", bearer(parent.token)).header("Idempotency-Key", "withdrawn-manual-assign")
+            .contentType(MediaType.APPLICATION_JSON).content("{\"courseVersionId\":\"" + withdrawnVersion + "\",\"lessonId\":\"" + withdrawnLesson + "\"}"))
+            .andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/families/" + parent.family + "/teaching/courses").header("Authorization", bearer(parent.token)))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data[1].status").value("WITHDRAWN"));
+        String root = "/api/v1/families/" + parent.family + "/children/" + child + "/autonomous-learning";
+        JsonNode assignment = data(mvc.perform(post(root + "/sync").header("Authorization", bearer(childToken))
+            .header("Idempotency-Key", "support-sync")).andExpect(status().isOk()).andReturn()).get(0);
+        UUID assignmentId = uuid(assignment, "id");
+        String support = root + "/assignments/" + assignmentId;
+
+        mvc.perform(post(support + "/activities/" + activity + "/help").header("Authorization", bearer(childToken))
+            .header("Idempotency-Key", "support-help").contentType(MediaType.APPLICATION_JSON)
+            .content("{\"message\":\"这里我没看懂，请和我一起看看。\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data.status").value("ASSIGNED"))
+            .andExpect(jsonPath("$.data.version").value(0));
+        mvc.perform(post(support + "/activities/" + activity + "/help").header("Authorization", bearer(childToken))
+            .header("Idempotency-Key", "support-help").contentType(MediaType.APPLICATION_JSON)
+            .content("{\"message\":\"这里我没看懂，请和我一起看看。\"}"))
+            .andExpect(status().isOk());
+
+        String attempt = "/api/v1/families/" + parent.family + "/children/" + child + "/learning/assignments/" + assignmentId + "/activities/" + activity + "/attempts";
+        mvc.perform(post(attempt).header("Authorization", bearer(childToken)).header("Idempotency-Key", "support-wrong")
+            .contentType(MediaType.APPLICATION_JSON).content("{\"responseText\":\"5\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data.activities[0].checkedCorrect").value(false));
+        MvcResult timeline = mvc.perform(get(support + "/support-events").header("Authorization", bearer(parent.token)))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data.length()").value(2))
+            .andExpect(jsonPath("$.data[1].type").value("INCORRECT_OBSERVED")).andReturn();
+        UUID wrongEvent = uuid(data(timeline).get(1), "id");
+        mvc.perform(get(support.replace(parent.family.toString(), other.family.toString()) + "/support-events")
+            .header("Authorization", bearer(other.token))).andExpect(status().isNotFound());
+
+        String revisit = java.time.Instant.now().plus(java.time.Duration.ofDays(2)).toString();
+        mvc.perform(post(support + "/support-events/classify").header("Authorization", bearer(parent.token))
+            .header("Idempotency-Key", "support-classify").contentType(MediaType.APPLICATION_JSON)
+            .content("{\"sourceEventId\":\"" + wrongEvent + "\",\"category\":\"PROCEDURE\",\"privateNote\":\"先用十二颗积木分组，不评价能力\",\"revisitAt\":\"" + revisit + "\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data.length()").value(4));
+        mvc.perform(get(support + "/support-events").header("Authorization", bearer(childToken)))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data[2].privateNote").value(""));
+        jdbc.update("UPDATE learning_support_event SET revisit_at=? WHERE assignment_id=? AND event_type='REVISIT_SCHEDULED'",
+            java.sql.Timestamp.from(java.time.Instant.now().minus(java.time.Duration.ofDays(1))), assignmentId);
+        mvc.perform(post(attempt).header("Authorization", bearer(childToken)).header("Idempotency-Key", "support-correct")
+            .contentType(MediaType.APPLICATION_JSON).content("{\"responseText\":\"3\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data.activities[0].checkedCorrect").value(true));
+        mvc.perform(get(support + "/support-events").header("Authorization", bearer(parent.token)))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data[4].type").value("REVISIT_COMPLETED"));
+        org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM activity_attempt WHERE assignment_id=?", Integer.class, assignmentId)).isEqualTo(2);
+        org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM learning_support_event WHERE assignment_id=? AND event_type='HELP_REQUESTED'", Integer.class, assignmentId)).isEqualTo(1);
+    }
+
     private JsonNode createAndPublish(Session parent, String stage, String title, String key) throws Exception {
         String body = "{\"schoolStage\":\"" + stage + "\",\"subjectCode\":\"SCIENCE\",\"title\":\"" + title +
             "\",\"version\":{\"summary\":\"一段短课程\",\"rightsBasis\":\"家庭原创\",\"units\":[{\"title\":\"单元\",\"lessons\":[{\"title\":\"观察颜色\",\"summary\":\"认真看完再休息\",\"activities\":[{\"type\":\"SHORT_VIDEO\",\"title\":\"看颜色\",\"instruction\":\"看完就停下来\",\"contentRef\":\"lesson_color_garden\",\"expectedMinutes\":3}]}]}]}}";

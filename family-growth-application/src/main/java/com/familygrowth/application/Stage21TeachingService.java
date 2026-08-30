@@ -11,6 +11,7 @@ import com.familygrowth.domain.Stage21TeachingModels.LearningAssignment;
 import com.familygrowth.domain.Stage21TeachingModels.ParentCourseSummary;
 import com.familygrowth.domain.Stage21TeachingModels.ReviewDecision;
 import com.familygrowth.domain.Stage21TeachingModels.VersionDraft;
+import com.familygrowth.domain.Stage21TeachingModels.ContentWithdrawal;
 import com.familygrowth.domain.Stage3Models.Actor;
 import com.familygrowth.domain.Stage3Models.ActorRole;
 import java.nio.charset.StandardCharsets;
@@ -82,6 +83,14 @@ public class Stage21TeachingService {
         if (version.status() != CourseVersionStatus.DRAFT) throw new Stage3Service.ConflictException("Course version is already published");
         com.familygrowth.domain.Stage21TeachingModels.validateForPublish(version);
         return store.publish(familyId, versionId, actor.actorId(), key, payload, clock.instant());
+    }
+
+    public ContentWithdrawal withdraw(Actor actor, UUID familyId, UUID versionId, String reason, String rawKey) {
+        auth.requireParent(actor, familyId);
+        String note = reason == null ? "" : reason.trim();
+        if (note.isBlank() || note.length() > 500) throw new IllegalArgumentException("A short withdrawal reason is required");
+        String key = key(rawKey); String payload = hash(versionId + "|WITHDRAW|" + note);
+        return store.withdraw(familyId, versionId, actor.actorId(), note, key, payload, clock.instant());
     }
 
     @Transactional(readOnly = true)
@@ -159,8 +168,11 @@ public class Stage21TeachingService {
         } else {
             evidence = EvidenceType.ATTEMPTED;
         }
-        return store.attempt(familyId, childId, assignmentId, activityId, actor.actorId(), response,
-            evidence, correct, key, payload, clock.instant());
+        var now = clock.instant();
+        LearningAssignment result = store.attempt(familyId, childId, assignmentId, activityId, actor.actorId(), response,
+            evidence, correct, key, payload, now);
+        autonomousLearning.recordAttemptSupport(familyId, childId, assignmentId, activityId, actor.actorId(), correct, key, now);
+        return result;
     }
 
     public LearningAssignment submit(Actor actor, UUID familyId, UUID childId, UUID assignmentId,
