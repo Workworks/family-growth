@@ -5,7 +5,9 @@ import java.net.URI
 import java.util.UUID
 
 data class RemoteTask(val id:String,val title:String,val minutes:Int,val status:String,val completionId:String?)
-data class RemoteExperienceProfile(val birthDate:String,val recommendedStage:String,val stageOverride:String?,val effectiveStage:String,val overrideReason:String,val hapticsEnabled:Boolean,val version:Long)
+data class RemoteExperienceProfile(val birthDate:String,val recommendedStage:String,val stageOverride:String?,val effectiveStage:String,
+ val recommendedPrimaryBand:String?=null,val primaryBandOverride:String?=null,val effectivePrimaryBand:String?=null,
+ val overrideReason:String,val hapticsEnabled:Boolean,val version:Long)
 data class RemoteResourceCategory(val id:String,val title:String,val displayOrder:Int,val categoryUrl:String?=null)
 data class RemoteEducationSource(val id:String,val title:String,val sourceUrl:String,val schoolStages:List<String>,val usageNote:String,val status:String,val refreshStatus:String,val refreshError:String,val lastRefreshedAt:String?,val categories:List<RemoteResourceCategory>)
 data class RemoteChildEducationSource(val id:String,val title:String,val categories:List<RemoteResourceCategory>,val lastRefreshedAt:String?,val parentActionRequired:Boolean)

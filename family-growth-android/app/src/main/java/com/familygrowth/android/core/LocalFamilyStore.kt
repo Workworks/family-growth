@@ -58,11 +58,19 @@ class LocalFamilyStore(context: Context) {
             put("dailyLimitMinutes", state.usage.dailyLimitMinutes); put("sessionLimitMinutes", state.usage.sessionLimitMinutes)
             put("usedMinutes", state.usage.usedMinutes); put("usageDate", state.usage.usageDate)
         })
+        put("learningRewardPolicy", JSONObject().apply {
+            put("money", state.learningRewardPolicy.money.toPlainString())
+            put("coin", state.learningRewardPolicy.coin)
+            put("xp", state.learningRewardPolicy.xp)
+        })
         put("experience", JSONObject().apply {
             put("birthDate", state.experience.birthDate)
             put("recommendedStage", state.experience.recommendedStage.name)
             state.experience.stageOverride?.let { put("stageOverride", it.name) }
             put("effectiveStage", state.experience.effectiveStage.name)
+            state.experience.recommendedPrimaryBand?.let { put("recommendedPrimaryBand", it.name) }
+            state.experience.primaryBandOverride?.let { put("primaryBandOverride", it.name) }
+            state.experience.effectivePrimaryBand?.let { put("effectivePrimaryBand", it.name) }
             put("overrideReason", state.experience.overrideReason)
             put("hapticsEnabled", state.experience.hapticsEnabled)
             put("version", state.experience.version)
@@ -75,6 +83,7 @@ class LocalFamilyStore(context: Context) {
         val wallet = root.optJSONObject("wallet") ?: JSONObject()
         val fund = root.optJSONObject("fund") ?: JSONObject()
         val usage = root.optJSONObject("usage") ?: JSONObject()
+        val learningReward = root.optJSONObject("learningRewardPolicy") ?: JSONObject()
         val experience = root.optJSONObject("experience")
         return FamilyLocalState(
             tasks = root.optJSONArray("tasks").mapObjects { value -> LocalGrowthTask(
@@ -102,6 +111,11 @@ class LocalFamilyStore(context: Context) {
                 watchedSeconds = value.optInt("watchedSeconds"),
                 completed = value.optBoolean("completed"),
             ) },
+            learningRewardPolicy = LearningRewardPolicy(
+                money = learningReward.decimal("money", "0.00"),
+                coin = learningReward.optInt("coin", 2),
+                xp = learningReward.optInt("xp", 5),
+            ),
             savings = root.optJSONArray("savings").mapObjects { value -> LocalSavingGoal(value.getString("id"), value.getString("title"), value.decimal("target"), value.decimal("saved", "0.00")) },
             wishes = root.optJSONArray("wishes").mapObjects { value -> LocalWish(value.getString("id"), value.getString("title"), value.decimal("target")) },
             fund = LocalFundPosition(fund.decimal("nav", "1.0000"), fund.decimal("shares", "0.0000")),
@@ -114,17 +128,22 @@ class LocalFamilyStore(context: Context) {
                 val recommended = runCatching { SchoolStage.valueOf(value.optString("recommendedStage")) }
                     .getOrElse { ChildExperiencePolicy.recommendedStage(LocalDate.parse(birthDate)) }
                 val override = value.optString("stageOverride").takeIf(String::isNotBlank)?.let { SchoolStage.valueOf(it) }
+                val recommendedBand = value.optString("recommendedPrimaryBand").takeIf(String::isNotBlank)?.let { PrimaryGradeBand.valueOf(it) }
+                val bandOverride = value.optString("primaryBandOverride").takeIf(String::isNotBlank)?.let { PrimaryGradeBand.valueOf(it) }
                 ChildExperienceSettings(
                     birthDate = birthDate,
                     recommendedStage = recommended,
                     stageOverride = override,
                     effectiveStage = runCatching { SchoolStage.valueOf(value.optString("effectiveStage")) }.getOrDefault(override ?: recommended),
+                    recommendedPrimaryBand = recommendedBand,
+                    primaryBandOverride = bandOverride,
+                    effectivePrimaryBand = value.optString("effectivePrimaryBand").takeIf(String::isNotBlank)?.let { PrimaryGradeBand.valueOf(it) },
                     overrideReason = value.optString("overrideReason"),
                     hapticsEnabled = value.optBoolean("hapticsEnabled", true),
                     version = value.optLong("version", 0),
                     source = runCatching { ExperienceSource.valueOf(value.optString("source")) }.getOrDefault(ExperienceSource.LOCAL),
                 )
-            } ?: ChildExperiencePolicy.localSettings(LocalDate.now().minusYears(4), null, "", true),
+            } ?: ChildExperiencePolicy.localSettings(LocalDate.now().minusYears(4), null, null, "", true),
         )
     }
 

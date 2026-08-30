@@ -57,8 +57,8 @@
 | POST | `/families/{familyId}/children/{childId}/usage-events` | PARENT/CHILD 本人 | 幂等记录本 App 的活跃/学习分钟；只接受最近 31 天且不超过未来 5 分钟的事件 |
 | GET | `/families/{familyId}/children/{childId}/reports/today` | PARENT/CHILD 本人 | 按家庭时区返回本人适龄使用、任务、待审核和钱包摘要 |
 | GET | `/families/{familyId}/children/{childId}/reports/monthly` | PARENT | 从 Usage/Completion/Ledger/Saving/Fund 事实表聚合月度成长和财商报告 |
-| GET/PUT | `/families/{familyId}/children/{childId}/experience-profile` | PARENT/CHILD 本人 / PARENT | 查询服务端推荐/有效学段与反馈档案；家长按版本修改出生日期、覆盖学段和触觉开关 |
-| GET | `/families/{familyId}/children/{childId}/experience-profile/audit` | PARENT | 查询出生日期、覆盖学段和触觉配置的不可变审计记录 |
+| GET/PUT | `/families/{familyId}/children/{childId}/experience-profile` | PARENT/CHILD 本人 / PARENT | 查询服务端推荐/有效学段、小学低/高年级带与反馈档案；家长按版本修改出生日期、覆盖学段、小学分段和触觉开关。`primaryBandOverride` 仅在有效学段为 `PRIMARY` 时允许 |
+| GET | `/families/{familyId}/children/{childId}/experience-profile/audit` | PARENT | 查询出生日期、覆盖学段、小学分段和触觉配置的不可变审计记录 |
 | GET/POST | `/families/{familyId}/documentary-sources` | PARENT | 查询或幂等创建带权利依据、访问模式、学段和生命周期的纪录片来源 |
 | GET | `/families/{familyId}/children/{childId}/documentaries` | PARENT/CHILD 本人 | 只投影有效学段内已批准且未过期的条目；孩子响应不含可启动 URL 或权利元数据 |
 | POST | `/families/{familyId}/documentary-sources/{sourceId}/approve` | PARENT | 幂等批准 DRAFT 来源 |

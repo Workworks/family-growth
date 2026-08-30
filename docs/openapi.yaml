@@ -861,6 +861,9 @@ components:
     SchoolStage:
       type: string
       enum: [PARENT_ONLY, KINDERGARTEN, PRIMARY, JUNIOR_MIDDLE, SENIOR_HIGH]
+    PrimaryGradeBand:
+      type: string
+      enum: [LOWER_PRIMARY, UPPER_PRIMARY]
     ExperienceProfileRequest:
       type: object
       required: [birthDate, hapticsEnabled, expectedVersion, auditReason]
@@ -869,6 +872,10 @@ components:
         stageOverride:
           oneOf:
             - { $ref: '#/components/schemas/SchoolStage' }
+            - { type: 'null' }
+        primaryBandOverride:
+          oneOf:
+            - { $ref: '#/components/schemas/PrimaryGradeBand' }
             - { type: 'null' }
         overrideReason: { type: [string, 'null'], maxLength: 240 }
         hapticsEnabled: { type: boolean }

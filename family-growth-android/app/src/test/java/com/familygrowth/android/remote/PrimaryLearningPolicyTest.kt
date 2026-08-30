@@ -1,5 +1,6 @@
 package com.familygrowth.android.remote
 
+import com.familygrowth.android.core.PrimaryGradeBand
 import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -9,15 +10,15 @@ class PrimaryLearningPolicyTest {
     private val today = LocalDate.of(2026, 8, 29)
 
     @Test fun `age bands are lower through eight and upper from nine`() {
-        assertEquals(PrimaryLearningBand.LOWER_PRIMARY, PrimaryLearningPolicy.bandFor("2020-08-29", today))
-        assertEquals(PrimaryLearningBand.LOWER_PRIMARY, PrimaryLearningPolicy.bandFor("2018-08-29", today))
-        assertEquals(PrimaryLearningBand.UPPER_PRIMARY, PrimaryLearningPolicy.bandFor("2017-08-29", today))
-        assertEquals(PrimaryLearningBand.UPPER_PRIMARY, PrimaryLearningPolicy.bandFor("2015-08-29", today))
+        assertEquals(PrimaryGradeBand.LOWER_PRIMARY, PrimaryLearningPolicy.bandFor("2020-08-29", today))
+        assertEquals(PrimaryGradeBand.LOWER_PRIMARY, PrimaryLearningPolicy.bandFor("2018-08-29", today))
+        assertEquals(PrimaryGradeBand.UPPER_PRIMARY, PrimaryLearningPolicy.bandFor("2017-08-29", today))
+        assertEquals(PrimaryGradeBand.UPPER_PRIMARY, PrimaryLearningPolicy.bandFor("2015-08-29", today))
     }
 
     @Test fun `invalid date fails safe to lower density view`() {
-        assertEquals(PrimaryLearningBand.LOWER_PRIMARY, PrimaryLearningPolicy.bandFor("not-a-date", today))
-        assertEquals(PrimaryLearningBand.LOWER_PRIMARY, PrimaryLearningPolicy.bandFor("2030-01-01", today))
+        assertEquals(PrimaryGradeBand.LOWER_PRIMARY, PrimaryLearningPolicy.bandFor("not-a-date", today))
+        assertEquals(PrimaryGradeBand.LOWER_PRIMARY, PrimaryLearningPolicy.bandFor("2030-01-01", today))
     }
 
     @Test fun `facts come from assignment evidence and correction state`() {

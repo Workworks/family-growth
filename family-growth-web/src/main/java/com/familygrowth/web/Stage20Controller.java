@@ -7,6 +7,7 @@ import com.familygrowth.domain.Stage20Models.DocumentarySource;
 import com.familygrowth.domain.Stage20Models.ExperienceAudit;
 import com.familygrowth.domain.Stage20Models.ExperienceProfile;
 import com.familygrowth.domain.Stage20Models.SchoolStage;
+import com.familygrowth.domain.Stage20Models.PrimaryGradeBand;
 import com.familygrowth.domain.Stage3Models;
 import com.familygrowth.domain.Stage3Models.Actor;
 import jakarta.validation.Valid;
@@ -59,7 +60,7 @@ class Stage20Controller {
         @Valid @RequestBody ExperienceRequest request
     ) {
         return ApiResponse.ok(service.updateExperience(actor, familyId, childId, request.birthDate(),
-            request.stageOverride(), request.overrideReason(), request.hapticsEnabled(), request.expectedVersion(),
+            request.stageOverride(), request.primaryBandOverride(), request.overrideReason(), request.hapticsEnabled(), request.expectedVersion(),
             request.auditReason()));
     }
 
@@ -127,6 +128,7 @@ class Stage20Controller {
     record ExperienceRequest(
         @NotNull @PastOrPresent LocalDate birthDate,
         SchoolStage stageOverride,
+        PrimaryGradeBand primaryBandOverride,
         @Size(max = 240) String overrideReason,
         @NotNull Boolean hapticsEnabled,
         @Min(0) long expectedVersion,

@@ -297,6 +297,9 @@ fun ChildExperienceCard(viewModel: FamilyAppViewModel, edit: () -> Unit) {
             DataPill("当前页面", experience.effectiveStage.displayName(), GrowthColors.Emerald, Modifier.weight(1f))
             DataPill("系统建议", experience.recommendedStage.displayName(), GrowthColors.Amber, Modifier.weight(1f))
         }
+        if (experience.effectiveStage == SchoolStage.PRIMARY && experience.effectivePrimaryBand != null) {
+            DataPill("小学分段", experience.effectivePrimaryBand.label, StageColors.PrimaryBlue, Modifier.fillMaxWidth())
+        }
         Text("出生日期 ${experience.birthDate} · ${if (experience.hapticsEnabled) "适龄触觉开启" else "适龄触觉关闭"}")
         if (experience.stageOverride != null) Text("家长覆盖：${experience.overrideReason}", color = MaterialTheme.colorScheme.onSurfaceVariant)
         Text("切换学段不会删除既有任务、奖励或学习记录。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -308,6 +311,7 @@ fun ChildExperienceDialog(viewModel: FamilyAppViewModel, dismiss: () -> Unit) {
     val current = viewModel.state.experience
     var birthDate by remember { mutableStateOf(current.birthDate) }
     var override by remember { mutableStateOf(current.stageOverride) }
+    var primaryBand by remember { mutableStateOf(current.primaryBandOverride) }
     var reason by remember { mutableStateOf(current.overrideReason) }
     var haptics by remember { mutableStateOf(current.hapticsEnabled) }
     AlertDialog(
@@ -325,8 +329,23 @@ fun ChildExperienceDialog(viewModel: FamilyAppViewModel, dismiss: () -> Unit) {
                     SchoolStage.SENIOR_HIGH to "高中",
                 ).forEach { (stage, label) ->
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                        RadioButton(selected = override == stage, onClick = { override = stage })
+                        RadioButton(selected = override == stage, onClick = { override = stage; if (stage != SchoolStage.PRIMARY) primaryBand = null })
                         Text(label)
+                    }
+                }
+                val recommended = runCatching { ChildExperiencePolicy.recommendedStage(java.time.LocalDate.parse(birthDate)) }.getOrNull()
+                val effective = override ?: recommended
+                if (effective == SchoolStage.PRIMARY) {
+                    Text("小学页面分段", style = MaterialTheme.typography.titleSmall)
+                    listOf(
+                        null to "按年龄建议",
+                        PrimaryGradeBand.LOWER_PRIMARY to "一至三年级",
+                        PrimaryGradeBand.UPPER_PRIMARY to "四至六年级",
+                    ).forEach { (band, label) ->
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(selected = primaryBand == band, onClick = { primaryBand = band })
+                            Text(label)
+                        }
                     }
                 }
                 if (override != null) LabeledField(reason, { reason = it.take(240) }, "覆盖原因")
@@ -337,7 +356,7 @@ fun ChildExperienceDialog(viewModel: FamilyAppViewModel, dismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            Button(onClick = { viewModel.updateExperience(birthDate, override, reason, haptics); dismiss() }, enabled = override == null || reason.isNotBlank()) { Text("保存阶段") }
+            Button(onClick = { viewModel.updateExperience(birthDate, override, primaryBand, reason, haptics); dismiss() }, enabled = override == null || reason.isNotBlank()) { Text("保存阶段") }
         },
         dismissButton = { TextButton(onClick = dismiss) { Text("取消") } },
     )

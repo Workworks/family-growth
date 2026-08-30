@@ -44,7 +44,7 @@ class ChildExperiencePolicyTest {
     @Test
     fun parentOverrideAndReducedMotionRemainSafe() {
         val settings = ChildExperiencePolicy.localSettings(
-            LocalDate.of(2020, 8, 26), SchoolStage.JUNIOR_MIDDLE, "按实际入学阶段", true,
+            LocalDate.of(2020, 8, 26), SchoolStage.JUNIOR_MIDDLE, null, "按实际入学阶段", true,
             LocalDate.of(2026, 8, 26),
         )
         assertEquals(SchoolStage.PRIMARY, settings.recommendedStage)

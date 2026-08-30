@@ -11,6 +11,10 @@ enum class TaskStatus { TODO, SUBMITTED, APPROVED }
 enum class TaskSource { FAMILY, LEARNING_VIDEO }
 enum class WithdrawalStatus { PENDING, APPROVED }
 enum class SchoolStage { PARENT_ONLY, KINDERGARTEN, PRIMARY, JUNIOR_MIDDLE, SENIOR_HIGH }
+enum class PrimaryGradeBand(val label: String, val guide: String) {
+    LOWER_PRIMARY("低年级", "读懂 · 试一试 · 说发现"),
+    UPPER_PRIMARY("高年级", "先猜 · 验证 · 解释"),
+}
 enum class ExperienceSource { LOCAL, SERVER }
 
 data class ChildFeedbackProfile(
@@ -26,6 +30,9 @@ data class ChildExperienceSettings(
     val recommendedStage: SchoolStage = SchoolStage.KINDERGARTEN,
     val stageOverride: SchoolStage? = null,
     val effectiveStage: SchoolStage = SchoolStage.KINDERGARTEN,
+    val recommendedPrimaryBand: PrimaryGradeBand? = null,
+    val primaryBandOverride: PrimaryGradeBand? = null,
+    val effectivePrimaryBand: PrimaryGradeBand? = null,
     val overrideReason: String = "",
     val hapticsEnabled: Boolean = true,
     val version: Long = 0,
@@ -69,6 +76,7 @@ object ChildExperiencePolicy {
     fun localSettings(
         birthDate: LocalDate,
         override: SchoolStage?,
+        primaryBandOverride: PrimaryGradeBand? = null,
         overrideReason: String,
         hapticsEnabled: Boolean,
         today: LocalDate = LocalDate.now(),
@@ -77,11 +85,24 @@ object ChildExperiencePolicy {
         require(override != SchoolStage.PARENT_ONLY) { "家长记录模式不能作为学段覆盖" }
         require(override == null || overrideReason.isNotBlank()) { "覆盖学段时需要填写原因" }
         val recommended = recommendedStage(birthDate, today)
+        val effective = override ?: recommended
+        require(primaryBandOverride == null || effective == SchoolStage.PRIMARY) { "小学分段只能用于小学阶段" }
+        val recommendedBand = if (effective == SchoolStage.PRIMARY) primaryBandFor(birthDate, today) else null
         return ChildExperienceSettings(
             birthDate = birthDate.toString(), recommendedStage = recommended, stageOverride = override,
-            effectiveStage = override ?: recommended, overrideReason = overrideReason.trim(),
+            effectiveStage = effective, recommendedPrimaryBand = recommendedBand,
+            primaryBandOverride = primaryBandOverride,
+            effectivePrimaryBand = if (effective == SchoolStage.PRIMARY) primaryBandOverride ?: recommendedBand else null,
+            overrideReason = overrideReason.trim(),
             hapticsEnabled = hapticsEnabled, version = version, source = ExperienceSource.LOCAL,
         )
+    }
+
+    fun primaryBandFor(birthDate: LocalDate, today: LocalDate = LocalDate.now()): PrimaryGradeBand {
+        require(!birthDate.isAfter(today)) { "出生日期不能晚于今天" }
+        return if (java.time.Period.between(birthDate, today).years <= 8) {
+            PrimaryGradeBand.LOWER_PRIMARY
+        } else PrimaryGradeBand.UPPER_PRIMARY
     }
 }
 
@@ -134,8 +155,15 @@ data class LocalLearningProgress(
     val completed: Boolean = false,
 )
 
+data class LearningRewardPolicy(
+    val money: BigDecimal = BigDecimal.ZERO.setScale(2),
+    val coin: Int = 2,
+    val xp: Int = 5,
+)
+
 data class LearningLesson(
     val id: String,
+    val schoolStage: SchoolStage,
     val title: String,
     val prompt: String,
     val resourceName: String,
@@ -145,10 +173,21 @@ data class LearningLesson(
 
 object LearningCatalog {
     val lessons = listOf(
-        LearningLesson("color-garden", "认识三种颜色", "跟着颜色慢慢看", "lesson_color_garden", 18, "●"),
-        LearningLesson("count-to-five", "一起数到五", "看看圆点一个个出现", "lesson_count_to_five", 18, "1·2·3"),
-        LearningLesson("shape-home", "形状找到家", "看看圆形、方形和三角形", "lesson_shape_home", 18, "△○□"),
+        LearningLesson("color-garden", SchoolStage.KINDERGARTEN, "认识三种颜色", "跟着颜色慢慢看", "lesson_color_garden", 18, "●"),
+        LearningLesson("count-to-five", SchoolStage.KINDERGARTEN, "一起数到五", "看看圆点一个个出现", "lesson_count_to_five", 18, "1·2·3"),
+        LearningLesson("shape-home", SchoolStage.KINDERGARTEN, "形状找到家", "看看圆形、方形和三角形", "lesson_shape_home", 18, "△○□"),
+        LearningLesson("primary-color-observe", SchoolStage.PRIMARY, "颜色观察笔记", "看完说出颜色出现的顺序", "lesson_color_garden", 18, "色"),
+        LearningLesson("primary-number-pattern", SchoolStage.PRIMARY, "数字规律小实验", "暂停一次，猜猜下一个数量", "lesson_count_to_five", 18, "1→5"),
+        LearningLesson("primary-shape-explain", SchoolStage.PRIMARY, "用一句话说形状", "看完解释一种形状的特点", "lesson_shape_home", 18, "△○□"),
+        LearningLesson("junior-visual-sequence", SchoolStage.JUNIOR_MIDDLE, "视觉序列与表达", "记录画面顺序，并用三句话复述", "lesson_color_garden", 18, "序列"),
+        LearningLesson("junior-discrete-model", SchoolStage.JUNIOR_MIDDLE, "离散数量表示", "比较画面中的数量和符号表达", "lesson_count_to_five", 18, "n"),
+        LearningLesson("junior-geometry-feature", SchoolStage.JUNIOR_MIDDLE, "几何特征观察", "找出边、角和曲线的区别", "lesson_shape_home", 18, "∠"),
+        LearningLesson("senior-visual-communication", SchoolStage.SENIOR_HIGH, "视觉信息如何传达", "分析颜色变化如何帮助读者理解", "lesson_color_garden", 18, "信息"),
+        LearningLesson("senior-sequence-model", SchoolStage.SENIOR_HIGH, "序列模型入门", "把画面数量写成一个简单序列", "lesson_count_to_five", 18, "aₙ"),
+        LearningLesson("senior-abstraction", SchoolStage.SENIOR_HIGH, "从图形到抽象", "说明图形特征如何被抽象为规则", "lesson_shape_home", 18, "模型"),
     )
+
+    fun forStage(stage: SchoolStage): List<LearningLesson> = lessons.filter { it.schoolStage == stage }
 
     fun byId(id: String): LearningLesson =
         lessons.singleOrNull { it.id == id } ?: throw FamilyRuleException("教学视频不存在")
@@ -189,6 +228,7 @@ data class FamilyLocalState(
     val rewards: List<LocalRewardItem> = emptyList(),
     val rewardInterestIds: List<String> = emptyList(),
     val learningProgress: List<LocalLearningProgress> = emptyList(),
+    val learningRewardPolicy: LearningRewardPolicy = LearningRewardPolicy(),
     val savings: List<LocalSavingGoal> = emptyList(),
     val wishes: List<LocalWish> = emptyList(),
     val fund: LocalFundPosition = LocalFundPosition(),

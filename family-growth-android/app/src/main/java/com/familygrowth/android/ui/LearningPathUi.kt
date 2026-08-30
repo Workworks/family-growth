@@ -27,7 +27,7 @@ import com.familygrowth.android.R
 import com.familygrowth.android.core.FamilyAppViewModel
 import com.familygrowth.android.core.SchoolStage
 import com.familygrowth.android.remote.KindergartenActivityPolicy
-import com.familygrowth.android.remote.PrimaryLearningBand
+import com.familygrowth.android.core.PrimaryGradeBand
 import com.familygrowth.android.remote.PrimaryLearningPolicy
 import com.familygrowth.android.remote.RemoteLearningActivity
 import com.familygrowth.android.remote.RemoteLearningAssignment
@@ -139,8 +139,8 @@ private fun PrimaryLearningPath(
     active: RemoteLearningActivity?,
     playVideo: (RemoteLearningActivity) -> Unit,
 ) {
-    val band = remember(viewModel.state.experience.birthDate) {
-        PrimaryLearningPolicy.bandFor(viewModel.state.experience.birthDate)
+    val band = remember(viewModel.state.experience.effectivePrimaryBand, viewModel.state.experience.birthDate) {
+        PrimaryLearningPolicy.bandFor(viewModel.state.experience.effectivePrimaryBand, viewModel.state.experience.birthDate)
     }
     val facts = remember(assignment) { PrimaryLearningPolicy.facts(assignment) }
     var needsHelp by remember(assignment.id, active?.id) { mutableStateOf(false) }
@@ -162,7 +162,7 @@ private fun PrimaryLearningPath(
                     }
                     LearningStatus(assignment.status)
                 }
-                if (band == PrimaryLearningBand.LOWER_PRIMARY) {
+                if (band == PrimaryGradeBand.LOWER_PRIMARY) {
                     PrimaryLowerSteps(assignment, active)
                 } else {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.spacedBy(9.dp)) {
@@ -178,7 +178,7 @@ private fun PrimaryLearningPath(
                     "COMPLETED" -> GentleNotice("这次探索完成了。记录的是你做过的步骤，不是和别人比较。")
                     else -> active?.let { activity ->
                         Column(verticalArrangement=Arrangement.spacedBy(11.dp)) {
-                            Text(if(band==PrimaryLearningBand.LOWER_PRIMARY) "这页只做这一项" else "当前探索",
+                            Text(if(band==PrimaryGradeBand.LOWER_PRIMARY) "这页只做这一项" else "当前探索",
                                 style=MaterialTheme.typography.labelLarge, color=PrimaryNotebookColors.Note)
                             Text(activity.title, style=MaterialTheme.typography.titleLarge, color=PrimaryNotebookColors.Ink,
                                 fontWeight=FontWeight.Bold)
@@ -206,7 +206,7 @@ private fun PrimaryLearningPath(
                                     onClick={ viewModel.attemptLearningActivity(assignment.id,activity.id,"我完成了这一步") },
                                     modifier=Modifier.fillMaxWidth().heightIn(min=56.dp),
                                     colors=ButtonDefaults.buttonColors(containerColor=PrimaryNotebookColors.Lake),
-                                ) { Text(if(band==PrimaryLearningBand.LOWER_PRIMARY) "我试过了" else "记录这次尝试") }
+                                ) { Text(if(band==PrimaryGradeBand.LOWER_PRIMARY) "我试过了" else "记录这次尝试") }
                             }
                             if (activity.checkedCorrect == false) {
                                 GentleNotice("这次还没对上。先找一找哪里不同，再试一次。${activity.hint}")

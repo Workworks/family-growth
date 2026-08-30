@@ -158,3 +158,6 @@
 | 56 | 22 | 完成内容、Android 与 H2 联合门禁 | Android debug/release 各 43 项、两变体 lint/assemble 通过；Maven H2 全量 22 个领域、2 个基础设施和 24 个 Boot 测试通过，6 个 PostgreSQL 条件测试按预期跳过；目标平板未连接，Stage 22 转为 BLOCKED | Stage 22 report/evidence、TODO/current/BLOCKERS |
 | 57 | 23 | 用户要求继续下一步并启动小学深度 | 登记 REQ-044/P1；在代码前固化低/高年级、年龄非诊断、真实证据、非完成型求助、两遍探索夹页设计和 WP/V/AC；同步新 Stage 报告、路线图、索引、current、TODO 与 BLOCKERS | Stage 23 report、需求账本 |
 | 58 | 23 | 完成 WP23-2 Android 可离线首切 | 小学动态课程从初高中通用路径分离；低年级采用单一当前夹页和三步支架，高年级显示从 Assignment/Activity 推导的要做/在做/再练事实；“我没看懂”只展开帮助，不调用 Attempt。Android debug/release 各 47 项、lint/assemble 通过 | `PrimaryLearningPolicy`、`LearningPathUi`、JVM tests、Stage 23 evidence |
+| 59 | 23 | 用户要求继续实施并发布，随后补充自主学习/奖励 | 登记 REQ-045/046；发布范围先完成服务端小学分段与 Android 自主课程/本机固定奖励纵切，生产自动选课和服务端奖励账本明确保留为下一 P0，不以本机能力冒充完成 | 需求账本、Stage 23 Spec/TODO/current |
+| 60 | 23 | 完成 V13 小学分段事实与 Android 纵切 | V13 保存小学分段覆盖和审计；服务端权限/版本/非法组合/历史 Attempt 保留通过。Android 家长可配小学分段和固定学习奖励，四学段各投影 3 个适龄表达课程，90% 播放只生成一次待审核任务 | Stage20 domain/application/JDBC/API、Android core/remote/UI/tests |
+| 61 | 23 | 完成发布前离线门禁 | Maven H2 全量通过；PostgreSQL 16.15 上 13 次迁移、Hibernate validate 与 Stage20 API 共 3 项零失败；Android debug/release 各 48 项、lint/assemble 通过。目标平板和服务端自动奖励保持未完成 | `evidence/stage-23/acceptance.json`、本轮验证输出 |

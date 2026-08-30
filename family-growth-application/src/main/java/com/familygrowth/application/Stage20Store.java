@@ -4,6 +4,7 @@ import com.familygrowth.domain.Stage20Models.DocumentarySource;
 import com.familygrowth.domain.Stage20Models.DocumentaryStatus;
 import com.familygrowth.domain.Stage20Models.ExperienceAudit;
 import com.familygrowth.domain.Stage20Models.SchoolStage;
+import com.familygrowth.domain.Stage20Models.PrimaryGradeBand;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -14,6 +15,7 @@ public interface Stage20Store {
     record StoredExperience(
         LocalDate birthDate,
         SchoolStage stageOverride,
+        PrimaryGradeBand primaryBandOverride,
         String overrideReason,
         boolean hapticsEnabled,
         long version,
@@ -24,6 +26,7 @@ public interface Stage20Store {
     record ExperienceUpdate(
         LocalDate birthDate,
         SchoolStage stageOverride,
+        PrimaryGradeBand primaryBandOverride,
         String overrideReason,
         boolean hapticsEnabled,
         long expectedVersion,

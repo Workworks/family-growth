@@ -229,7 +229,7 @@ private fun ChildGrowthScreen(viewModel: FamilyAppViewModel) {
         }
         if (area == ChildGrowthArea.LESSONS) {
             item { SectionTitle("今天看一个就好", "视频不会自动播放，看完记为待家长确认的任务") }
-            items(LearningCatalog.lessons, key = { it.id }) { lesson ->
+            items(LearningCatalog.forStage(state.experience.effectiveStage), key = { it.id }) { lesson ->
                 val progress = state.learningProgress.singleOrNull { it.videoId == lesson.id }
                 ChildLessonCard(lesson, progress) { feedback { selectedLesson = lesson } }
             }
@@ -365,7 +365,7 @@ private fun LearningVideoDialog(lesson: LearningLesson, progress: LocalLearningP
                     factory = { videoContext ->
                         VideoView(videoContext).also { view ->
                             videoView = view
-                            val uri = Uri.parse("android.resource://${context.packageName}/${learningVideoResource(lesson.id)}")
+                            val uri = Uri.parse("android.resource://${context.packageName}/${learningVideoResource(lesson.resourceName)}")
                             view.setVideoURI(uri)
                             view.setOnCompletionListener { playing = false }
                             view.setOnErrorListener { _, _, _ -> playing = false; videoError = true; true }
@@ -403,10 +403,10 @@ private fun LearningVideoDialog(lesson: LearningLesson, progress: LocalLearningP
     )
 }
 
-private fun learningVideoResource(id: String): Int = when (id) {
-    "color-garden" -> R.raw.lesson_color_garden
-    "count-to-five" -> R.raw.lesson_count_to_five
-    "shape-home" -> R.raw.lesson_shape_home
+private fun learningVideoResource(resourceName: String): Int = when (resourceName) {
+    "lesson_color_garden" -> R.raw.lesson_color_garden
+    "lesson_count_to_five" -> R.raw.lesson_count_to_five
+    "lesson_shape_home" -> R.raw.lesson_shape_home
     else -> throw FamilyRuleException("教学视频资源不存在")
 }
 
@@ -464,6 +464,7 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
     var showUsage by remember { mutableStateOf(false) }
     var showConnection by remember { mutableStateOf(false) }
     var showExperience by remember { mutableStateOf(false) }
+    var showLearningReward by remember { mutableStateOf(false) }
     var showEducationSource by remember { mutableStateOf(false) }
     val state = viewModel.state
     val approved = state.tasks.count { it.status == TaskStatus.APPROVED }
@@ -473,6 +474,7 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
         }
         item { ServiceConnectionCard(viewModel) { showConnection = true } }
         item { ChildExperienceCard(viewModel) { showExperience = true } }
+        item { LearningRewardPolicyCard(state.learningRewardPolicy) { showLearningReward = true } }
         item { ParentTeachingStudio(viewModel) }
         item { EducationResourceShelfCard(viewModel) { showEducationSource = true } }
         item {
@@ -499,7 +501,51 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
     if (showUsage) UsageDialog(state.usage, { showUsage = false }) { daily, session -> viewModel.updateUsage(daily, session); showUsage = false }
     if (showConnection) ServiceConnectionDialog(viewModel) { showConnection = false }
     if (showExperience) ChildExperienceDialog(viewModel) { showExperience = false }
+    if (showLearningReward) LearningRewardPolicyDialog(state.learningRewardPolicy, { showLearningReward = false }) { money, coin, xp ->
+        viewModel.updateLearningReward(money, coin, xp)
+        showLearningReward = false
+    }
     if (showEducationSource) EducationResourceSourceDialog(viewModel) { showEducationSource = false }
+}
+
+@Composable
+private fun LearningRewardPolicyCard(policy: LearningRewardPolicy, edit: () -> Unit) {
+    GrowthCard {
+        SectionTitle("自主学习预设奖励", "认真观看达到 90% 后生成待家长审核任务") {
+            TextButton(onClick = edit) { Text("配置") }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            DataPill("Money", "¥${policy.money}", GrowthColors.Emerald, Modifier.weight(1f))
+            DataPill("Coin", policy.coin.toString(), GrowthColors.Amber, Modifier.weight(1f))
+            DataPill("XP", policy.xp.toString(), Color(0xFF55A6C8), Modifier.weight(1f))
+        }
+        Text("奖励在课程达标时固化到任务，家长审核后才写入本机账本；已生成任务不被后续改值。", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun LearningRewardPolicyDialog(policy: LearningRewardPolicy, dismiss: () -> Unit, save: (BigDecimal, Int, Int) -> Unit) {
+    var money by remember { mutableStateOf(policy.money.toPlainString()) }
+    var coin by remember { mutableStateOf(policy.coin.toString()) }
+    var xp by remember { mutableStateOf(policy.xp.toString()) }
+    val parsedMoney = money.toBigDecimalOrNull()?.setScale(2, RoundingMode.HALF_UP)
+    val parsedCoin = coin.toIntOrNull()
+    val parsedXp = xp.toIntOrNull()
+    val valid = parsedMoney != null && parsedMoney.signum() >= 0 && parsedCoin != null && parsedCoin in 0..10_000 && parsedXp != null && parsedXp in 0..100_000
+    AlertDialog(
+        onDismissRequest = dismiss,
+        title = { Text("配置自主学习奖励") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("固定、透明的奖励会在真实观看达到 90% 后形成待审核任务，不使用随机奖励。")
+                OutlinedTextField(money, { money = it.take(20) }, label = { Text("Money") }, singleLine = true)
+                OutlinedTextField(coin, { coin = it.filter(Char::isDigit).take(5) }, label = { Text("Coin") }, singleLine = true)
+                OutlinedTextField(xp, { xp = it.filter(Char::isDigit).take(6) }, label = { Text("XP") }, singleLine = true)
+            }
+        },
+        confirmButton = { Button(onClick = { save(parsedMoney!!, parsedCoin!!, parsedXp!!) }, enabled = valid) { Text("保存奖励") } },
+        dismissButton = { TextButton(onClick = dismiss) { Text("取消") } },
+    )
 }
 
 @Composable

@@ -8,6 +8,7 @@ import com.familygrowth.domain.Stage20Models.DocumentaryStatus;
 import com.familygrowth.domain.Stage20Models.ExperienceAudit;
 import com.familygrowth.domain.Stage20Models.ExperienceProfile;
 import com.familygrowth.domain.Stage20Models.SchoolStage;
+import com.familygrowth.domain.Stage20Models.PrimaryGradeBand;
 import com.familygrowth.domain.Stage3Models.Actor;
 import com.familygrowth.domain.Stage3Models.ActorRole;
 import java.nio.charset.StandardCharsets;
@@ -46,6 +47,7 @@ public class Stage20Service {
         UUID childId,
         LocalDate birthDate,
         SchoolStage stageOverride,
+        PrimaryGradeBand primaryBandOverride,
         String overrideReason,
         boolean hapticsEnabled,
         long expectedVersion,
@@ -56,8 +58,13 @@ public class Stage20Service {
         if (birthDate.isAfter(LocalDate.now(clock))) {
             throw new IllegalArgumentException("birthDate cannot be in the future");
         }
+        SchoolStage recommended = SchoolStage.recommended(birthDate, LocalDate.now(clock));
+        SchoolStage effective = stageOverride == null ? recommended : stageOverride;
+        if (primaryBandOverride != null && effective != SchoolStage.PRIMARY) {
+            throw new IllegalArgumentException("primaryBandOverride requires PRIMARY effective stage");
+        }
         var stored = store.updateExperience(familyId, childId, actor.actorId(),
-            new Stage20Store.ExperienceUpdate(birthDate, stageOverride, normalize(overrideReason),
+            new Stage20Store.ExperienceUpdate(birthDate, stageOverride, primaryBandOverride, normalize(overrideReason),
                 hapticsEnabled, expectedVersion, requireText(auditReason, "auditReason")), clock.instant());
         return profile(familyId, childId, stored);
     }
@@ -153,8 +160,13 @@ public class Stage20Service {
         LocalDate today = LocalDate.now(clock);
         SchoolStage recommended = SchoolStage.recommended(stored.birthDate(), today);
         SchoolStage effective = stored.stageOverride() == null ? recommended : stored.stageOverride();
+        PrimaryGradeBand recommendedBand = effective == SchoolStage.PRIMARY
+            ? PrimaryGradeBand.recommended(stored.birthDate(), today) : null;
+        PrimaryGradeBand effectiveBand = effective == SchoolStage.PRIMARY
+            ? (stored.primaryBandOverride() == null ? recommendedBand : stored.primaryBandOverride()) : null;
         return new ExperienceProfile(familyId, childId, stored.birthDate(),
             Period.between(stored.birthDate(), today).getYears(), recommended, stored.stageOverride(), effective,
+            recommendedBand, effective == SchoolStage.PRIMARY ? stored.primaryBandOverride() : null, effectiveBand,
             stored.overrideReason(), stored.hapticsEnabled(), Stage20Models.feedbackFor(effective, stored.hapticsEnabled()),
             Stage20Models.capabilitiesFor(effective), stored.version(), stored.updatedAt());
     }

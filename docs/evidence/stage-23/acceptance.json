@@ -1,64 +1,85 @@
 {
   "stage": 23,
-  "capturedAt": "2026-08-29",
+  "capturedAt": "2026-08-30",
   "status": "IN_PROGRESS",
-  "scope": "WP23-1 specification and WP23-2 Android lower/upper primary exploration projection",
+  "scope": "WP23-3 server primary grade band and WP23-8 Android stage-aware self-learning/reward offline slice; v0.3.6 release pending",
   "results": [
     {
-      "id": "V23-01",
+      "id": "V23-01/V23-02",
       "status": "PASS_OFFLINE",
-      "command": ".\\gradlew.bat testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease --no-daemon",
+      "command": ".\\gradlew.bat testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease",
       "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "PrimaryLearningPolicy maps ages 6-8 to lower primary and 9-11 to upper primary; invalid/future birth dates fail safe to the lower-density view"
+      "result": "Debug and release each passed 48 JVM tests. Server effective primary band wins over the age fallback; assignment/activity facts and the non-completing help exit remain intact."
     },
     {
-      "id": "V23-02",
+      "id": "V23-03/V23-09",
       "status": "PASS_OFFLINE",
-      "command": ".\\gradlew.bat testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease --no-daemon",
+      "command": ".\\gradlew.bat --console=plain testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease",
       "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "Debug and release each passed 47 JVM tests. Lower primary renders one current notebook page; upper primary facts derive only from assignment evidence. Help expansion does not call an attempt or claim completion"
+      "result": "Both variants, lint and APK assembly passed. Parent can set the primary band and a fixed local learning reward; four stages each project three age-worded original bundled activities. Verified 90 percent playback creates one pending review task and no ledger entry before review."
     },
     {
-      "id": "V23-03",
-      "status": "PASS_OFFLINE",
-      "command": ".\\gradlew.bat testDebugUnitTest testReleaseUnitTest lintDebug lintRelease assembleDebug assembleRelease --no-daemon",
-      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
-      "shellType": "PowerShell",
-      "exitCode": 0,
-      "passed": true,
-      "result": "BUILD SUCCESSFUL; debug/release unit tests, lint and APK assembly passed with no new primary navigation, ranking, countdown or reward surface"
-    },
-    {
-      "id": "V23-04",
-      "status": "NOT_RUN_PLANNED",
-      "command": "NOT_RUN: server grade-band, help/reason and spaced-repractice APIs belong to WP23-3/5",
+      "id": "V23-04-H2",
+      "status": "PASS",
+      "command": ".\\mvnw.cmd test",
       "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
       "shellType": "PowerShell",
-      "exitCode": null,
-      "passed": false,
-      "result": "No database or API change was made in WP23-1/2; H2/PostgreSQL evidence is not claimed"
+      "exitCode": 0,
+      "passed": true,
+      "result": "All H2 domain, infrastructure and Boot tests passed. Flyway V13, parent/child/cross-family permissions, optimistic conflict, invalid non-primary band, immutable audit and seeded historical Attempt preservation passed."
+    },
+    {
+      "id": "V23-04-POSTGRES",
+      "status": "PASS",
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am -Dtest=PostgresSchemaValidationTest,Stage20ApiTest -Dsurefire.failIfNoSpecifiedTests=false test",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "PostgreSQL 16.15 applied/validated 13 migrations and Hibernate ddl-auto=validate; 3 selected tests passed with zero skips. Existing course-version chain and ActivityAttempt survived grade-band switching. The disposable container was stopped and removed."
     },
     {
       "id": "V23-05",
       "status": "BLOCKED",
-      "command": "NOT_RUN: target tablet primary learning acceptance",
+      "command": "NOT_RUN: target tablet primary learning and in-app upgrade acceptance",
       "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
       "shellType": "PowerShell",
       "exitCode": null,
       "passed": false,
-      "result": "No target Android tablet was connected; rotation, TalkBack, large text, reduced motion and complete lower/upper primary flows were not executed"
+      "result": "No target Android tablet was connected; rotation, TalkBack, large text, reduced motion, physical playback and v0.3.5 to v0.3.6 data-preserving upgrade remain unverified."
+    },
+    {
+      "id": "V23-08",
+      "status": "PARTIAL",
+      "command": "Android JVM and two-variant gates above",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": false,
+      "result": "The Android local slice is verified. Server-side self-enrollment and fixed reward settlement with transactional Money/Coin ledger, replay and concurrency tests are not implemented and are not claimed."
+    },
+    {
+      "id": "V23-07",
+      "status": "NOT_RUN_PENDING_RELEASE",
+      "command": "Pending v0.3.6 tag workflow and public APK verification",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": null,
+      "passed": false,
+      "result": "Release verification will be filled only after commit, push, tag workflow and public asset download complete."
     }
   ],
   "remaining": [
-    "WP23-3 server grade-band facts and parent-protected audit",
-    "WP23-4 audited original subject activity pack",
+    "Server self-learning enrollment and transactional preset reward settlement",
+    "WP23-4 audited original primary subject activity pack",
     "WP23-5 persisted misconception, help and repractice evidence",
-    "WP23-6 primary report, PostgreSQL and target-tablet acceptance"
+    "WP23-6 primary report and target-tablet acceptance",
+    "V23-07 public v0.3.6 asset verification"
   ]
 }

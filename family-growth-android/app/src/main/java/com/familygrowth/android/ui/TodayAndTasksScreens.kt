@@ -284,7 +284,17 @@ private fun ChildTasksScreen(viewModel: FamilyAppViewModel) {
             }
         }
         if (selfLearning) {
-            OfficialSelfLearningScreen(viewModel.state.experience, viewModel.childEducationCatalog, viewModel::requestParentForResource)
+            Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                if (viewModel.learningAssignments.isNotEmpty()) {
+                    Column(Modifier.padding(horizontal = 24.dp)) {
+                        SectionTitle("适合当前阶段的家庭课程", "学段由家长配置；视频不会自动播放")
+                        ChildLearningPath(viewModel)
+                    }
+                }
+                Box(Modifier.weight(1f)) {
+                    OfficialSelfLearningScreen(viewModel.state.experience, viewModel.childEducationCatalog, viewModel::requestParentForResource)
+                }
+            }
             return@Column
         }
         LazyColumn(

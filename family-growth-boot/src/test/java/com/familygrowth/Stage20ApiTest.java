@@ -10,6 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.UUID;
+import java.time.Instant;
+import java.sql.Timestamp;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -40,11 +42,13 @@ class Stage20ApiTest {
         UUID child = child(parent, "小禾", "2022-08-26");
         String childToken = childToken(parent, child);
         String url = profileUrl(parent, child);
+        UUID existingAttempt = seedLearningAttempt(parent, child);
 
         mvc.perform(get(url).header("Authorization", bearer(parent.token)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.recommendedStage").value("KINDERGARTEN"))
             .andExpect(jsonPath("$.data.effectiveStage").value("KINDERGARTEN"))
+            .andExpect(jsonPath("$.data.effectivePrimaryBand").isEmpty())
             .andExpect(jsonPath("$.data.feedbackProfile.maxAnimationMs").value(320))
             .andExpect(jsonPath("$.data.version").value(0));
         mvc.perform(get(url).header("Authorization", bearer(childToken)))
@@ -54,7 +58,7 @@ class Stage20ApiTest {
         mvc.perform(get(url)).andExpect(status().isUnauthorized());
 
         String update = """
-            {"birthDate":"2017-08-26","stageOverride":"JUNIOR_MIDDLE",
+            {"birthDate":"2017-08-26","stageOverride":"PRIMARY","primaryBandOverride":"UPPER_PRIMARY",
              "overrideReason":"按实际入学阶段配置","hapticsEnabled":false,"expectedVersion":0,
              "auditReason":"家长确认本学期阶段"}
             """;
@@ -62,7 +66,10 @@ class Stage20ApiTest {
             .contentType(MediaType.APPLICATION_JSON).content(update))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.recommendedStage").value("PRIMARY"))
-            .andExpect(jsonPath("$.data.effectiveStage").value("JUNIOR_MIDDLE"))
+            .andExpect(jsonPath("$.data.effectiveStage").value("PRIMARY"))
+            .andExpect(jsonPath("$.data.recommendedPrimaryBand").value("UPPER_PRIMARY"))
+            .andExpect(jsonPath("$.data.primaryBandOverride").value("UPPER_PRIMARY"))
+            .andExpect(jsonPath("$.data.effectivePrimaryBand").value("UPPER_PRIMARY"))
             .andExpect(jsonPath("$.data.feedbackProfile.hapticsEnabled").value(false))
             .andExpect(jsonPath("$.data.version").value(1));
         mvc.perform(put(url).header("Authorization", bearer(childToken))
@@ -71,17 +78,32 @@ class Stage20ApiTest {
         mvc.perform(put(url).header("Authorization", bearer(parent.token))
             .contentType(MediaType.APPLICATION_JSON).content(update))
             .andExpect(status().isConflict());
+        String invalidParentOnly = """
+            {"birthDate":"2017-08-26","stageOverride":"PARENT_ONLY","primaryBandOverride":null,
+             "overrideReason":"非法覆盖","hapticsEnabled":false,"expectedVersion":1,
+             "auditReason":"非法家长模式"}
+            """;
         mvc.perform(put(url).header("Authorization", bearer(parent.token))
-            .contentType(MediaType.APPLICATION_JSON).content(update.replace("JUNIOR_MIDDLE", "PARENT_ONLY")))
+            .contentType(MediaType.APPLICATION_JSON).content(invalidParentOnly))
+            .andExpect(status().isBadRequest());
+        String invalidBand = """
+            {"birthDate":"2013-08-26","stageOverride":"JUNIOR_MIDDLE","primaryBandOverride":"LOWER_PRIMARY",
+             "overrideReason":"实际学段","hapticsEnabled":false,"expectedVersion":1,"auditReason":"非法小学分段"}
+            """;
+        mvc.perform(put(url).header("Authorization", bearer(parent.token))
+            .contentType(MediaType.APPLICATION_JSON).content(invalidBand))
             .andExpect(status().isBadRequest());
 
         mvc.perform(get(url + "/audit").header("Authorization", bearer(parent.token)))
             .andExpect(status().isOk()).andExpect(jsonPath("$.data.length()").value(1))
-            .andExpect(jsonPath("$.data[0].reason").value("家长确认本学期阶段"));
+            .andExpect(jsonPath("$.data[0].reason").value("家长确认本学期阶段"))
+            .andExpect(jsonPath("$.data[0].newPrimaryBandOverride").value("UPPER_PRIMARY"));
         mvc.perform(get(url + "/audit").header("Authorization", bearer(childToken)))
             .andExpect(status().isForbidden());
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM child_experience_audit WHERE child_id=?",
             Integer.class, child)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM activity_attempt WHERE id=?",
+            Integer.class, existingAttempt)).isEqualTo(1);
     }
 
     @Test
@@ -166,6 +188,27 @@ class Stage20ApiTest {
             .content("{\"childId\":\"" + child + "\"}"))
             .andExpect(status().isCreated()).andReturn();
         return text(result, "data", "token");
+    }
+
+    private UUID seedLearningAttempt(Session parent, UUID child) {
+        UUID parentId = jdbc.queryForObject("SELECT id FROM parent_profile WHERE family_id=?", UUID.class, parent.family);
+        UUID course = UUID.randomUUID(), version = UUID.randomUUID(), unit = UUID.randomUUID();
+        UUID lesson = UUID.randomUUID(), activity = UUID.randomUUID(), assignment = UUID.randomUUID(), attempt = UUID.randomUUID();
+        Instant now = Instant.parse("2026-08-30T00:00:00Z");
+        Timestamp timestamp = Timestamp.from(now);
+        jdbc.update("INSERT INTO teaching_course(id,family_id,school_stage,subject_code,title,created_by,idempotency_key,payload_hash,created_at) VALUES(?,?,?,?,?,?,?,?,?)",
+            course, parent.family, "PRIMARY", "SCIENCE", "既有课程", parentId, "history-course-" + course, "0".repeat(64), timestamp);
+        jdbc.update("INSERT INTO teaching_course_version(id,course_id,version_number,summary,rights_basis,status,created_by,published_by,published_at,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
+            version, course, 1, "历史版本", "家庭原创", "PUBLISHED", parentId, parentId, timestamp, timestamp);
+        jdbc.update("INSERT INTO teaching_unit(id,course_version_id,title,display_order) VALUES(?,?,?,?)", unit, version, "单元", 0);
+        jdbc.update("INSERT INTO teaching_lesson(id,unit_id,title,summary,display_order) VALUES(?,?,?,?,?)", lesson, unit, "课节", "历史课节", 0);
+        jdbc.update("INSERT INTO learning_activity(id,lesson_id,activity_type,title,instruction,content_ref,expected_minutes,display_order) VALUES(?,?,?,?,?,?,?,?)",
+            activity, lesson, "OFFLINE_PRACTICE", "观察", "完成观察", "", 5, 0);
+        jdbc.update("INSERT INTO lesson_assignment(id,family_id,child_id,course_version_id,lesson_id,status,assigned_by,idempotency_key,version,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+            assignment, parent.family, child, version, lesson, "IN_PROGRESS", parentId, "history-assignment-" + assignment, 0, timestamp, timestamp);
+        jdbc.update("INSERT INTO activity_attempt(id,family_id,assignment_id,activity_id,actor_id,response_text,evidence_type,checked_correct,idempotency_key,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)",
+            attempt, parent.family, assignment, activity, child, "观察过了", "ATTEMPTED", null, "history-attempt-" + attempt, timestamp);
+        return attempt;
     }
 
     private static String profileUrl(Session parent, UUID child) {

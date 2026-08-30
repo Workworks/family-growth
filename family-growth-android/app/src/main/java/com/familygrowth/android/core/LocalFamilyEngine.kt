@@ -114,9 +114,9 @@ object LocalFamilyEngine {
                 id = taskId,
                 title = "看完：${lesson.title}",
                 minutes = 1,
-                moneyReward = BigDecimal.ZERO.setScale(2),
-                coinReward = 2,
-                xpReward = 5,
+                moneyReward = state.learningRewardPolicy.money,
+                coinReward = state.learningRewardPolicy.coin,
+                xpReward = state.learningRewardPolicy.xp,
                 status = TaskStatus.SUBMITTED,
                 source = TaskSource.LEARNING_VIDEO,
                 sourceVideoId = videoId,
@@ -127,6 +127,12 @@ object LocalFamilyEngine {
             else -> state.tasks
         }
         return state.copy(tasks = tasks, learningProgress = progress)
+    }
+
+    fun updateLearningRewardPolicy(state: FamilyLocalState, money: BigDecimal, coin: Int, xp: Int): FamilyLocalState {
+        requireNonNegative(money)
+        if (coin !in 0..10_000 || xp !in 0..100_000) throw FamilyRuleException("学习奖励超出允许范围")
+        return state.copy(learningRewardPolicy = LearningRewardPolicy(money.setScale(2, RoundingMode.HALF_UP), coin, xp))
     }
 
     fun addSavingGoal(state: FamilyLocalState, title: String, target: BigDecimal): FamilyLocalState {

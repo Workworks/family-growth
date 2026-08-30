@@ -7,6 +7,7 @@ import com.familygrowth.domain.Stage20Models.DocumentaryAccessMode;
 import com.familygrowth.domain.Stage20Models.DocumentarySource;
 import com.familygrowth.domain.Stage20Models.DocumentaryStatus;
 import com.familygrowth.domain.Stage20Models.SchoolStage;
+import com.familygrowth.domain.Stage20Models.PrimaryGradeBand;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -23,6 +24,16 @@ class Stage20ModelsTest {
         assertThat(SchoolStage.recommended(LocalDate.of(2014, 8, 26), TODAY)).isEqualTo(SchoolStage.JUNIOR_MIDDLE);
         assertThat(SchoolStage.recommended(LocalDate.of(2011, 8, 26), TODAY)).isEqualTo(SchoolStage.SENIOR_HIGH);
         assertThatThrownBy(() -> SchoolStage.recommended(TODAY.plusDays(1), TODAY))
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void recommendsPrimaryGradeBandAtNineYearBoundary() {
+        assertThat(PrimaryGradeBand.recommended(LocalDate.of(2018, 8, 26), TODAY))
+            .isEqualTo(PrimaryGradeBand.LOWER_PRIMARY);
+        assertThat(PrimaryGradeBand.recommended(LocalDate.of(2017, 8, 26), TODAY))
+            .isEqualTo(PrimaryGradeBand.UPPER_PRIMARY);
+        assertThatThrownBy(() -> PrimaryGradeBand.recommended(TODAY.plusDays(1), TODAY))
             .isInstanceOf(IllegalArgumentException.class);
     }
 

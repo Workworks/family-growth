@@ -8,6 +8,7 @@ import com.familygrowth.domain.Stage20Models.DocumentarySource;
 import com.familygrowth.domain.Stage20Models.DocumentaryStatus;
 import com.familygrowth.domain.Stage20Models.ExperienceAudit;
 import com.familygrowth.domain.Stage20Models.SchoolStage;
+import com.familygrowth.domain.Stage20Models.PrimaryGradeBand;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -30,7 +31,8 @@ class JdbcStage20Store implements Stage20Store {
     @Override
     public StoredExperience experience(UUID familyId, UUID childId, Instant now) {
         return jdbc.query("""
-            SELECT c.birth_date, p.stage_override, COALESCE(p.override_reason, '') AS override_reason,
+            SELECT c.birth_date, p.stage_override, p.primary_band_override,
+                   COALESCE(p.override_reason, '') AS override_reason,
                    COALESCE(p.haptics_enabled, TRUE) AS haptics_enabled,
                    COALESCE(p.version, 0) AS profile_version,
                    COALESCE(p.updated_at, c.created_at) AS updated_at
@@ -51,13 +53,13 @@ class JdbcStage20Store implements Stage20Store {
             .orElseThrow(FamilyGrowthService.NotFoundException::new);
 
         Optional<StoredExperience> existing = jdbc.query("""
-            SELECT c.birth_date, p.stage_override, p.override_reason, p.haptics_enabled,
+            SELECT c.birth_date, p.stage_override, p.primary_band_override, p.override_reason, p.haptics_enabled,
                    p.version AS profile_version, p.updated_at
             FROM child_experience_profile p
             JOIN child_profile c ON c.id=p.child_id AND c.family_id=p.family_id
             WHERE p.family_id=? AND p.child_id=? FOR UPDATE
             """, (rs, row) -> storedExperience(rs), familyId, childId).stream().findFirst();
-        StoredExperience old = existing.orElse(new StoredExperience(oldBirthDate, null, "", true, 0, now));
+        StoredExperience old = existing.orElse(new StoredExperience(oldBirthDate, null, null, "", true, 0, now));
         if (old.version() != update.expectedVersion()) {
             throw new Stage3Service.ConflictException("Experience profile version changed");
         }
@@ -68,27 +70,28 @@ class JdbcStage20Store implements Stage20Store {
         if (existing.isPresent()) {
             jdbc.update("""
                 UPDATE child_experience_profile
-                SET stage_override=?, override_reason=?, haptics_enabled=?, version=?, updated_by=?, updated_at=?
+                SET stage_override=?, primary_band_override=?, override_reason=?, haptics_enabled=?, version=?, updated_by=?, updated_at=?
                 WHERE family_id=? AND child_id=?
-                """, enumName(update.stageOverride()), update.overrideReason(), update.hapticsEnabled(), nextVersion,
+                """, enumName(update.stageOverride()), enumName(update.primaryBandOverride()), update.overrideReason(), update.hapticsEnabled(), nextVersion,
                 actorId, Timestamp.from(now), familyId, childId);
         } else {
             jdbc.update("""
                 INSERT INTO child_experience_profile
-                (child_id,family_id,stage_override,override_reason,haptics_enabled,version,updated_by,created_at,updated_at)
-                VALUES (?,?,?,?,?,?,?,?,?)
-                """, childId, familyId, enumName(update.stageOverride()), update.overrideReason(),
+                (child_id,family_id,stage_override,primary_band_override,override_reason,haptics_enabled,version,updated_by,created_at,updated_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?)
+                """, childId, familyId, enumName(update.stageOverride()), enumName(update.primaryBandOverride()), update.overrideReason(),
                 update.hapticsEnabled(), nextVersion, actorId, Timestamp.from(now), Timestamp.from(now));
         }
         jdbc.update("""
             INSERT INTO child_experience_audit
             (id,family_id,child_id,actor_id,old_birth_date,new_birth_date,old_stage_override,new_stage_override,
-             old_haptics_enabled,new_haptics_enabled,reason,created_at)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+             old_primary_band_override,new_primary_band_override,old_haptics_enabled,new_haptics_enabled,reason,created_at)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             """, UUID.randomUUID(), familyId, childId, actorId, oldBirthDate, update.birthDate(),
-            enumName(old.stageOverride()), enumName(update.stageOverride()), old.hapticsEnabled(),
+            enumName(old.stageOverride()), enumName(update.stageOverride()), enumName(old.primaryBandOverride()),
+            enumName(update.primaryBandOverride()), old.hapticsEnabled(),
             update.hapticsEnabled(), update.auditReason(), Timestamp.from(now));
-        return new StoredExperience(update.birthDate(), update.stageOverride(), update.overrideReason(),
+        return new StoredExperience(update.birthDate(), update.stageOverride(), update.primaryBandOverride(), update.overrideReason(),
             update.hapticsEnabled(), nextVersion, now);
     }
 
@@ -102,6 +105,7 @@ class JdbcStage20Store implements Stage20Store {
             rs.getObject("child_id", UUID.class), rs.getObject("actor_id", UUID.class),
             rs.getObject("old_birth_date", LocalDate.class), rs.getObject("new_birth_date", LocalDate.class),
             schoolStage(rs.getString("old_stage_override")), schoolStage(rs.getString("new_stage_override")),
+            primaryGradeBand(rs.getString("old_primary_band_override")), primaryGradeBand(rs.getString("new_primary_band_override")),
             rs.getBoolean("old_haptics_enabled"), rs.getBoolean("new_haptics_enabled"),
             rs.getString("reason"), rs.getTimestamp("created_at").toInstant()), familyId, childId, limit);
     }
@@ -184,6 +188,7 @@ class JdbcStage20Store implements Stage20Store {
     private static StoredExperience storedExperience(ResultSet rs) throws SQLException {
         String override = rs.getString("stage_override");
         return new StoredExperience(rs.getObject("birth_date", LocalDate.class), schoolStage(override),
+            primaryGradeBand(rs.getString("primary_band_override")),
             rs.getString("override_reason"), rs.getBoolean("haptics_enabled"), rs.getLong("profile_version"),
             rs.getTimestamp("updated_at").toInstant());
     }
@@ -202,6 +207,10 @@ class JdbcStage20Store implements Stage20Store {
 
     private static SchoolStage schoolStage(String value) {
         return value == null ? null : SchoolStage.valueOf(value);
+    }
+
+    private static PrimaryGradeBand primaryGradeBand(String value) {
+        return value == null ? null : PrimaryGradeBand.valueOf(value);
     }
 
     private static String enumName(Enum<?> value) {

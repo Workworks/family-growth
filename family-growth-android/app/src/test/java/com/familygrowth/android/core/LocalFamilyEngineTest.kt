@@ -118,4 +118,19 @@ class LocalFamilyEngineTest {
         assertEquals(5, approved.wallet.xp)
         assertEquals("TASK_REWARD", approved.ledger.single().type)
     }
+
+    @Test
+    fun stageCatalogAndParentRewardPolicyAreAppliedWhenCompletionIsCreated() {
+        assertEquals(3, LearningCatalog.forStage(SchoolStage.KINDERGARTEN).size)
+        assertEquals(3, LearningCatalog.forStage(SchoolStage.PRIMARY).size)
+        assertTrue(LearningCatalog.forStage(SchoolStage.PRIMARY).all { it.schoolStage == SchoolStage.PRIMARY })
+        val lesson = LearningCatalog.forStage(SchoolStage.PRIMARY).first()
+        var state = LocalFamilyEngine.updateLearningRewardPolicy(FamilyLocalState(), BigDecimal("1.50"), 7, 12)
+        repeat(17) { state = LocalFamilyEngine.recordLearningPlayback(state, lesson.id, 1) }
+        val task = state.tasks.single()
+        assertEquals(BigDecimal("1.50"), task.moneyReward)
+        assertEquals(7, task.coinReward)
+        assertEquals(12, task.xpReward)
+        assertTrue(state.ledger.isEmpty())
+    }
 }

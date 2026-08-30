@@ -34,6 +34,20 @@ public final class Stage20Models {
         }
     }
 
+    public enum PrimaryGradeBand {
+        LOWER_PRIMARY,
+        UPPER_PRIMARY;
+
+        public static PrimaryGradeBand recommended(LocalDate birthDate, LocalDate today) {
+            Objects.requireNonNull(birthDate);
+            Objects.requireNonNull(today);
+            if (birthDate.isAfter(today)) {
+                throw new IllegalArgumentException("birthDate cannot be in the future");
+            }
+            return Period.between(birthDate, today).getYears() <= 8 ? LOWER_PRIMARY : UPPER_PRIMARY;
+        }
+    }
+
     public record FeedbackProfile(
         String visualStyle,
         int maxAnimationMs,
@@ -63,6 +77,9 @@ public final class Stage20Models {
         SchoolStage recommendedStage,
         SchoolStage stageOverride,
         SchoolStage effectiveStage,
+        PrimaryGradeBand recommendedPrimaryBand,
+        PrimaryGradeBand primaryBandOverride,
+        PrimaryGradeBand effectivePrimaryBand,
         String overrideReason,
         boolean hapticsEnabled,
         FeedbackProfile feedbackProfile,
@@ -92,6 +109,8 @@ public final class Stage20Models {
         LocalDate newBirthDate,
         SchoolStage oldStageOverride,
         SchoolStage newStageOverride,
+        PrimaryGradeBand oldPrimaryBandOverride,
+        PrimaryGradeBand newPrimaryBandOverride,
         boolean oldHapticsEnabled,
         boolean newHapticsEnabled,
         String reason,

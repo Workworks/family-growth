@@ -2,11 +2,7 @@ package com.familygrowth.android.remote
 
 import java.time.LocalDate
 import java.time.Period
-
-enum class PrimaryLearningBand(val label: String, val guide: String) {
-    LOWER_PRIMARY("低年级", "读懂 · 试一试 · 说发现"),
-    UPPER_PRIMARY("高年级", "先猜 · 验证 · 解释"),
-}
+import com.familygrowth.android.core.PrimaryGradeBand
 
 data class PrimaryLearningFacts(
     val toDo: Int,
@@ -16,13 +12,16 @@ data class PrimaryLearningFacts(
 )
 
 object PrimaryLearningPolicy {
-    fun bandFor(birthDate: String, today: LocalDate = LocalDate.now()): PrimaryLearningBand =
+    fun bandFor(effectiveBand: PrimaryGradeBand?, birthDate: String, today: LocalDate = LocalDate.now()): PrimaryGradeBand =
+        effectiveBand ?: bandFor(birthDate, today)
+
+    fun bandFor(birthDate: String, today: LocalDate = LocalDate.now()): PrimaryGradeBand =
         runCatching {
             val date = LocalDate.parse(birthDate)
             require(!date.isAfter(today))
-            if (Period.between(date, today).years <= 8) PrimaryLearningBand.LOWER_PRIMARY
-            else PrimaryLearningBand.UPPER_PRIMARY
-        }.getOrDefault(PrimaryLearningBand.LOWER_PRIMARY)
+            if (Period.between(date, today).years <= 8) PrimaryGradeBand.LOWER_PRIMARY
+            else PrimaryGradeBand.UPPER_PRIMARY
+        }.getOrDefault(PrimaryGradeBand.LOWER_PRIMARY)
 
     fun facts(assignment: RemoteLearningAssignment): PrimaryLearningFacts {
         val completed = assignment.activities.count(RemoteLearningActivity::childReady)

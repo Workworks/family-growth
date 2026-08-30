@@ -7,6 +7,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import com.familygrowth.android.core.SchoolStage
+import com.familygrowth.android.core.PrimaryGradeBand
 
 class RemoteFamilyRepositoryTest {
     @Test fun urlPolicyAllowsHttpsAndDevelopmentPrivateHttpOnly() {
@@ -43,7 +44,7 @@ class RemoteFamilyRepositoryTest {
         val transport = FakeTransport()
         val repository = RemoteFamilyRepository(transport, MemorySessionStore(), false)
         assertTrue(repository.connect("https://family.example", FAMILY, PARENT, CHILD, "123456") is RemoteResult.Ok)
-        val result = repository.updateExperience(LocalDate.of(2013, 8, 26), SchoolStage.JUNIOR_MIDDLE, "实际入学阶段", false, 0)
+        val result = repository.updateExperience(LocalDate.of(2013, 8, 26), SchoolStage.JUNIOR_MIDDLE, null, "实际入学阶段", false, 0)
         assertTrue(result is RemoteResult.Ok)
         assertEquals(SchoolStage.JUNIOR_MIDDLE, transport.updatedStage)
         assertFalse(transport.updatedHaptics)
@@ -103,8 +104,8 @@ class RemoteFamilyRepositoryTest {
         override suspend fun login(base:String,family:String,parent:String,pin:String)=RemoteResult.Ok("parent-token")
         override suspend fun childSession(base:String,parentToken:String,child:String)=RemoteResult.Ok("child-token")
         override suspend fun snapshot(base:String,token:String,family:String,child:String):RemoteResult<RemoteSnapshot> = if(expire) RemoteResult.Unauthorized else RemoteResult.Ok(RemoteSnapshot(family,child,"小树",BigDecimal("12.00"),30,emptyList(),0,0))
-        override suspend fun experience(base:String,token:String,family:String,child:String):RemoteResult<RemoteExperienceProfile> = if(expire) RemoteResult.Unauthorized else RemoteResult.Ok(RemoteExperienceProfile("2022-08-26","KINDERGARTEN",null,"KINDERGARTEN","",true,0))
-        override suspend fun updateExperience(base:String,token:String,family:String,child:String,birthDate:LocalDate,stageOverride:SchoolStage?,overrideReason:String,hapticsEnabled:Boolean,expectedVersion:Long):RemoteResult<RemoteExperienceProfile>{updatedStage=stageOverride;updatedHaptics=hapticsEnabled;return RemoteResult.Ok(RemoteExperienceProfile(birthDate.toString(),"PRIMARY",stageOverride?.name,stageOverride?.name?:"PRIMARY",overrideReason,hapticsEnabled,expectedVersion+1))}
+        override suspend fun experience(base:String,token:String,family:String,child:String):RemoteResult<RemoteExperienceProfile> = if(expire) RemoteResult.Unauthorized else RemoteResult.Ok(RemoteExperienceProfile("2022-08-26","KINDERGARTEN",null,"KINDERGARTEN",overrideReason="",hapticsEnabled=true,version=0))
+        override suspend fun updateExperience(base:String,token:String,family:String,child:String,birthDate:LocalDate,stageOverride:SchoolStage?,primaryBandOverride:PrimaryGradeBand?,overrideReason:String,hapticsEnabled:Boolean,expectedVersion:Long):RemoteResult<RemoteExperienceProfile>{updatedStage=stageOverride;updatedHaptics=hapticsEnabled;return RemoteResult.Ok(RemoteExperienceProfile(birthDate.toString(),"PRIMARY",stageOverride?.name,stageOverride?.name?:"PRIMARY",primaryBandOverride=primaryBandOverride?.name,effectivePrimaryBand=primaryBandOverride?.name,overrideReason=overrideReason,hapticsEnabled=hapticsEnabled,version=expectedVersion+1))}
         override suspend fun educationSources(base:String,token:String,family:String)=RemoteResult.Ok(emptyList<RemoteEducationSource>())
         override suspend fun createEducationSource(base:String,token:String,family:String,title:String,sourceUrl:String,stages:List<SchoolStage>,usageNote:String,key:String):RemoteResult<RemoteEducationSource>{resourceCalls += "create";return RemoteResult.Ok(RemoteEducationSource("source-1",title,sourceUrl,stages.map{it.name},usageNote,"DRAFT","NEVER","",null,emptyList()))}
         override suspend fun educationSourceAction(base:String,token:String,family:String,source:String,action:String,key:String):RemoteResult<RemoteEducationSource>{resourceCalls += action;return RemoteResult.Ok(RemoteEducationSource(source,"公益课堂","https://learn.example.org",listOf("PRIMARY"),"免费浏览","DRAFT","READY","",null,emptyList()))}

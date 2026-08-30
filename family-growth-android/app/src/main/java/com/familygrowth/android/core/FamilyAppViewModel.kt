@@ -133,16 +133,19 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     fun sellFund() = mutate("已赎回全部纯模拟份额") { LocalFamilyEngine.sellAllFund(it) }
     fun updateNav(nav: BigDecimal) = mutate("教学 NAV 已更新") { LocalFamilyEngine.updateFundNav(it, nav) }
     fun updateUsage(daily: Int, session: Int) = mutate("本机防沉迷规则已更新") { LocalFamilyEngine.updateUsagePolicy(it, daily, session) }
-    fun updateExperience(birthDate: String, stageOverride: SchoolStage?, overrideReason: String, hapticsEnabled: Boolean) {
+    fun updateLearningReward(money: BigDecimal, coin: Int, xp: Int) = mutate("自主学习奖励已保存；新完成课程按此规则生成待审核奖励") {
+        LocalFamilyEngine.updateLearningRewardPolicy(it, money, coin, xp)
+    }
+    fun updateExperience(birthDate: String, stageOverride: SchoolStage?, primaryBandOverride: PrimaryGradeBand?, overrideReason: String, hapticsEnabled: Boolean) {
         val parsed = runCatching { java.time.LocalDate.parse(birthDate) }.getOrElse { return failUnit("请填写 YYYY-MM-DD 格式的出生日期") }
         if (remote.hasSession()) {
             viewModelScope.launch {
-                handleRemote(remote.updateExperience(parsed, stageOverride, overrideReason, hapticsEnabled,
+                handleRemote(remote.updateExperience(parsed, stageOverride, primaryBandOverride, overrideReason, hapticsEnabled,
                     state.experience.version), "学习阶段已保存到家庭服务")
             }
         } else {
             mutate("本机学习阶段已更新；连接服务后以服务端配置为准") {
-                it.copy(experience = ChildExperiencePolicy.localSettings(parsed, stageOverride, overrideReason,
+                it.copy(experience = ChildExperiencePolicy.localSettings(parsed, stageOverride, primaryBandOverride, overrideReason,
                     hapticsEnabled, version = it.experience.version + 1))
             }
         }
@@ -489,6 +492,9 @@ private fun RemoteExperienceProfile.toLocal() = ChildExperienceSettings(
     recommendedStage = SchoolStage.valueOf(recommendedStage),
     stageOverride = stageOverride?.let(SchoolStage::valueOf),
     effectiveStage = SchoolStage.valueOf(effectiveStage),
+    recommendedPrimaryBand = recommendedPrimaryBand?.let(PrimaryGradeBand::valueOf),
+    primaryBandOverride = primaryBandOverride?.let(PrimaryGradeBand::valueOf),
+    effectivePrimaryBand = effectivePrimaryBand?.let(PrimaryGradeBand::valueOf),
     overrideReason = overrideReason,
     hapticsEnabled = hapticsEnabled,
     version = version,
