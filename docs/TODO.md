@@ -14,7 +14,7 @@
 | P0 | 23–26 | `IN_PROGRESS` | 按 REQ-050 连续完成全排期；普通可逆默认值由 Agent 决策并写入 Spec/AQ，不等待偏好确认 | Agent | 各 Stage 报告、测试与 `evidence/stage-N/` |
 | P0 | 22 | `BLOCKED` | WP22-1–5 已完成；连接目标平板回放年龄带/五领域折页、布置、孩子离屏完成、家长一句观察、TalkBack、旋转、Reduced Motion 和触觉关闭 | 用户提供平板；Agent 回放 | Stage 22 报告、`evidence/stage-22/` |
 | P1 | 23 | `BLOCKED` | 可离线工作包已完成；连接目标平板回放小学报告、横竖屏、TalkBack、大字体、Reduced Motion 与数据保留 | 用户提供平板；Agent 回放 | Stage 23 报告、`evidence/stage-23/` |
-| P1 | 24 | `NOT_STARTED` | 在 Stage 23 可离线收口后建立初中阶段 Spec，建设学科规划、自主学习、复盘和家长事实视图 | Agent | Stage 24 Spec、代码、门禁与 evidence |
+| P1 | 24 | `IN_PROGRESS` | WP24-2：实现独立初中学科实验台、真实 Assignment 状态投影、可访问顺序控制和休息出口 | Agent | Stage 24 Spec、Android 双变体与 `evidence/stage-24/` |
 | P1 | 25 | `NOT_STARTED` | 在 Stage 24 收口后建立高中阶段 Spec，建设目标规划、课程深度、自主节奏和家长事实视图 | Agent | Stage 25 Spec、代码、门禁与 evidence |
 | P0 | 26 | `NOT_STARTED` | 收口跨学段迁移、儿童数据导出/删除/保留、完整 App 内防沉迷、Android 生产服务接入及发布门禁 | Agent；设备/服务验收由外部条件解除 | Stage 26 Spec、代码、门禁、Release 与 evidence |
 | P0 | 21 | `BLOCKED` | v0.3.6/12 已发布；在目标平板从 v0.3.5 应用内覆盖升级并回放 AndroidKeyStore 写前队列、杀进程/断网、重新登录、401/409、真实来源/官方播放和 TalkBack/旋转 | 用户提供平板/可访问服务；Agent 回放 | `stages/stage-23-report.md`、`evidence/stage-23/acceptance.json`、v0.3.6 Release |
@@ -31,7 +31,7 @@
 
 ## 2. 可由 Agent 继续推进
 
-Stage 20/21/22 的可离线工程与门禁已经收口，只剩目标平板/服务验收。按 REQ-050 不再因普通产品偏好暂停：当前完成 Stage 23 WP23-6，随后连续进入 Stage 24、25、26；LIM-013 数据权利、完整 App 内防沉迷和 Android 生产接入在 Stage 26 作为 P0 收口。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
+Stage 20–23 的可离线工程与门禁已经收口，只剩目标平板/服务验收。按 REQ-050 不再因普通产品偏好暂停：当前执行 Stage 24 WP24-2，随后连续进入 Stage 25、26；LIM-013 数据权利、完整 App 内防沉迷和 Android 生产接入在 Stage 26 作为 P0 收口。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
 
 ## 3. 只能由外部条件解除
 
