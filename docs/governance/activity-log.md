@@ -176,3 +176,9 @@
 - Flyway V15 与生产 API 保存不可变学习支持事件；Android 求助进入设备密钥加密 outbox，家长页面读取求助/错误事实并可安排两天后再练。
 - 已发布课程可由家长留下不可变理由后撤回，停止未来手动/自动加入而不删除既有 Assignment、Attempt 或支持证据。
 - 全量 H2、PostgreSQL 16.15（15 migrations/60 tables）和 Android debug/release 各 50 项、lint/assemble 通过；目标平板未执行，未发布新 APK。
+
+## 2026-08-30 · Activity 67 · 全部排期复核
+
+- 用户要求列出当前全部排期；登记 REQ-049/P1，并联合核对 TODO、Stage 路线、全面教学/产品深度 backlog、BLOCKERS、Bug 与 AQ。
+- 发现并修正 BLOCKERS 中 Stage 23 仍把 WP23-4/5 写为缺失的漂移；当前唯一可直接连续实施的既立项工作包是 WP23-6，随后按 Stage 24→25→26 推进，数据权利与完整防沉迷保持并行 P0。
+- 当前无开放产品 Bug；设备验收、服务宿主/目标平板规格、儿童数据删除保留边界和完整防沉迷默认值仍需外部条件或产品决策。
