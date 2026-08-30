@@ -72,6 +72,7 @@ fun ChildLearningPath(viewModel: FamilyAppViewModel) {
             LearningStatus(assignment.status)
         }
         Text(assignment.lessonSummary, style = MaterialTheme.typography.bodyLarge)
+        LearningRewardPromise(assignment)
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             itemsIndexed(assignment.activities, key = { _, it -> it.id }) { index, activity ->
                 val done = activity.childReady()
@@ -173,6 +174,7 @@ private fun PrimaryLearningPath(
                     Text(band.guide, style=MaterialTheme.typography.labelLarge, color=PrimaryNotebookColors.Lake)
                 }
                 HorizontalDivider(color=PrimaryNotebookColors.Grid)
+                LearningRewardPromise(assignment)
                 when (assignment.status) {
                     "SUBMITTED" -> GentleNotice("已经交给家长看。现在可以休息或去做别的事。")
                     "COMPLETED" -> GentleNotice("这次探索完成了。记录的是你做过的步骤，不是和别人比较。")
@@ -232,6 +234,19 @@ private fun PrimaryLearningPath(
             }
         }
     }
+}
+
+@Composable
+private fun LearningRewardPromise(assignment: RemoteLearningAssignment) {
+    val reward = assignment.reward
+    val hasReward = reward.money.toBigDecimalOrNull()?.signum() == 1 || reward.coin > 0 || reward.xp > 0
+    if (!hasReward) return
+    val text = when {
+        assignment.schoolStage == "KINDERGARTEN" -> "做完后，请家长一起看看小星星。"
+        reward.settledAt != null -> "家长已经确认并记录了这次奖励。"
+        else -> "家长预设奖励：${reward.money} Money · ${reward.coin} Coin · ${reward.xp} XP；完成并由家长确认后记录。"
+    }
+    GentleNotice(text)
 }
 
 @Composable

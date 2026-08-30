@@ -2,7 +2,7 @@
   "stage": 23,
   "capturedAt": "2026-08-30",
   "status": "IN_PROGRESS",
-  "scope": "WP23-3 server primary grade band, WP23-8 Android stage-aware self-learning/reward offline slice, and verified v0.3.6 public release",
+  "scope": "WP23-3 primary grade band, WP23-8 Android stage-aware learning, WP23-9 production autonomous enrollment/reward ledger, and verified v0.3.6 public release",
   "results": [
     {
       "id": "V23-01/V23-02",
@@ -22,7 +22,7 @@
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "Both variants, lint and APK assembly passed. Parent can set the primary band and a fixed local learning reward; four stages each project three age-worded original bundled activities. Verified 90 percent playback creates one pending review task and no ledger entry before review."
+      "result": "Both variants, lint and APK assembly passed. Connected parent reward changes use the production policy endpoint; child refresh calls explicit autonomous sync before replacing the retained catalog. Assignment reward snapshots decode safely, and kindergarten uses a simple star/parent phrase rather than financial terms."
     },
     {
       "id": "V23-04-H2",
@@ -32,7 +32,7 @@
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "All H2 domain, infrastructure and Boot tests passed. Flyway V13, parent/child/cross-family permissions, optimistic conflict, invalid non-primary band, immutable audit and seeded historical Attempt preservation passed."
+      "result": "All H2 domain, infrastructure and Boot tests passed: 24 domain, 2 infrastructure and 25 Boot tests with 6 PostgreSQL-only skips. Flyway V14, reward validation, permissions, optimistic policy conflict, stage filtering, 90 percent evidence, snapshot settlement and replay passed."
     },
     {
       "id": "V23-04-POSTGRES",
@@ -56,13 +56,23 @@
     },
     {
       "id": "V23-08",
-      "status": "PARTIAL",
-      "command": "Android JVM and two-variant gates above",
+      "status": "PASS",
+      "command": ".\\mvnw.cmd test; targeted PostgreSQL 16.15 schema/API/concurrency tests; Android two-variant gates above",
       "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
       "shellType": "PowerShell",
       "exitCode": 0,
-      "passed": false,
-      "result": "The Android local slice is verified. Server-side self-enrollment and fixed reward settlement with transactional Money/Coin ledger, replay and concurrency tests are not implemented and are not claimed."
+      "passed": true,
+      "result": "Server-side latest-stage autonomous enrollment and fixed reward settlement are implemented. Assignment snapshots survive later policy changes; approval atomically updates XP/Wallet and writes Money/Coin LEARNING_ASSIGNMENT ledger entries once. Child policy writes are forbidden and cross-family reads are hidden."
+    },
+    {
+      "id": "V23-10-POSTGRES",
+      "status": "PASS",
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am -Dtest=PostgresSchemaValidationTest,Stage23AutonomousLearningApiTest,Stage21TeachingConcurrencyTest -Dsurefire.failIfNoSpecifiedTests=false test",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Disposable PostgreSQL 16.15 applied and validated 14 migrations and 58 production tables. Schema, autonomous API and concurrent approve/rework tests all passed with zero skips; ledger count and XP matched the single winning transition. The container was stopped and auto-removed."
     },
     {
       "id": "V23-07",
@@ -76,7 +86,6 @@
     }
   ],
   "remaining": [
-    "Server self-learning enrollment and transactional preset reward settlement",
     "WP23-4 audited original primary subject activity pack",
     "WP23-5 persisted misconception, help and repractice evidence",
     "WP23-6 primary report and target-tablet acceptance"

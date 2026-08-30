@@ -21,6 +21,8 @@ import com.familygrowth.domain.Stage21TeachingModels.ParentCourseSummary;
 import com.familygrowth.domain.Stage21TeachingModels.QuestionOption;
 import com.familygrowth.domain.Stage21TeachingModels.UnitContent;
 import com.familygrowth.domain.Stage21TeachingModels.VersionDraft;
+import com.familygrowth.domain.Stage23LearningModels.AssignmentSource;
+import com.familygrowth.domain.Stage23LearningModels.RewardSnapshot;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -213,7 +215,8 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
     @Override
     public Optional<AssignmentFacts> assignment(UUID familyId, UUID childId, UUID assignmentId) {
         return jdbc.query("""
-            SELECT a.id,a.child_id,a.course_version_id,a.lesson_id,a.status,a.version,a.updated_at,
+            SELECT a.id,a.child_id,a.course_version_id,a.lesson_id,a.status,a.version,a.updated_at,a.assignment_source,
+                   a.money_reward_snapshot,a.coin_reward_snapshot,a.xp_reward_snapshot,a.reward_settled_at,
                    c.title course_title,c.school_stage,c.subject_code,u.title unit_title,
                    l.title lesson_title,l.summary lesson_summary,lc.review_note
             FROM lesson_assignment a JOIN teaching_course_version v ON v.id=a.course_version_id
@@ -226,13 +229,16 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
     @Override
     public List<LearningAssignment> assignments(UUID familyId, UUID childId, SchoolStage stage) {
         return jdbc.query("""
-            SELECT a.id,a.child_id,a.course_version_id,a.lesson_id,a.status,a.version,a.updated_at,
+            SELECT a.id,a.child_id,a.course_version_id,a.lesson_id,a.status,a.version,a.updated_at,a.assignment_source,
+                   a.money_reward_snapshot,a.coin_reward_snapshot,a.xp_reward_snapshot,a.reward_settled_at,
                    c.title course_title,c.school_stage,c.subject_code,u.title unit_title,
                    l.title lesson_title,l.summary lesson_summary,lc.review_note
             FROM lesson_assignment a JOIN teaching_course_version v ON v.id=a.course_version_id
             JOIN teaching_course c ON c.id=v.course_id JOIN teaching_lesson l ON l.id=a.lesson_id
             JOIN teaching_unit u ON u.id=l.unit_id JOIN learning_completion lc ON lc.assignment_id=a.id
             WHERE a.family_id=? AND a.child_id=? AND c.school_stage=? AND v.status='PUBLISHED'
+              AND (a.assignment_source='PARENT' OR v.version_number=(SELECT MAX(v2.version_number)
+                   FROM teaching_course_version v2 WHERE v2.course_id=c.id AND v2.status='PUBLISHED'))
             ORDER BY a.updated_at DESC,a.id
             """, (rs, row) -> assignment(rs), familyId, childId, stage.name()).stream().map(this::facts)
             .map(AssignmentFacts::projection).toList();
@@ -358,7 +364,10 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
             rs.getString("course_title"), rs.getString("unit_title"), rs.getString("lesson_title"),
             rs.getString("lesson_summary"), SchoolStage.valueOf(rs.getString("school_stage")),
             rs.getString("subject_code"), AssignmentStatus.valueOf(rs.getString("status")), rs.getLong("version"),
-            List.of(), rs.getString("review_note"), rs.getTimestamp("updated_at").toInstant());
+            List.of(), rs.getString("review_note"), rs.getTimestamp("updated_at").toInstant(),
+            AssignmentSource.valueOf(rs.getString("assignment_source")), new RewardSnapshot(
+                rs.getBigDecimal("money_reward_snapshot"), rs.getLong("coin_reward_snapshot"),
+                rs.getLong("xp_reward_snapshot"), instant(rs, "reward_settled_at")));
     }
 
     private AssignmentFacts facts(LearningAssignment bare) {
@@ -377,7 +386,8 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
         }).toList();
         LearningAssignment projection = new LearningAssignment(bare.id(), bare.childId(), bare.courseVersionId(),
             bare.lessonId(), bare.courseTitle(), bare.unitTitle(), bare.lessonTitle(), bare.lessonSummary(),
-            bare.schoolStage(), bare.subjectCode(), bare.status(), bare.version(), progress, bare.reviewNote(), bare.updatedAt());
+            bare.schoolStage(), bare.subjectCode(), bare.status(), bare.version(), progress, bare.reviewNote(), bare.updatedAt(),
+            bare.assignmentSource(), bare.reward());
         Map<UUID, ActivityContent> contentMap = new LinkedHashMap<>();
         contents.forEach(content -> contentMap.put(content.id(), content));
         return new AssignmentFacts(projection, Map.copyOf(contentMap));

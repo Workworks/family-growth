@@ -25,7 +25,9 @@ object KindergartenActivityPolicy {
   else -> null
  }
 }
-data class RemoteLearningAssignment(val id:String,val courseTitle:String,val unitTitle:String,val lessonTitle:String,val lessonSummary:String,val schoolStage:String,val subjectCode:String,val status:String,val version:Long,val activities:List<RemoteLearningActivity>,val reviewNote:String) {
+data class RemoteRewardSnapshot(val money:String="0.00",val coin:Long=0,val xp:Long=0,val settledAt:String?=null)
+data class RemoteRewardPolicy(val money:String,val coin:Long,val xp:Long,val version:Long)
+data class RemoteLearningAssignment(val id:String,val courseTitle:String,val unitTitle:String,val lessonTitle:String,val lessonSummary:String,val schoolStage:String,val subjectCode:String,val status:String,val version:Long,val activities:List<RemoteLearningActivity>,val reviewNote:String,val assignmentSource:String="PARENT",val reward:RemoteRewardSnapshot=RemoteRewardSnapshot()) {
  fun canSubmit():Boolean = status=="IN_PROGRESS" && activities.isNotEmpty() && activities.all(RemoteLearningActivity::childReady)
 }
 data class RemoteCourseSummary(val courseId:String,val title:String,val schoolStage:String,val subjectCode:String,val versionId:String,val versionNumber:Int,val status:String,val lessonCount:Int)

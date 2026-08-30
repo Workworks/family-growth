@@ -1,6 +1,8 @@
 package com.familygrowth.domain;
 
 import com.familygrowth.domain.Stage20Models.SchoolStage;
+import com.familygrowth.domain.Stage23LearningModels.AssignmentSource;
+import com.familygrowth.domain.Stage23LearningModels.RewardSnapshot;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -138,7 +140,8 @@ public final class Stage21TeachingModels {
                                      String courseTitle, String unitTitle, String lessonTitle, String lessonSummary,
                                      SchoolStage schoolStage, String subjectCode, AssignmentStatus status,
                                      long version, List<ActivityProgress> activities, String reviewNote,
-                                     Instant updatedAt) { }
+                                     Instant updatedAt, AssignmentSource assignmentSource,
+                                     RewardSnapshot reward) { }
     public record AssignmentFacts(LearningAssignment projection, Map<UUID, ActivityContent> contentByActivity) { }
 
     public static boolean childEvidenceSatisfied(ActivityProgress activity) {

@@ -29,13 +29,15 @@ public class Stage21TeachingService {
     private final Stage3Service auth;
     private final Stage20Service experience;
     private final Stage21TeachingStore store;
+    private final Stage23LearningStore autonomousLearning;
     private final Clock clock;
 
     public Stage21TeachingService(Stage3Service auth, Stage20Service experience,
-                                  Stage21TeachingStore store, Clock clock) {
+                                  Stage21TeachingStore store, Stage23LearningStore autonomousLearning, Clock clock) {
         this.auth = auth;
         this.experience = experience;
         this.store = store;
+        this.autonomousLearning = autonomousLearning;
         this.clock = clock;
     }
 
@@ -111,7 +113,9 @@ public class Stage21TeachingService {
             verify(replay.get(), "ASSIGN", lessonId, payload);
             return facts(familyId, childId, replay.get().resultId()).projection();
         }
-        return store.assign(familyId, childId, versionId, lessonId, actor.actorId(), key, payload, clock.instant());
+        LearningAssignment assigned = store.assign(familyId, childId, versionId, lessonId, actor.actorId(), key, payload, clock.instant());
+        autonomousLearning.snapshotAssignment(familyId, childId, assigned.id(), clock.instant());
+        return facts(familyId, childId, assigned.id()).projection();
     }
 
     @Transactional(readOnly = true)
@@ -200,8 +204,13 @@ public class Stage21TeachingService {
         if (facts.projection().status() != AssignmentStatus.SUBMITTED) {
             throw new Stage3Service.ConflictException("Only a submitted assignment can be reviewed");
         }
-        return store.transition(familyId, childId, assignmentId, target, actor.actorId(), reviewNote,
+        LearningAssignment reviewed = store.transition(familyId, childId, assignmentId, target, actor.actorId(), reviewNote,
             expectedVersion, key, payload, clock.instant());
+        if (decision == ReviewDecision.APPROVE) {
+            autonomousLearning.settleReward(familyId, childId, assignmentId, actor.actorId(), clock.instant());
+            return facts(familyId, childId, assignmentId).projection();
+        }
+        return reviewed;
     }
 
     private AssignmentFacts facts(UUID familyId, UUID childId, UUID assignmentId) {

@@ -12,7 +12,7 @@
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
 | P0 | 22 | `BLOCKED` | WP22-1–5 已完成；连接目标平板回放年龄带/五领域折页、布置、孩子离屏完成、家长一句观察、TalkBack、旋转、Reduced Motion 和触觉关闭 | 用户提供平板；Agent 回放 | Stage 22 报告、`evidence/stage-22/` |
-| P0 | 23 | `IN_PROGRESS` | WP23-3 与 Android 自主课程/本机奖励首切已完成；下一步实现服务端自主课程自动选课、家长预设奖励、真实完成后幂等账本结算及并发门禁，再实施 WP23-4/5 | Agent | Stage 23 报告、Stage 21 教学/账本纵切、PostgreSQL 并发测试、`evidence/stage-23/` |
+| P1 | 23 | `IN_PROGRESS` | WP23-4/5：建设语文/数学/英语/科学首批原创活动模板，以及持久错因、求助和间隔再练证据 | Agent | Stage 23 内容权利审计、H2/PostgreSQL/API/Android 门禁、`evidence/stage-23/` |
 | P0 | 21 | `BLOCKED` | v0.3.6/12 已发布；在目标平板从 v0.3.5 应用内覆盖升级并回放 AndroidKeyStore 写前队列、杀进程/断网、重新登录、401/409、真实来源/官方播放和 TalkBack/旋转 | 用户提供平板/可访问服务；Agent 回放 | `stages/stage-23-report.md`、`evidence/stage-23/acceptance.json`、v0.3.6 Release |
 | P0 | 20 | `BLOCKED` | 用目标平板回放四学段、触觉开关、Reduced Motion、TalkBack、旋转、重启和真实服务同步 | 用户提供设备；Agent 回放 | `stages/stage-20-report.md`、`evidence/stage-20/acceptance.json` |
 | P0 | 18 | `BLOCKED` | 在平板用 v0.3.3→v0.3.4 更新链同时测试双视角、视频计时、奖励兴趣和重启保留 | 用户测试；Agent 根据反馈修复 | Stage 18/19 真机证据 |
@@ -27,7 +27,7 @@
 
 ## 2. 可由 Agent 继续推进
 
-Stage 20/21/22 的可离线工程与门禁已经收口，只剩目标平板/服务验收。Stage 23 已完成服务端小学分段与 Android 自主课程/本机固定奖励首切；Agent 下一产品顺位是 REQ-046 的服务端自动选课和奖励账本闭环，再进入 WP23-4/5。LIM-013 数据权利/完整时段审计仍为并行 P0 安全事项。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
+Stage 20/21/22 的可离线工程与门禁已经收口，只剩目标平板/服务验收。Stage 23 已完成服务端小学分段、自动选课与奖励账本生产闭环；Agent 下一产品顺位是 WP23-4/5 的原创主要学科包与错因/求助/再练证据。LIM-013 数据权利/完整时段审计仍为并行 P0 安全事项。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
 
 ## 3. 只能由外部条件解除
 

@@ -73,11 +73,15 @@
 | GET | `/families/{familyId}/teaching/course-versions/{versionId}` | PARENT | 读取一个不可变课程版本的课节树，供家长端选择并布置；CHILD 禁止读取 |
 | POST | `/families/{familyId}/teaching/course-versions/{versionId}/publish` | PARENT | 幂等发布课程版本并记录发布人/时间，发布后没有内容修改 API |
 | GET/POST | `/families/{familyId}/children/{childId}/learning/assignments` | PARENT/CHILD 本人 / PARENT | 查询本人适龄已发布课节，或由家长分配一个课节；孩子响应不含答案键和权利依据 |
+| GET/PUT | `/families/{familyId}/children/{childId}/autonomous-learning/reward-policy` | PARENT | 查询或按期望版本更新固定 Money/Coin/XP 奖励；默认全零，修改只影响之后新加入的 Assignment，并追加审计 |
+| POST | `/families/{familyId}/children/{childId}/autonomous-learning/sync` | PARENT/CHILD 本人 | 显式幂等加入当前有效学段、每门课程最新已发布版本的缺失课节；GET 目录保持只读，创建时固化奖励快照 |
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/activities/{activityId}/attempts` | CHILD 本人 | 幂等记录活动尝试；视频须报告至少 90% 实际播放计数，客观题由服务端判定，现实活动只记 ATTEMPTED |
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/submit` | CHILD 本人 | required evidence 齐备且 `expectedVersion` 一致时提交课节；返工后还必须先产生新的 Attempt |
-| POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/review` | PARENT | `APPROVE` 追加家长确认与 MASTERED，或 `REWORK` 温和要求复做；不旁路增加 Money/Coin |
+| POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/review` | PARENT | `APPROVE` 追加家长确认与 MASTERED，并在同一事务按 Assignment 快照结算一次 XP/Money/Coin；`REWORK` 不发奖 |
 
 批准审核会锁定 Completion 与 Wallet；Coin/Money 流水先追加，再在同一事务更新余额和 Completion。重复提交返回首次结果；重复/冲突审核返回 409，不能重复发奖。XP 的奖励事实保存在 Completion 快照并更新 `child_progress`。
+
+自主学习奖励与普通成长任务奖励共用 Wallet/Ledger 不变量，但业务类型为 `LEARNING_ASSIGNMENT`。策略修改不追溯已有 Assignment；零奖励只记录结算时间，不生成零金额流水。自动同步只投影当前有效学段的最新已发布课程版本，历史 Attempt/完成记录继续保留。
 
 零钱回收状态机为 `REQUESTED → APPROVED → PAID`、`REQUESTED → REJECTED/CANCELLED`、`APPROVED → CANCELLED`。`availableMoney = moneyBalance - reservedMoney`；家长调账、Money→Coin、储蓄转入和模拟基金买入都必须检查可用额。APPROVED 只冻结，PAID 才按申请 Money 扣账；手续费只影响家庭约定的线下净到账，并以不可变快照和流水原因透明保存。
 

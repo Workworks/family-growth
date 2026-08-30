@@ -751,6 +751,24 @@ paths:
       parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/LessonAssignmentRequest' } } } }
       responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/autonomous-learning/reward-policy:
+    get:
+      operationId: getAutonomousLearningRewardPolicy
+      description: Parent-only read of the fixed per-child policy. An absent policy is returned as a zero-valued version 0 default.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+    put:
+      operationId: updateAutonomousLearningRewardPolicy
+      description: Parent-only optimistic update with immutable audit. The new policy affects only assignments created after the update.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/AutonomousRewardPolicyRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/autonomous-learning/sync:
+    post:
+      operationId: syncAutonomousLearningAssignments
+      description: Parent or owning child idempotently enrolls missing lessons only from each course's latest published version matching the server-authoritative effective stage. Reward policy is snapshotted on creation; GET catalog remains read-only.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
   /families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/activities/{activityId}/attempts:
     post:
       operationId: recordLearningActivityAttempt
@@ -777,7 +795,7 @@ paths:
   /families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/review:
     post:
       operationId: reviewLearningAssignment
-      description: Parent-only APPROVE or REWORK. Approval appends PARENT_CONFIRMED where required and a lesson-level MASTERED fact; it does not grant Money or Coin.
+      description: Parent-only APPROVE or REWORK. Approval appends PARENT_CONFIRMED/MASTERED and atomically settles the assignment's fixed XP/Money/Coin snapshot once; Money/Coin each require an immutable LEARNING_ASSIGNMENT ledger entry.
       parameters:
         - $ref: '#/components/parameters/FamilyId'
         - $ref: '#/components/parameters/ChildId'
@@ -992,6 +1010,15 @@ components:
         decision: { type: string, enum: [APPROVE, REWORK] }
         note: { type: [string, 'null'], maxLength: 500 }
         expectedVersion: { type: integer, format: int64, minimum: 0 }
+    AutonomousRewardPolicyRequest:
+      type: object
+      required: [moneyReward, coinReward, xpReward, expectedVersion, auditReason]
+      properties:
+        moneyReward: { type: number, multipleOf: 0.01, minimum: 0, maximum: 10000 }
+        coinReward: { type: integer, format: int64, minimum: 0, maximum: 1000000 }
+        xpReward: { type: integer, format: int64, minimum: 0, maximum: 1000000 }
+        expectedVersion: { type: integer, format: int64, minimum: 0 }
+        auditReason: { type: string, minLength: 1, maxLength: 500 }
     BootstrapRequest:
       type: object
       required: [familyName, parentName, pin]

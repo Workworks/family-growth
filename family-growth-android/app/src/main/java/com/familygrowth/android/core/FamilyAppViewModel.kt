@@ -133,8 +133,19 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     fun sellFund() = mutate("已赎回全部纯模拟份额") { LocalFamilyEngine.sellAllFund(it) }
     fun updateNav(nav: BigDecimal) = mutate("教学 NAV 已更新") { LocalFamilyEngine.updateFundNav(it, nav) }
     fun updateUsage(daily: Int, session: Int) = mutate("本机防沉迷规则已更新") { LocalFamilyEngine.updateUsagePolicy(it, daily, session) }
-    fun updateLearningReward(money: BigDecimal, coin: Int, xp: Int) = mutate("自主学习奖励已保存；新完成课程按此规则生成待审核奖励") {
-        LocalFamilyEngine.updateLearningRewardPolicy(it, money, coin, xp)
+    fun updateLearningReward(money: BigDecimal, coin: Int, xp: Int) {
+        if (!remote.hasSession()) return mutate("本机自主学习奖励已保存；连接服务后需再次确认服务端规则") {
+            LocalFamilyEngine.updateLearningRewardPolicy(it, money, coin, xp)
+        }
+        viewModelScope.launch {
+            when (val result = remote.updateLearningReward(money.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString(), coin.toLong(), xp.toLong())) {
+                is RemoteResult.Ok -> mutate("自主学习奖励已保存到家庭服务；只影响新加入课程") {
+                    LocalFamilyEngine.updateLearningRewardPolicy(it, money, coin, xp)
+                }
+                RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
+                is RemoteResult.Failure -> message = result.message
+            }
+        }
     }
     fun updateExperience(birthDate: String, stageOverride: SchoolStage?, primaryBandOverride: PrimaryGradeBand?, overrideReason: String, hapticsEnabled: Boolean) {
         val parsed = runCatching { java.time.LocalDate.parse(birthDate) }.getOrElse { return failUnit("请填写 YYYY-MM-DD 格式的出生日期") }

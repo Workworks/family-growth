@@ -3,6 +3,7 @@ package com.familygrowth;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.familygrowth.application.Stage21TeachingService;
+import com.familygrowth.application.Stage23LearningService;
 import com.familygrowth.application.Stage3Service;
 import com.familygrowth.domain.AgeStage;
 import com.familygrowth.domain.Stage20Models.SchoolStage;
@@ -14,6 +15,7 @@ import com.familygrowth.domain.Stage21TeachingModels.ReviewDecision;
 import com.familygrowth.domain.Stage21TeachingModels.UnitDraft;
 import com.familygrowth.domain.Stage21TeachingModels.VersionDraft;
 import java.time.LocalDate;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -33,6 +35,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 class Stage21TeachingConcurrencyTest {
     @Autowired Stage3Service stage3;
     @Autowired Stage21TeachingService teaching;
+    @Autowired Stage23LearningService autonomous;
     @Autowired JdbcTemplate jdbc;
 
     @Test
@@ -41,6 +44,8 @@ class Stage21TeachingConcurrencyTest {
         var parent = bootstrap.session().actor();
         var child = stage3.addChild(parent, bootstrap.familyId(), "孩子", LocalDate.of(2017, 1, 1), AgeStage.CHILD_6_9);
         var childActor = stage3.createChildSession(parent, child.id()).actor();
+        autonomous.updatePolicy(parent, bootstrap.familyId(), child.id(), new BigDecimal("1.00"), 2, 3, 0,
+            "并发批准奖励测试");
         var activity = new ActivityDraft(ActivityType.OFFLINE_PRACTICE, "找一片叶子", "离开屏幕找一找", "", 5,
             "", "", List.of(), "");
         var draft = new VersionDraft("一次一件事", "家庭原创活动",
@@ -71,6 +76,12 @@ class Stage21TeachingConcurrencyTest {
         int mastered = jdbc.queryForObject("SELECT COUNT(*) FROM mastery_evidence WHERE assignment_id=? AND evidence_type='MASTERED'",
             Integer.class, result.id());
         assertThat(mastered).isEqualTo(result.status() == AssignmentStatus.COMPLETED ? 1 : 0);
+        int rewardLedger = jdbc.queryForObject("SELECT COUNT(*) FROM ledger_entry WHERE family_id=? AND business_type='LEARNING_ASSIGNMENT' AND business_id=?",
+            Integer.class, bootstrap.familyId(), result.id());
+        long xp = jdbc.queryForObject("SELECT xp_balance FROM child_progress WHERE family_id=? AND child_id=?",
+            Long.class, bootstrap.familyId(), child.id());
+        assertThat(rewardLedger).isEqualTo(result.status() == AssignmentStatus.COMPLETED ? 2 : 0);
+        assertThat(xp).isEqualTo(result.status() == AssignmentStatus.COMPLETED ? 3L : 0L);
     }
 
     private static boolean attempt(CountDownLatch start, Runnable operation) {
