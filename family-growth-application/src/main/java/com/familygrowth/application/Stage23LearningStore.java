@@ -4,6 +4,7 @@ import com.familygrowth.domain.Stage20Models.SchoolStage;
 import com.familygrowth.domain.Stage23LearningModels.RewardPolicy;
 import com.familygrowth.domain.Stage23LearningModels.MisconceptionCategory;
 import com.familygrowth.domain.Stage23LearningModels.SupportEvent;
+import com.familygrowth.domain.Stage23LearningModels.SubjectLearningFacts;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Optional;
@@ -28,4 +29,6 @@ public interface Stage23LearningStore {
                          String key, String payloadHash, Instant now);
     void recordAttemptSupport(UUID familyId, UUID childId, UUID assignmentId, UUID activityId,
                               UUID actorId, Boolean correct, String attemptKey, Instant now);
+    List<SubjectLearningFacts> primaryLearningFacts(UUID familyId, UUID childId, Instant now);
+    long recordedLearningMinutes(UUID familyId, UUID childId, Instant from, Instant to);
 }

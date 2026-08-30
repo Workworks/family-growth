@@ -5,6 +5,7 @@ import com.familygrowth.domain.Stage21TeachingModels.LearningAssignment;
 import com.familygrowth.domain.Stage23LearningModels.RewardPolicy;
 import com.familygrowth.domain.Stage23LearningModels.MisconceptionCategory;
 import com.familygrowth.domain.Stage23LearningModels.SupportEvent;
+import com.familygrowth.domain.Stage23LearningModels.PrimaryLearningReport;
 import com.familygrowth.domain.Stage3Models;
 import com.familygrowth.domain.Stage3Models.Actor;
 import jakarta.validation.Valid;
@@ -54,6 +55,12 @@ class Stage23LearningController {
                                                @PathVariable UUID familyId, @PathVariable UUID childId,
                                                @RequestHeader("Idempotency-Key") String key) {
         return ApiResponse.ok(service.sync(actor, familyId, childId, key));
+    }
+
+    @GetMapping("/primary-report")
+    ApiResponse<PrimaryLearningReport> primaryReport(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE) Actor actor,
+                                                      @PathVariable UUID familyId, @PathVariable UUID childId) {
+        return ApiResponse.ok(service.primaryReport(actor, familyId, childId));
     }
 
     @GetMapping("/assignments/{assignmentId}/support-events")

@@ -47,6 +47,8 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     var learningSupportByAssignment by mutableStateOf<Map<String,List<RemoteSupportEvent>>>(emptyMap())
         private set
+    var primaryLearningReport by mutableStateOf<RemotePrimaryLearningReport?>(null)
+        private set
     var teachingCourses by mutableStateOf<List<RemoteCourseSummary>>(emptyList())
         private set
     var pendingLearningActions by mutableStateOf(learningOutbox.snapshot())
@@ -317,7 +319,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             if (result is RemoteResult.Ok) { syncEducationResources(); reconcileAndFlushLearning(refreshFirst=false); flushUsageNow() }
         }
     }
-    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); learningSupportByAssignment=emptyMap(); teachingCourses = emptyList(); connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
+    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); learningSupportByAssignment=emptyMap(); primaryLearningReport=null; teachingCourses = emptyList(); connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
 
     private fun changeEducationSource(id: String, action: String, success: String) {
         viewModelScope.launch {
@@ -443,6 +445,11 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             is RemoteResult.Failure -> message = catalog.message
         }
         syncLearningAssignments()
+        when(val report=remote.primaryLearningReport()) {
+            is RemoteResult.Ok -> primaryLearningReport=report.value
+            RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized,"")
+            is RemoteResult.Failure -> Unit
+        }
         syncTeachingCourses()
     }
 

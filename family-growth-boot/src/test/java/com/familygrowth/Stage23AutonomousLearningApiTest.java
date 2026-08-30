@@ -197,11 +197,43 @@ class Stage23AutonomousLearningApiTest {
             .andExpect(status().isOk()).andExpect(jsonPath("$.data[2].privateNote").value(""));
         jdbc.update("UPDATE learning_support_event SET revisit_at=? WHERE assignment_id=? AND event_type='REVISIT_SCHEDULED'",
             java.sql.Timestamp.from(java.time.Instant.now().minus(java.time.Duration.ofDays(1))), assignmentId);
+        jdbc.update("INSERT INTO usage_event(id,family_id,child_id,event_type,minutes,occurred_at,idempotency_key,actor_id,created_at) VALUES(?,?,?,?,?,?,?,?,?)",
+            UUID.randomUUID(), parent.family, child, "LEARNING", 12, java.sql.Timestamp.from(java.time.Instant.now()),
+            "primary-report-minutes", child, java.sql.Timestamp.from(java.time.Instant.now()));
+        mvc.perform(get(root + "/primary-report").header("Authorization", bearer(childToken)))
+            .andExpect(status().isForbidden());
+        mvc.perform(get(root.replace(parent.family.toString(), other.family.toString()) + "/primary-report")
+            .header("Authorization", bearer(other.token))).andExpect(status().isNotFound());
+        MvcResult report = mvc.perform(get(root + "/primary-report").header("Authorization", bearer(parent.token)))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data.effectiveStage").value("PRIMARY"))
+            .andExpect(jsonPath("$.data.effectivePrimaryBand").value("UPPER_PRIMARY"))
+            .andExpect(jsonPath("$.data.recordedLearningMinutes").value(12))
+            .andExpect(jsonPath("$.data.subjects[0].subjectCode").value("MATH"))
+            .andExpect(jsonPath("$.data.subjects[0].inProgress").value(1))
+            .andExpect(jsonPath("$.data.subjects[0].openSupport").value(1))
+            .andExpect(jsonPath("$.data.subjects[0].scheduledRevisits").value(1))
+            .andExpect(jsonPath("$.data.subjects[0].dueRevisits").value(1)).andReturn();
+        org.assertj.core.api.Assertions.assertThat(report.getResponse().getContentAsString())
+            .doesNotContain("privateNote").doesNotContain("answerKey").doesNotContain("先用十二颗积木");
         mvc.perform(post(attempt).header("Authorization", bearer(childToken)).header("Idempotency-Key", "support-correct")
             .contentType(MediaType.APPLICATION_JSON).content("{\"responseText\":\"3\"}"))
             .andExpect(status().isOk()).andExpect(jsonPath("$.data.activities[0].checkedCorrect").value(true));
         mvc.perform(get(support + "/support-events").header("Authorization", bearer(parent.token)))
             .andExpect(status().isOk()).andExpect(jsonPath("$.data[4].type").value("REVISIT_COMPLETED"));
+        mvc.perform(get(root + "/primary-report").header("Authorization", bearer(parent.token)))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data.subjects[0].scheduledRevisits").value(0))
+            .andExpect(jsonPath("$.data.subjects[0].dueRevisits").value(0));
+        mvc.perform(put("/api/v1/families/" + parent.family + "/children/" + child + "/experience-profile")
+            .header("Authorization", bearer(parent.token)).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"birthDate\":\"2017-08-26\",\"stageOverride\":\"JUNIOR_MIDDLE\",\"primaryBandOverride\":null," +
+                "\"overrideReason\":\"已进入初中阶段\",\"hapticsEnabled\":true,\"expectedVersion\":0," +
+                "\"auditReason\":\"验证切换学段后保留小学事实\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data.effectiveStage").value("JUNIOR_MIDDLE"));
+        mvc.perform(get(root + "/primary-report").header("Authorization", bearer(parent.token)))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data.effectiveStage").value("JUNIOR_MIDDLE"))
+            .andExpect(jsonPath("$.data.effectivePrimaryBand").isEmpty())
+            .andExpect(jsonPath("$.data.subjects[0].subjectCode").value("MATH"))
+            .andExpect(jsonPath("$.data.subjects[0].inProgress").value(1));
         org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM activity_attempt WHERE assignment_id=?", Integer.class, assignmentId)).isEqualTo(2);
         org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM learning_support_event WHERE assignment_id=? AND event_type='HELP_REQUESTED'", Integer.class, assignmentId)).isEqualTo(1);
     }

@@ -5,6 +5,7 @@ import com.familygrowth.domain.Stage21TeachingModels.LearningAssignment;
 import com.familygrowth.domain.Stage23LearningModels.RewardPolicy;
 import com.familygrowth.domain.Stage23LearningModels.MisconceptionCategory;
 import com.familygrowth.domain.Stage23LearningModels.SupportEvent;
+import com.familygrowth.domain.Stage23LearningModels.PrimaryLearningReport;
 import com.familygrowth.domain.Stage3Models.Actor;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
@@ -73,6 +74,18 @@ public class Stage23LearningService {
         List<SupportEvent> events = store.supportEvents(familyId, childId, assignmentId);
         return actor.role() == com.familygrowth.domain.Stage3Models.ActorRole.CHILD
             ? events.stream().map(SupportEvent::childSafe).toList() : events;
+    }
+
+    @Transactional(readOnly = true)
+    public PrimaryLearningReport primaryReport(Actor actor, UUID familyId, UUID childId) {
+        auth.requireParent(actor, familyId);
+        auth.requireChildOrParent(actor, familyId, childId);
+        var profile = experience.experience(actor, familyId, childId);
+        Instant end = clock.instant();
+        Instant start = end.minus(Duration.ofDays(7));
+        return new PrimaryLearningReport(childId, profile.effectiveStage(), profile.effectivePrimaryBand(),
+            start, end, store.recordedLearningMinutes(familyId, childId, start, end),
+            store.primaryLearningFacts(familyId, childId, end), end);
     }
 
     public LearningAssignment requestHelp(Actor actor, UUID familyId, UUID childId, UUID assignmentId,

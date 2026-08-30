@@ -366,6 +366,19 @@ private fun KindergartenLearningSteps(active: Int) {
 fun ParentLearningReviews(viewModel: FamilyAppViewModel) {
     val submitted = viewModel.learningAssignments.filter { it.status == "SUBMITTED" }
     val support = viewModel.learningSupportByAssignment
+    viewModel.primaryLearningReport?.let { report ->
+        GrowthCard {
+            SectionTitle("最近 7 天学习事实", "只记录发生过的行动，不是成绩或能力评价")
+            Text("已记录学习 ${report.recordedLearningMinutes} 分钟", style=MaterialTheme.typography.titleMedium)
+            if(report.subjects.isEmpty()) Text("还没有小学课程记录。",color=MaterialTheme.colorScheme.onSurfaceVariant)
+            report.subjects.forEach { fact ->
+                val subject=when(fact.subjectCode){"CHINESE"->"语文";"MATH"->"数学";"ENGLISH"->"英语";"SCIENCE"->"科学";else->fact.subjectCode}
+                Text("$subject · 完成 ${fact.completed} · 待回应 ${fact.submitted} · 求助 ${fact.openSupport} · 到期再练 ${fact.dueRevisits}",
+                    color=MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            if(report.effectiveStage!="PRIMARY") Text("当前已切换学段；这里仍保留以前的小学学习事实。",style=MaterialTheme.typography.bodySmall)
+        }
+    }
     support.forEach { (assignmentId,events) ->
         val assignment=viewModel.learningAssignments.firstOrNull { it.id==assignmentId } ?: return@forEach
         val classified=events.filter { it.type=="MISCONCEPTION_CLASSIFIED" }.mapNotNull { it.parentEventId }.toSet()

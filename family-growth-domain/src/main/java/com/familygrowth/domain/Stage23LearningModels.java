@@ -5,6 +5,8 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import com.familygrowth.domain.Stage20Models.PrimaryGradeBand;
+import com.familygrowth.domain.Stage20Models.SchoolStage;
 
 public final class Stage23LearningModels {
     private Stage23LearningModels() { }
@@ -24,6 +26,33 @@ public final class Stage23LearningModels {
 
     public record SupportTimeline(List<SupportEvent> events) {
         public SupportTimeline { events = events == null ? List.of() : List.copyOf(events); }
+    }
+
+    public record SubjectLearningFacts(String subjectCode, long assigned, long inProgress, long submitted,
+                                       long completed, long reworkRequired, long openSupport,
+                                       long scheduledRevisits, long dueRevisits) {
+        public SubjectLearningFacts {
+            if (subjectCode == null || subjectCode.isBlank()) throw new IllegalArgumentException("subjectCode is required");
+            if (assigned < 0 || inProgress < 0 || submitted < 0 || completed < 0 || reworkRequired < 0
+                || openSupport < 0 || scheduledRevisits < 0 || dueRevisits < 0) {
+                throw new IllegalArgumentException("Learning fact counts cannot be negative");
+            }
+        }
+    }
+
+    public record PrimaryLearningReport(UUID childId, SchoolStage effectiveStage,
+                                        PrimaryGradeBand effectivePrimaryBand, Instant windowStart,
+                                        Instant windowEnd, long recordedLearningMinutes,
+                                        List<SubjectLearningFacts> subjects, Instant generatedAt) {
+        public PrimaryLearningReport {
+            if (childId == null || effectiveStage == null || windowStart == null || windowEnd == null || generatedAt == null) {
+                throw new IllegalArgumentException("Primary learning report facts are required");
+            }
+            if (recordedLearningMinutes < 0 || windowEnd.isBefore(windowStart)) {
+                throw new IllegalArgumentException("Primary learning report window is invalid");
+            }
+            subjects = subjects == null ? List.of() : List.copyOf(subjects);
+        }
     }
 
     public record RewardPolicy(UUID familyId, UUID childId, BigDecimal moneyReward,

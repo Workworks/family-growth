@@ -2,7 +2,7 @@
   "stage": 23,
   "capturedAt": "2026-08-30",
   "status": "IN_PROGRESS",
-  "scope": "WP23-3 primary grade band, WP23-4/5 original primary pack and persistent support evidence, WP23-8/9 autonomous learning/reward ledger, and verified v0.3.6 public release",
+  "scope": "WP23-3 primary grade band, WP23-4/5 original primary pack and persistent support evidence, WP23-6 parent factual report, WP23-8/9 autonomous learning/reward ledger, and verified v0.3.6 public release",
   "results": [
     {
       "id": "V23-01/V23-02",
@@ -95,6 +95,16 @@
       "result": "Help leaves assignment ASSIGNED/version 0 and replays once; wrong objective attempts append immutable process facts. Parent classification schedules a revisit, child reads blank privateNote, a due correct attempt appends REVISIT_COMPLETED, and cross-family reads return 404."
     },
     {
+      "id": "V23-13",
+      "status": "PASS_OFFLINE",
+      "command": ".\\mvnw.cmd test; PostgreSQL 16.15 PostgresSchemaValidationTest/Stage23AutonomousLearningApiTest; Android debug/release JVM/lint/assemble",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Parent-only primary report aggregates preserved assignment states, unresolved support, scheduled/due revisits and trailing-seven-day explicit LEARNING minutes. Child access is 403, cross-family access is 404, and response/UI contain no private note, answer key, score or ability inference. H2 full suite, PostgreSQL 16.15 schema plus API tests, and Android debug/release JVM/lint/assemble passed; target tablet remains blocked."
+    },
+    {
       "id": "V23-07",
       "status": "PASS",
       "command": "gh run view 33292966665; gh release view v0.3.6; gh release download v0.3.6; Get-FileHash; aapt dump badging; apksigner verify --print-certs",
@@ -106,6 +116,6 @@
     }
   ],
   "remaining": [
-    "WP23-6 primary report and target-tablet acceptance"
+    "Target-tablet rotation, TalkBack, large-text, Reduced Motion and data-preserving upgrade acceptance"
   ]
 }

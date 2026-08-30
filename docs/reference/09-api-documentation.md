@@ -75,6 +75,7 @@
 | GET/POST | `/families/{familyId}/children/{childId}/learning/assignments` | PARENT/CHILD 本人 / PARENT | 查询本人适龄已发布课节，或由家长分配一个课节；孩子响应不含答案键和权利依据 |
 | GET/PUT | `/families/{familyId}/children/{childId}/autonomous-learning/reward-policy` | PARENT | 查询或按期望版本更新固定 Money/Coin/XP 奖励；默认全零，修改只影响之后新加入的 Assignment，并追加审计 |
 | POST | `/families/{familyId}/children/{childId}/autonomous-learning/sync` | PARENT/CHILD 本人 | 显式幂等加入当前有效学段、每门课程最新已发布版本的缺失课节；GET 目录保持只读，创建时固化奖励快照 |
+| GET | `/families/{familyId}/children/{childId}/autonomous-learning/primary-report` | PARENT | 最近 7 天明确学习分钟与历史小学 Assignment/求助/再练事实；无评分、能力推断、答案键或家长私密说明，切换学段后仍保留历史 |
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/activities/{activityId}/attempts` | CHILD 本人 | 幂等记录活动尝试；视频须报告至少 90% 实际播放计数，客观题由服务端判定，现实活动只记 ATTEMPTED |
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/submit` | CHILD 本人 | required evidence 齐备且 `expectedVersion` 一致时提交课节；返工后还必须先产生新的 Attempt |
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/review` | PARENT | `APPROVE` 追加家长确认与 MASTERED，并在同一事务按 Assignment 快照结算一次 XP/Money/Coin；`REWORK` 不发奖 |

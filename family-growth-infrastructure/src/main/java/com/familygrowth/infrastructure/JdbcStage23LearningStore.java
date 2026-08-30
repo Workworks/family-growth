@@ -10,6 +10,7 @@ import com.familygrowth.domain.Stage23LearningModels.RewardPolicy;
 import com.familygrowth.domain.Stage23LearningModels.MisconceptionCategory;
 import com.familygrowth.domain.Stage23LearningModels.SupportEvent;
 import com.familygrowth.domain.Stage23LearningModels.SupportEventType;
+import com.familygrowth.domain.Stage23LearningModels.SubjectLearningFacts;
 import com.familygrowth.domain.Stage3Models.AssetType;
 import com.familygrowth.domain.Stage3Models.Wallet;
 import java.math.BigDecimal;
@@ -18,6 +19,8 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -225,6 +228,71 @@ class JdbcStage23LearningStore implements Stage23LearningStore {
                 SupportEventType.REVISIT_COMPLETED, null, "按计划又试了一次，并答对了。", "", null, scheduleId,
                 actorId, key, key, now);
         }
+    }
+
+    @Override
+    public List<SubjectLearningFacts> primaryLearningFacts(UUID familyId, UUID childId, Instant now) {
+        requireChild(familyId, childId, false);
+        Map<String, long[]> facts = new LinkedHashMap<>();
+        jdbc.query("""
+            SELECT c.subject_code,a.status,COUNT(*) AS fact_count
+            FROM lesson_assignment a
+            JOIN teaching_course_version v ON v.id=a.course_version_id
+            JOIN teaching_course c ON c.id=v.course_id
+            WHERE a.family_id=? AND a.child_id=? AND c.school_stage='PRIMARY'
+            GROUP BY c.subject_code,a.status ORDER BY c.subject_code,a.status
+            """, rs -> {
+                long[] counts = facts.computeIfAbsent(rs.getString("subject_code"), ignored -> new long[8]);
+                long count = rs.getLong("fact_count");
+                switch (AssignmentStatus.valueOf(rs.getString("status"))) {
+                    case ASSIGNED -> counts[0] += count;
+                    case IN_PROGRESS -> counts[1] += count;
+                    case SUBMITTED -> counts[2] += count;
+                    case COMPLETED -> counts[3] += count;
+                    case REWORK_REQUIRED -> counts[4] += count;
+                }
+            }, familyId, childId);
+        jdbc.query("""
+            SELECT c.subject_code,
+              SUM(CASE WHEN s.event_type IN ('HELP_REQUESTED','INCORRECT_OBSERVED')
+                    AND NOT EXISTS (SELECT 1 FROM learning_support_event x
+                                    WHERE x.parent_event_id=s.id AND x.event_type='MISCONCEPTION_CLASSIFIED')
+                  THEN 1 ELSE 0 END) AS open_support,
+              SUM(CASE WHEN s.event_type='REVISIT_SCHEDULED'
+                    AND NOT EXISTS (SELECT 1 FROM learning_support_event x
+                                    WHERE x.parent_event_id=s.id AND x.event_type='REVISIT_COMPLETED')
+                  THEN 1 ELSE 0 END) AS scheduled_revisits,
+              SUM(CASE WHEN s.event_type='REVISIT_SCHEDULED' AND s.revisit_at<=?
+                    AND NOT EXISTS (SELECT 1 FROM learning_support_event x
+                                    WHERE x.parent_event_id=s.id AND x.event_type='REVISIT_COMPLETED')
+                  THEN 1 ELSE 0 END) AS due_revisits
+            FROM learning_support_event s
+            JOIN lesson_assignment a ON a.id=s.assignment_id
+            JOIN teaching_course_version v ON v.id=a.course_version_id
+            JOIN teaching_course c ON c.id=v.course_id
+            WHERE s.family_id=? AND s.child_id=? AND c.school_stage='PRIMARY'
+            GROUP BY c.subject_code ORDER BY c.subject_code
+            """, rs -> {
+                long[] counts = facts.computeIfAbsent(rs.getString("subject_code"), ignored -> new long[8]);
+                counts[5] = rs.getLong("open_support");
+                counts[6] = rs.getLong("scheduled_revisits");
+                counts[7] = rs.getLong("due_revisits");
+            }, ts(now), familyId, childId);
+        return facts.entrySet().stream().map(entry -> {
+            long[] value = entry.getValue();
+            return new SubjectLearningFacts(entry.getKey(), value[0], value[1], value[2], value[3], value[4],
+                value[5], value[6], value[7]);
+        }).toList();
+    }
+
+    @Override
+    public long recordedLearningMinutes(UUID familyId, UUID childId, Instant from, Instant to) {
+        requireChild(familyId, childId, false);
+        Long minutes = jdbc.queryForObject("""
+            SELECT COALESCE(SUM(minutes),0) FROM usage_event
+            WHERE family_id=? AND child_id=? AND event_type='LEARNING' AND occurred_at>=? AND occurred_at<?
+            """, Long.class, familyId, childId, ts(from), ts(to));
+        return minutes == null ? 0 : minutes;
     }
 
     private boolean replay(UUID familyId, String key, String payloadHash) {

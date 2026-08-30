@@ -779,6 +779,12 @@ paths:
       description: Parent or owning child idempotently enrolls missing lessons only from each course's latest published version matching the server-authoritative effective stage. Reward policy is snapshotted on creation; GET catalog remains read-only.
       parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
       responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/autonomous-learning/primary-report:
+    get:
+      operationId: getPrimaryLearningReport
+      description: Parent-only factual summary of preserved primary-school assignments, open support and revisit facts, plus recorded LEARNING minutes in the trailing seven-day window. It contains no score, ability inference, answer key or private note and remains readable after a stage change.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
   /families/{familyId}/children/{childId}/autonomous-learning/assignments/{assignmentId}/activities/{activityId}/help:
     post:
       operationId: requestLearningHelp
@@ -1079,6 +1085,32 @@ components:
         xpReward: { type: integer, format: int64, minimum: 0, maximum: 1000000 }
         expectedVersion: { type: integer, format: int64, minimum: 0 }
         auditReason: { type: string, minLength: 1, maxLength: 500 }
+    PrimaryLearningReport:
+      type: object
+      required: [childId, effectiveStage, windowStart, windowEnd, recordedLearningMinutes, subjects, generatedAt]
+      properties:
+        childId: { type: string, format: uuid }
+        effectiveStage: { type: string, enum: [PARENT_ONLY, KINDERGARTEN, PRIMARY, JUNIOR_MIDDLE, SENIOR_HIGH] }
+        effectivePrimaryBand: { type: [string, 'null'], enum: [LOWER_PRIMARY, UPPER_PRIMARY, null] }
+        windowStart: { type: string, format: date-time }
+        windowEnd: { type: string, format: date-time }
+        recordedLearningMinutes: { type: integer, format: int64, minimum: 0 }
+        subjects:
+          type: array
+          items:
+            type: object
+            required: [subjectCode, assigned, inProgress, submitted, completed, reworkRequired, openSupport, scheduledRevisits, dueRevisits]
+            properties:
+              subjectCode: { type: string }
+              assigned: { type: integer, format: int64, minimum: 0 }
+              inProgress: { type: integer, format: int64, minimum: 0 }
+              submitted: { type: integer, format: int64, minimum: 0 }
+              completed: { type: integer, format: int64, minimum: 0 }
+              reworkRequired: { type: integer, format: int64, minimum: 0 }
+              openSupport: { type: integer, format: int64, minimum: 0 }
+              scheduledRevisits: { type: integer, format: int64, minimum: 0 }
+              dueRevisits: { type: integer, format: int64, minimum: 0 }
+        generatedAt: { type: string, format: date-time }
     BootstrapRequest:
       type: object
       required: [familyName, parentName, pin]
