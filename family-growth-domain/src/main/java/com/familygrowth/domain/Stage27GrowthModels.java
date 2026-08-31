@@ -1,0 +1,23 @@
+package com.familygrowth.domain;
+
+import java.time.*;import java.util.*;
+
+public final class Stage27GrowthModels {
+ private Stage27GrowthModels(){}
+ public enum GrowthCategory{LEARNING,HEALTH,HABITS,RELATIONSHIP,CREATIVITY,LIFE_SKILLS,OTHER}
+ public enum PlanStatus{DRAFT,ACTIVE,PAUSED,COMPLETED,CANCELED}
+ public enum GoalStatus{ACTIVE,COMPLETED,CANCELED}
+ public enum MilestoneCategory{PARENT_CHILD_READING,MOVEMENT,LANGUAGE,SELF_CARE,EMOTIONAL_CONNECTION,LEARNING,CREATIVITY,OTHER}
+ public record Plan(UUID id,UUID childId,String title,String description,GrowthCategory category,String ageStage,String target,LocalDate startDate,LocalDate endDate,PlanStatus status,long revision,Instant createdAt,Instant updatedAt){public Plan{required(id,childId,title,category,ageStage,startDate,status,createdAt,updatedAt);description=optional(description,1000);target=optional(target,500);if(title.trim().length()>120||ageStage.trim().length()>32||revision<0||(endDate!=null&&endDate.isBefore(startDate)))throw new IllegalArgumentException("Invalid growth plan");title=title.trim();ageStage=ageStage.trim();}}
+ public record Goal(UUID id,UUID planId,String title,String description,String target,GoalStatus status,long revision,Instant createdAt,Instant updatedAt){public Goal{required(id,planId,title,status,createdAt,updatedAt);title=title.trim();description=optional(description,1000);target=optional(target,500);if(title.length()>120||revision<0)throw new IllegalArgumentException("Invalid growth goal");}}
+ public record Milestone(UUID id,UUID childId,UUID planId,UUID goalId,LocalDate occurredOn,MilestoneCategory category,String title,String observation,long revision,List<ArtifactMetadata> artifacts,Instant createdAt,Instant updatedAt){public Milestone{required(id,childId,occurredOn,category,title,createdAt,updatedAt);title=title.trim();observation=optional(observation,1500);artifacts=artifacts==null?List.of():List.copyOf(artifacts);if(title.length()>160||revision<0)throw new IllegalArgumentException("Invalid milestone");}}
+ public record ArtifactMetadata(UUID id,UUID milestoneId,String contentType,long byteSize,String sha256,String altText,Instant createdAt){public ArtifactMetadata{required(id,milestoneId,contentType,sha256,createdAt);altText=optional(altText,300);if(byteSize<1||byteSize>5*1024*1024L||!sha256.matches("[0-9a-f]{64}"))throw new IllegalArgumentException("Invalid artifact metadata");}}
+ public record Artifact(ArtifactMetadata metadata,byte[] content){public Artifact{required(metadata,content);content=content.clone();if(content.length!=metadata.byteSize())throw new IllegalArgumentException("Artifact size mismatch");}public byte[] content(){return content.clone();}}
+ public record ParentRecordTemplate(String code,String title,String prompt,MilestoneCategory category){public ParentRecordTemplate{required(code,title,prompt,category);}}
+ public record CategoryFacts(GrowthCategory category,long plans,long activePlans,long milestones,long approvedTasks,long rejectedTasks){public CategoryFacts{required(category);if(plans<0||activePlans<0||milestones<0||approvedTasks<0||rejectedTasks<0)throw new IllegalArgumentException("Invalid growth facts");}}
+ public record GrowthReport(UUID childId,long draftPlans,long activePlans,long pausedPlans,long completedPlans,long canceledPlans,long milestones,long artifacts,List<CategoryFacts> categories,Instant generatedAt){public GrowthReport{required(childId,generatedAt);categories=categories==null?List.of():List.copyOf(categories);if(draftPlans<0||activePlans<0||pausedPlans<0||completedPlans<0||canceledPlans<0||milestones<0||artifacts<0)throw new IllegalArgumentException("Invalid growth report");}}
+ public static void requireTransition(PlanStatus from,PlanStatus to){boolean ok=switch(from){case DRAFT->to==PlanStatus.ACTIVE||to==PlanStatus.CANCELED;case ACTIVE->to==PlanStatus.PAUSED||to==PlanStatus.COMPLETED||to==PlanStatus.CANCELED;case PAUSED->to==PlanStatus.ACTIVE||to==PlanStatus.COMPLETED||to==PlanStatus.CANCELED;case COMPLETED,CANCELED->false;};if(!ok)throw new IllegalArgumentException("Growth plan status transition is not allowed");}
+ public static void requireTransition(GoalStatus from,GoalStatus to){if(from!=GoalStatus.ACTIVE||(to!=GoalStatus.COMPLETED&&to!=GoalStatus.CANCELED))throw new IllegalArgumentException("Growth goal status transition is not allowed");}
+ private static String optional(String value,int max){String v=value==null?"":value.trim();if(v.length()>max)throw new IllegalArgumentException("Text is too long");return v;}
+ private static void required(Object... values){for(Object v:values)if(v==null||(v instanceof String s&&s.trim().isEmpty()))throw new IllegalArgumentException("Required growth fact is missing");}
+}

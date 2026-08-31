@@ -93,6 +93,14 @@
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/activities/{activityId}/attempts` | CHILD 本人 | 幂等记录活动尝试；视频须报告至少 90% 实际播放计数，客观题由服务端判定，现实活动只记 ATTEMPTED |
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/submit` | CHILD 本人 | required evidence 齐备且 `expectedVersion` 一致时提交课节；返工后还必须先产生新的 Attempt |
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/review` | PARENT | `APPROVE` 追加家长确认与 MASTERED，并在同一事务按 Assignment 快照结算一次 XP/Money/Coin；`REWORK` 不发奖 |
+| GET/POST | `/families/{familyId}/children/{childId}/growth-archive/plans` | PARENT | 查询或幂等创建成长计划；创建只能从 DRAFT/ACTIVE 开始，不接受伪造终态 |
+| POST | `/families/{familyId}/children/{childId}/growth-archive/plans/{planId}/transition` | PARENT | 按 revision 幂等推进 DRAFT/ACTIVE/PAUSED/COMPLETED/CANCELED 状态机，终态不可重开 |
+| GET/POST | `/families/{familyId}/children/{childId}/growth-archive/plans/{planId}/goals` | PARENT | 查询或幂等创建计划内目标；终态计划不能追加目标 |
+| POST | `/families/{familyId}/children/{childId}/growth-archive/goals/{goalId}/transition` | PARENT | 按 revision 将 ACTIVE 目标完成或取消，终态不可重开 |
+| GET/POST/PUT | `/families/{familyId}/children/{childId}/growth-archive/milestones` | PARENT | 查询、幂等创建或按 revision 更新具体、可观察的成长记录 |
+| POST/GET | `/families/{familyId}/children/{childId}/growth-archive/milestones/{milestoneId}/artifacts`、`.../artifacts/{artifactId}` | PARENT | 上传并读取 JPEG/PNG/WebP 成长照片；服务端核验魔数和 5 MiB 上限，响应 no-store；导出只含元数据 |
+| GET | `/families/{familyId}/children/{childId}/growth-archive/parent-record-templates` | PARENT | 返回 0–2 岁亲子阅读、运动、语言、自理与情感连接的家长记录模板 |
+| GET | `/families/{familyId}/children/{childId}/growth-archive/report` | PARENT | 只聚合计划、记录、图片和既有任务事实，不产生评分、人格标签或能力推断 |
 
 批准审核会锁定 Completion 与 Wallet；Coin/Money 流水先追加，再在同一事务更新余额和 Completion。重复提交返回首次结果；重复/冲突审核返回 409，不能重复发奖。XP 的奖励事实保存在 Completion 快照并更新 `child_progress`。
 

@@ -258,3 +258,23 @@
 - 发布准备提交 `10e6c5b` 和 tag `v0.3.8` 已推送；GitHub Actions `33365966672` 使用历史稳定 release 身份完成校验、测试、Lint、签名构建和公开 Release。
 - 公开资产 `family-growth-0.3.8.apk` 已下载到 `dist/`：11,781,539 字节，GitHub digest 与下载 SHA-256 `175933870797656961a44c512e5ce92a28294182c35c714ced5f4c09c7615fab` 一致；`aapt2` 复验包名 `com.familygrowth.android`、0.3.8/14，`apksigner` 复验证书 SHA-256 与 v0.3.7 一致。
 - Stage 23–26、数据权利、完整 App 内防沉迷和 Android 生产接入的 Agent 可执行范围完成二次审计与发布收口；Stage 26 转回 `BLOCKED`，只保留目标平板/可信 HTTPS V26-08 运行态验收，不以 Release 替代设备证据。
+
+## 2026-08-31 · Activity 80 · 未完成事项事实源一致性复审
+
+- 按持续目标重新读取 AGENTS、当前 Stage、TODO、Spec 指南、Bug、AQ 与 BLOCKERS，并从当前工作树和 v0.3.8 发布事实重新判断未完成项，不沿用会话结论替代证据。
+- 复审未发现新的可离线产品工程缺口，但发现治理漂移：BLOCKERS 仍把 Stage 21/23–25 归入“工程未完成”、Stage 10 仍把 Stage 17/26 已补齐能力描述为缺失，AQ 仍把数据保留和休息策略列为待评审。已按 Stage 17/26 和 v0.3.8 证据纠正，不改写各 Stage 当时的历史验收事实。
+- 当前未完成项均要求真实 Android 平板、设备可访问并信任证书的 HTTPS 家庭服务、真实站点兼容或第三方许可；Release、Mock、构建和自动化不能替代这些运行态条件。
+
+## 2026-08-31 · Activity 81 · REQ-051 总清单重审与 Stage 27 立项
+
+- 继续审计 `teaching-and-project-backlog.md` 后发现 Activity 80 的“未发现可离线缺口”仍不成立：P-01–P-21 除 P-13/17/18 外还有明确未实现的 P1/P2 深化。按用户持续授权登记 REQ-051，并把结论修正为 Stage 27–32 连续路线。
+- Stage 27 先交付 P-01/02/03/12：计划/目标状态机、家长里程碑、数据库内受控图片档案、0–2 岁家长记录和事实成长报告。文件仅允许 JPEG/PNG/WebP、最多 5 MiB、校验魔数/MIME/SHA-256，孩子和跨家庭访问拒绝，删除不影响 Ledger。
+- `frontend-design` 两遍设计将家长页确定为低刺激“家庭成长年轮”：树枝时间轨迹只编码类别，不使用进度环、分数、连续天数、徽章或自动庆祝；真实设备相册和无障碍仍独立进入 V27-08。
+
+## 2026-08-31 · Activity 82 · Stage 27 成长年轮可离线闭环
+
+- V24 为既有计划/目标补字段和受审计状态机，新增里程碑、动作与数据库内图片档案；旧 JPA 写入首次全量回归暴露 `updated_at` 无默认值，补 `CURRENT_TIMESTAMP` 后 Stage 3/8/9 兼容回归恢复通过。
+- API 仅允许家长操作，跨家庭隐藏；图片限制 JPEG/PNG/WebP 和 5 MiB，核验 MIME/魔数/SHA-256，下载 `no-store`，导出只含元数据，受约束删除移除二进制/自由文本且 Ledger 保持零副作用。
+- Android 家长“成长”页按 `frontend-design` 收敛为低刺激成长年轮，系统相册选择和生产 API 失败不回退本机成功；孩子端导航和档案入口不变。106 个双变体 JVM 测试、Lint、debug/release 构建通过。
+- H2 全量回归与隔离 PostgreSQL 16.15（24 迁移、85 表、Boot 34 项无跳过）通过。PostgreSQL 首轮只因临时容器默认连接数耗尽失败；重建精确命名的测试容器并提高测试连接上限后通过，随后已验证并删除临时容器。
+- V27-08 因缺目标平板与可访问可信 HTTPS 服务保持 `BLOCKED`；Stage 28 可离线工程继续启动。

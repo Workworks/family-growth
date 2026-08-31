@@ -996,6 +996,80 @@ paths:
         - $ref: '#/components/parameters/IdempotencyKey'
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/LearningReviewRequest' } } } }
       responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/growth-archive/plans:
+    get:
+      operationId: listGrowthPlans
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } }
+    post:
+      operationId: createGrowthPlan
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/GrowthPlanRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/growth-archive/plans/{planId}/transition:
+    post:
+      operationId: transitionGrowthPlan
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/GrowthTransitionRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/growth-archive/plans/{planId}/goals:
+    get:
+      operationId: listGrowthGoals
+      responses: { '200': { $ref: '#/components/responses/Ok' } }
+    post:
+      operationId: createGrowthGoal
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/GrowthGoalRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/growth-archive/goals/{goalId}/transition:
+    post:
+      operationId: transitionGrowthGoal
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/GrowthGoalTransitionRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/growth-archive/milestones:
+    get:
+      operationId: listGrowthMilestones
+      responses: { '200': { $ref: '#/components/responses/Ok' } }
+    post:
+      operationId: createGrowthMilestone
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/GrowthMilestoneRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/growth-archive/milestones/{milestoneId}:
+    put:
+      operationId: updateGrowthMilestone
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/GrowthMilestoneUpdateRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/growth-archive/milestones/{milestoneId}/artifacts:
+    post:
+      operationId: uploadGrowthArtifact
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, altText]
+              properties:
+                file: { type: string, format: binary, description: Genuine JPEG, PNG or WebP; at most 5 MiB. }
+                altText: { type: string, minLength: 1, maxLength: 300 }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' } }
+  /families/{familyId}/children/{childId}/growth-archive/artifacts/{artifactId}:
+    get:
+      operationId: downloadGrowthArtifact
+      responses:
+        '200': { description: Parent-only no-store image bytes, content: { image/jpeg: { schema: { type: string, format: binary } }, image/png: { schema: { type: string, format: binary } }, image/webp: { schema: { type: string, format: binary } } } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /families/{familyId}/children/{childId}/growth-archive/parent-record-templates:
+    get:
+      operationId: listParentGrowthRecordTemplates
+      responses: { '200': { $ref: '#/components/responses/Ok' } }
+  /families/{familyId}/children/{childId}/growth-archive/report:
+    get:
+      operationId: getFactualGrowthReport
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } }
 components:
   securitySchemes:
     bearerAuth:
@@ -1566,6 +1640,56 @@ components:
         type: { type: string, enum: [APP_ACTIVE, LEARNING] }
         minutes: { type: integer, minimum: 1, maximum: 60 }
         occurredAt: { type: string, format: date-time }
+    GrowthPlanRequest:
+      type: object
+      required: [title, category, ageStage, startDate]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 120 }
+        description: { type: string, maxLength: 1000 }
+        category: { type: string, enum: [LEARNING, HEALTH, HABITS, RELATIONSHIP, CREATIVITY, LIFE_SKILLS, OTHER] }
+        ageStage: { type: string, minLength: 1, maxLength: 32 }
+        target: { type: string, maxLength: 500 }
+        startDate: { type: string, format: date }
+        endDate: { type: [string, 'null'], format: date }
+        status: { type: string, enum: [DRAFT, ACTIVE], default: DRAFT }
+    GrowthTransitionRequest:
+      type: object
+      required: [status, expectedRevision, reason]
+      properties:
+        status: { type: string, enum: [ACTIVE, PAUSED, COMPLETED, CANCELED] }
+        expectedRevision: { type: integer, format: int64, minimum: 0 }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    GrowthGoalRequest:
+      type: object
+      required: [title]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 120 }
+        description: { type: string, maxLength: 1000 }
+        target: { type: string, maxLength: 500 }
+    GrowthGoalTransitionRequest:
+      type: object
+      required: [status, expectedRevision, reason]
+      properties:
+        status: { type: string, enum: [COMPLETED, CANCELED] }
+        expectedRevision: { type: integer, format: int64, minimum: 0 }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    GrowthMilestoneRequest:
+      type: object
+      required: [occurredOn, category, title, observation]
+      properties:
+        planId: { type: [string, 'null'], format: uuid }
+        goalId: { type: [string, 'null'], format: uuid }
+        occurredOn: { type: string, format: date }
+        category: { type: string, enum: [PARENT_CHILD_READING, MOVEMENT, LANGUAGE, SELF_CARE, EMOTIONAL_CONNECTION, LEARNING, CREATIVITY, OTHER] }
+        title: { type: string, minLength: 1, maxLength: 160 }
+        observation: { type: string, minLength: 1, maxLength: 1500 }
+    GrowthMilestoneUpdateRequest:
+      allOf:
+        - $ref: '#/components/schemas/GrowthMilestoneRequest'
+        - type: object
+          required: [expectedRevision]
+          properties:
+            expectedRevision: { type: integer, format: int64, minimum: 0 }
     ApiError:
       type: object
       required: [code, message]

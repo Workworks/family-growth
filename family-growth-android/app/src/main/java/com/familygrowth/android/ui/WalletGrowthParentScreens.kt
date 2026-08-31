@@ -2,6 +2,8 @@ package com.familygrowth.android.ui
 
 import android.net.Uri
 import android.widget.VideoView
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
@@ -34,7 +36,7 @@ import java.util.Date
 import java.util.Locale
 
 private enum class WalletAction { GIFT, EXCHANGE, WITHDRAW }
-private enum class GrowthDialog { REWARD, SAVING, WISH, WISH_ALLOCATE, FUND_BUY, FUND_NAV, SAVING_DEPOSIT }
+private enum class GrowthDialog { PLAN, MILESTONE, REWARD, SAVING, WISH, WISH_ALLOCATE, FUND_BUY, FUND_NAV, SAVING_DEPOSIT }
 private enum class ChildGrowthArea { LESSONS, REWARDS }
 
 @Composable
@@ -147,8 +149,27 @@ fun GrowthScreen(viewModel: FamilyAppViewModel) {
     var dialog by remember { mutableStateOf<GrowthDialog?>(null) }
     var selectedSaving by remember { mutableStateOf<String?>(null) }
     var selectedWish by remember { mutableStateOf<String?>(null) }
+    var photoMilestone by remember { mutableStateOf<String?>(null) }
+    val context=LocalContext.current
+    val photoPicker=rememberLauncherForActivityResult(ActivityResultContracts.GetContent()){uri->uri?.let{selected->val mime=context.contentResolver.getType(selected).orEmpty();val bytes=runCatching{context.contentResolver.openInputStream(selected)?.use{it.readBytes()}}.getOrNull();val milestoneId=photoMilestone;photoMilestone=null;if(bytes!=null&&milestoneId!=null)viewModel.uploadGrowthPhoto(milestoneId,bytes,mime,"家长记录的成长照片")}}
     val state = viewModel.state
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        item { SectionTitle("家庭成长年轮", "记录真实变化，不给孩子打分，也不比较快慢") }
+        item {
+            GrowthCard {
+                SectionTitle("正在生长的枝条", "计划只是方向，随时可以暂停；完成后历史仍会保留") { TextButton(onClick={dialog=GrowthDialog.PLAN}){Icon(Icons.Rounded.Add,null);Text("新计划")} }
+                viewModel.growthReport?.let{report->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)){DataPill("进行中",report.activePlans.toString(),GrowthColors.Emerald,Modifier.weight(1f));DataPill("真实记录",report.milestones.toString(),GrowthColors.Amber,Modifier.weight(1f));DataPill("照片",report.artifacts.toString(),Color(0xFF5E7D8C),Modifier.weight(1f))}}
+                if(viewModel.growthPlans.isEmpty()) EmptyInvitation("🌱","还没有成长计划","从一个现实中能观察的小行动开始。")
+                else viewModel.growthPlans.take(6).forEach{plan->Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)){Column(Modifier.weight(1f)){Text(plan.title,style=MaterialTheme.typography.titleMedium);Text(plan.target.ifBlank{"关注真实变化"},color=MaterialTheme.colorScheme.onSurfaceVariant);StatusDot(when(plan.status){"ACTIVE"->"正在生长";"PAUSED"->"先休息";"COMPLETED"->"已经走过";else->"准备中"},if(plan.status=="ACTIVE")GrowthColors.Emerald else MaterialTheme.colorScheme.outline)};if(plan.status=="ACTIVE")TextButton(onClick={viewModel.completeGrowthPlan(plan)}){Text("完成")}}}
+            }
+        }
+        item {
+            GrowthCard {
+                SectionTitle("今天看见了什么", "写具体动作和回应，不写“聪明”“落后”等标签") { TextButton(onClick={dialog=GrowthDialog.MILESTONE}){Icon(Icons.Rounded.Add,null);Text("记录")}}
+                if(viewModel.growthMilestones.isEmpty()) EmptyInvitation("🍃","还没有成长记录","例如：今天自己把绘本放回书架。")
+                else viewModel.growthMilestones.take(10).forEach{m->Column(Modifier.fillMaxWidth().padding(vertical=8.dp)){Text(m.title,style=MaterialTheme.typography.titleMedium);Text(m.observation,color=MaterialTheme.colorScheme.onSurfaceVariant);Row(verticalAlignment=Alignment.CenterVertically){Text(m.occurredOn,style=MaterialTheme.typography.bodySmall,color=Color(0xFF5E7D8C));Spacer(Modifier.weight(1f));if(m.artifacts.isNotEmpty())Text("${m.artifacts.size} 张照片",style=MaterialTheme.typography.bodySmall);TextButton(onClick={photoMilestone=m.id;photoPicker.launch("image/*")}){Text("加照片")}}}}
+            }
+        }
         item { SectionTitle("把奖励变成选择", "消费、储蓄、愿望和模拟投资都服务于成长复盘") }
         item {
             GrowthCard {
@@ -187,6 +208,8 @@ fun GrowthScreen(viewModel: FamilyAppViewModel) {
     }
 
     when (dialog) {
+        GrowthDialog.PLAN -> GrowthTextPairDialog("建立成长计划","计划名称","希望观察到的具体变化",{dialog=null}){title,target->viewModel.addGrowthPlan(title,target);dialog=null}
+        GrowthDialog.MILESTONE -> GrowthTextPairDialog("记录真实变化","今天发生了什么","描述一个可观察的动作或回应",{dialog=null}){title,observation->viewModel.addGrowthMilestone(title,observation);dialog=null}
         GrowthDialog.REWARD -> TitleNumberDialog("添加家庭奖励", "奖励名称", "Coin 价格", { dialog = null }) { title, value -> viewModel.addReward(title, value.toInt()); dialog = null }
         GrowthDialog.SAVING -> TitleMoneyDialog("创建储蓄目标", "目标名称", { dialog = null }) { title, value -> viewModel.addSaving(title, value); dialog = null }
         GrowthDialog.WISH -> TitleMoneyDialog("记录愿望", "愿望名称", { dialog = null }) { title, value -> viewModel.addWish(title, value); dialog = null }
@@ -198,6 +221,8 @@ fun GrowthScreen(viewModel: FamilyAppViewModel) {
     }
     viewModel.pendingFundTrade?.let{preview->AlertDialog(onDismissRequest=viewModel::cancelFundTrade,title={Text(if(preview.side=="BUY")"确认模拟买入" else "确认模拟赎回")},text={Column(verticalArrangement=Arrangement.spacedBy(6.dp)){Text("教学 NAV ${preview.nav}");Text("交易金额 ¥${preview.gross}");Text("费用 ¥${preview.fee}");Text("净额 ¥${preview.net}");Text("模拟份额 ${preview.shares}",fontWeight=FontWeight.Bold);Text(preview.notice,style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}},confirmButton={Button(onClick=viewModel::confirmFundTrade){Text("确认模拟交易")}},dismissButton={TextButton(onClick=viewModel::cancelFundTrade){Text("取消")}})}
 }
+
+@Composable private fun GrowthTextPairDialog(title:String,firstLabel:String,secondLabel:String,dismiss:()->Unit,confirm:(String,String)->Unit){var first by remember{mutableStateOf("")};var second by remember{mutableStateOf("")};AlertDialog(onDismissRequest=dismiss,title={Text(title)},text={Column(verticalArrangement=Arrangement.spacedBy(12.dp)){OutlinedTextField(first,{first=it.take(120)},label={Text(firstLabel)},singleLine=true);OutlinedTextField(second,{second=it.take(500)},label={Text(secondLabel)},minLines=3)}},confirmButton={Button(onClick={confirm(first.trim(),second.trim())},enabled=first.isNotBlank()&&second.isNotBlank()){Text("保存")}},dismissButton={TextButton(onClick=dismiss){Text("取消")}})}
 
 @Composable
 private fun ChildGrowthScreen(viewModel: FamilyAppViewModel) {

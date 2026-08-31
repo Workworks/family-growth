@@ -1,0 +1,61 @@
+{
+  "stage": 27,
+  "capturedAt": "2026-08-31",
+  "status": "BLOCKED",
+  "scope": "Growth plan lifecycle, parent-only milestones and controlled artifacts, parent-only 0-2 records, factual growth reports and Android production integration",
+  "results": [
+    {
+      "id": "V27-01/V27-02/V27-03/V27-04/V27-05-H2",
+      "status": "PASS",
+      "command": ".\\mvnw.cmd test",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "31 domain tests, 2 infrastructure tests and 34 Boot tests completed with zero failures/errors; six PostgreSQL-only tests skipped by condition. Flyway applied 24 migrations. Legacy Stage 3/8/9 growth-plan creation, Stage 27 states, idempotency, stale revisions, role/object isolation, genuine PNG/fake MIME rejection, report, export, constrained erasure and zero-ledger side effect passed."
+    },
+    {
+      "id": "V27-01/V27-02/V27-03/V27-04/V27-05-POSTGRES",
+      "status": "PASS",
+      "command": "FAMILY_GROWTH_TEST_POSTGRES_*=[REDACTED_TEST_VALUES]; .\\mvnw.cmd clean verify",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Disposable PostgreSQL 16.15 validated 24 migrations and 85 production tables. All 34 Boot tests ran with zero failures, errors or skips. The first infrastructure attempt exhausted the disposable server default connection limit; a fresh exact-name test container with a test-only higher max_connections completed successfully and was verified then removed."
+    },
+    {
+      "id": "V27-06-ANDROID",
+      "status": "PASS_OFFLINE",
+      "command": ".\\gradlew.bat clean test lint assembleDebug assembleRelease; .\\gradlew.bat test lint assembleDebug assembleRelease --no-daemon --console=plain",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "106 JVM tests passed across debug/release with zero failures/errors/skips; lint reported zero errors and seven existing warnings; 105-task debug/release build passed. Package com.familygrowth.android remained versionCode 14/versionName 0.3.8. The Stage 27 output is intentionally not a signed/public release; final publication remains scheduled after later Stages."
+    },
+    {
+      "id": "V27-07",
+      "status": "PASS_OFFLINE",
+      "command": "OpenAPI parse, Markdown local-link validation, evidence JSON parse, git diff --check and tracked secret scan",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "OpenAPI 3.1 parsed with 98 paths; 93 Markdown files had no broken local links; all 27 Stage evidence JSON files parsed; whitespace and tracked sensitive-pattern scans passed."
+    },
+    {
+      "id": "V27-08",
+      "status": "BLOCKED",
+      "command": "NOT_RUN: target-tablet gallery, accessibility and persistence acceptance",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": null,
+      "passed": false,
+      "result": "No target Android tablet or device-accessible trusted HTTPS family service is available. System gallery JPEG/PNG/WebP selection, upload rendering, TalkBack, large text, rotation, Reduced Motion and restart retention remain unverified."
+    }
+  ],
+  "remaining": [
+    "Target-tablet V27-08 runtime acceptance"
+  ]
+}

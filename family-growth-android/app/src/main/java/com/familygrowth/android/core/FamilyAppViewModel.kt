@@ -94,6 +94,12 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     var retentionPolicy by mutableStateOf<RemoteRetentionPolicy?>(null)
         private set
+    var growthPlans by mutableStateOf<List<RemoteGrowthPlan>>(emptyList())
+        private set
+    var growthMilestones by mutableStateOf<List<RemoteGrowthMilestone>>(emptyList())
+        private set
+    var growthReport by mutableStateOf<RemoteGrowthReport?>(null)
+        private set
 
     val isChildLocked: Boolean get() = mode == AppMode.CHILD &&
         (remoteUsageAccess?.allowed==false || state.usage.usedMinutes >= state.usage.dailyLimitMinutes || sessionUsedMinutes >= state.usage.sessionLimitMinutes)
@@ -188,6 +194,10 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     fun cancelFundTrade(){pendingFundTrade=null;message="已取消模拟交易，没有账本变化"}
     fun updateRetentionPolicy(days:Int){val policy=retentionPolicy?:return failUnit("请先连接并同步家庭服务");viewModelScope.launch{when(val r=production.updateRetentionPolicy(days,policy.version)){is RemoteResult.Ok->{retentionPolicy=r.value;message="使用明细保留期已保存；账本和最小审计不受影响"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
     fun runRetentionNow(){viewModelScope.launch{when(val r=production.runRetention()){is RemoteResult.Ok->message="保留策略已执行：删除 ${r.value.usageEventsDeleted} 条过期使用明细，脱敏 ${r.value.allowancesRedacted} 条临时原因";RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun addGrowthPlan(title:String,target:String){viewModelScope.launch{when(val r=production.createGrowthPlan(title,"HABITS",target)){is RemoteResult.Ok->{syncGrowthArchive();message="成长计划已保存"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun completeGrowthPlan(plan:RemoteGrowthPlan){viewModelScope.launch{when(val r=production.transitionGrowthPlan(plan,"COMPLETED")){is RemoteResult.Ok->{syncGrowthArchive();message="成长计划已完成，历史记录仍会保留"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun addGrowthMilestone(title:String,observation:String,category:String="OTHER"){viewModelScope.launch{when(val r=production.createGrowthMilestone(growthPlans.firstOrNull{it.status=="ACTIVE"}?.id,title,observation,category)){is RemoteResult.Ok->{syncGrowthArchive();message="今天的真实变化已记录"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun uploadGrowthPhoto(milestoneId:String,bytes:ByteArray,mime:String,altText:String){viewModelScope.launch{when(val r=production.uploadGrowthArtifact(milestoneId,bytes,mime,altText)){is RemoteResult.Ok->{syncGrowthArchive();message="照片已安全加入成长档案"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
     fun updateUsage(daily: Int, session: Int) {
         if(!remote.hasSession())return mutate("本机防沉迷规则已更新；连接服务后可统一设置休息时段") { LocalFamilyEngine.updateUsagePolicy(it, daily, session) }
         viewModelScope.launch { when(val result=remote.configureUsage(daily,session,"21:30:00","06:30:00")) {
@@ -473,7 +483,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             if (result is RemoteResult.Ok) { syncEducationResources(); syncProductionState(); reconcileAndFlushLearning(refreshFirst=false); flushUsageNow() }
         }
     }
-    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); juniorLearningPlan=null; juniorLearningReport=null; seniorModuleConfiguration=null; seniorGoals=emptyList(); seniorReflections=emptyList(); seniorLearningReport=null;remoteUsageAccess=null;erasurePreview=null;stageTransitionPreview=null; learningSupportByAssignment=emptyMap(); primaryLearningReport=null; teachingCourses = emptyList(); connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
+    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); juniorLearningPlan=null; juniorLearningReport=null; seniorModuleConfiguration=null; seniorGoals=emptyList(); seniorReflections=emptyList(); seniorLearningReport=null;remoteUsageAccess=null;erasurePreview=null;stageTransitionPreview=null; learningSupportByAssignment=emptyMap(); primaryLearningReport=null; teachingCourses = emptyList();growthPlans=emptyList();growthMilestones=emptyList();growthReport=null; connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
 
     private fun changeEducationSource(id: String, action: String, success: String) {
         viewModelScope.launch {
@@ -632,7 +642,13 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         when(val r=production.todayReport()){is RemoteResult.Ok->todayUsageReport=r.value;else->Unit}
         when(val r=production.monthlyReport()){is RemoteResult.Ok->monthlyUsageReport=r.value;else->Unit}
         when(val r=production.retentionPolicy()){is RemoteResult.Ok->retentionPolicy=r.value;else->Unit}
+        syncGrowthArchive()
         store.save(state)
+    }
+    private suspend fun syncGrowthArchive(){
+        when(val r=production.growthPlans()){is RemoteResult.Ok->growthPlans=r.value;RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
+        when(val r=production.growthMilestones()){is RemoteResult.Ok->growthMilestones=r.value;RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
+        when(val r=production.growthReport()){is RemoteResult.Ok->growthReport=r.value;else->Unit}
     }
     private suspend fun ensureFund():RemoteFund?{when(val existing=production.funds()){is RemoteResult.Ok->existing.value.firstOrNull()?.let{return it};RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return null};is RemoteResult.Failure->{message=existing.message;return null}};return when(val made=production.createFund()){is RemoteResult.Ok->{when(val nav=production.updateNav(made.value.id,BigDecimal.ONE.setScale(6))){is RemoteResult.Failure->{message=nav.message;return null};RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return null};else->Unit};when(val fees=production.configureFundFees(made.value.id)){is RemoteResult.Failure->{message=fees.message;return null};RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return null};else->Unit};made.value};RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");null};is RemoteResult.Failure->{message=made.message;null}}}
     private fun fundTrade(side:String,input:BigDecimal,success:String){viewModelScope.launch{val fund=ensureFund()?:return@launch;when(val preview=production.tradePreview(fund.id,side,input)){is RemoteResult.Ok->{pendingFundTrade=preview.value;message="$success；请先核对 NAV、费用和份额"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=preview.message}}}
