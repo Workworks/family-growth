@@ -69,7 +69,7 @@ object LocalFamilyEngine {
         )
         return post(state, entry).copy(
             withdrawals = state.withdrawals.map {
-                if (it.id == id) it.copy(status = WithdrawalStatus.APPROVED) else it
+                if (it.id == id) it.copy(status = WithdrawalStatus.PAID) else it
             },
         )
     }

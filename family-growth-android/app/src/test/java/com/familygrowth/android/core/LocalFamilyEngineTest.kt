@@ -38,7 +38,7 @@ class LocalFamilyEngineTest {
         val withdrawn = LocalFamilyEngine.approveWithdrawal(requested, requested.withdrawals.single().id)
 
         assertEquals(BigDecimal("75.00"), withdrawn.wallet.money)
-        assertEquals(WithdrawalStatus.APPROVED, withdrawn.withdrawals.single().status)
+        assertEquals(WithdrawalStatus.PAID, withdrawn.withdrawals.single().status)
         assertTrue(withdrawn.ledger.first().description.contains("线下到账 ¥24.50"))
         assertTrue(withdrawn.ledger.first().description.contains("手续费 ¥0.50"))
     }

@@ -18,7 +18,9 @@ import java.util.UUID
 
 class FamilyAppViewModel(application: Application) : AndroidViewModel(application) {
     private val store = LocalFamilyStore(application)
-    private val remote = RemoteFamilyRepository(HttpFamilyApiTransport(), MemorySessionStore(), BuildConfig.DEBUG)
+    private val sessionStore = MemorySessionStore()
+    private val remote = RemoteFamilyRepository(HttpFamilyApiTransport(), sessionStore, BuildConfig.DEBUG)
+    private val production = ProductionFamilyApi(sessionStore)
     private val learningOutbox = LearningOutbox(EncryptedLearningOutboxStore(application))
     private var remoteCompletionByTask: Map<String, String> = emptyMap()
     private val pendingUsage = mutableListOf<PendingUsage>()
@@ -75,6 +77,22 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     var pendingLearningActions by mutableStateOf(learningOutbox.snapshot())
         private set
     var teachingActionRunning by mutableStateOf(false)
+        private set
+    var pendingExchangePreview by mutableStateOf<RemoteExchangePreview?>(null)
+        private set
+    var pendingWithdrawalQuote by mutableStateOf<RemoteWithdrawalQuote?>(null)
+        private set
+    var pendingFundTrade by mutableStateOf<RemoteFundTradePreview?>(null)
+        private set
+    var todayUsageReport by mutableStateOf<RemoteUsageReport?>(null)
+        private set
+    var monthlyUsageReport by mutableStateOf<RemoteUsageReport?>(null)
+        private set
+    var rewardOrders by mutableStateOf<List<RemoteRewardOrder>>(emptyList())
+        private set
+    var savingBalance by mutableStateOf<BigDecimal?>(null)
+        private set
+    var retentionPolicy by mutableStateOf<RemoteRetentionPolicy?>(null)
         private set
 
     val isChildLocked: Boolean get() = mode == AppMode.CHILD &&
@@ -133,12 +151,20 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         if (!remote.hasSession() || completion == null) return mutate("审核通过，奖励已进入钱包流水") { LocalFamilyEngine.approveTask(it, id) }
         viewModelScope.launch { handleRemote(remote.approveTask(completion), "家长已确认，稳定奖励已进入服务端账本") }
     }
-    fun depositGift(amount: BigDecimal) = mutate("压岁钱已按 1:1 存入") { LocalFamilyEngine.depositGiftMoney(it, amount) }
-    fun exchange(amount: BigDecimal) = mutate("兑换完成") { LocalFamilyEngine.exchangeMoneyToCoin(it, amount) }
-    fun withdraw(amount: BigDecimal) = mutate("零钱回收申请已提交，家长确认后才会扣款") { LocalFamilyEngine.requestWithdrawal(it, amount) }
-    fun approveWithdrawal(id: String) = mutate("申请已确认，扣款和手续费已进入流水") { LocalFamilyEngine.approveWithdrawal(it, id) }
-    fun addReward(title: String, price: Int) = mutate { LocalFamilyEngine.addReward(it, title, price) }
-    fun redeemReward(id: String) = mutate("奖励兑换已记录") { LocalFamilyEngine.redeemReward(it, id) }
+    fun depositGift(amount: BigDecimal) { if(!remote.hasSession()) return mutate("本机演示账本已记录；连接服务后不会自动上传") { LocalFamilyEngine.depositGiftMoney(it, amount) }; productionAction({production.gift(amount)},"压岁钱已进入服务端账本") }
+    fun exchange(amount: BigDecimal) { if(!remote.hasSession()) return mutate("本机演示兑换已完成") { LocalFamilyEngine.exchangeMoneyToCoin(it, amount) }; viewModelScope.launch{when(val r=production.exchangePreview(amount)){is RemoteResult.Ok->{pendingExchangePreview=r.value;message="请核对兑换金额、费用和到账 Coin"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}} }
+    fun confirmExchange(){val preview=pendingExchangePreview?:return;viewModelScope.launch{when(val r=production.confirmExchange(preview.id)){is RemoteResult.Ok->{pendingExchangePreview=null;refreshProduction("兑换已确认，服务端账本已更新")};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun cancelExchange(){pendingExchangePreview=null;message="已取消兑换，没有扣款"}
+    fun withdraw(amount: BigDecimal) { if(!remote.hasSession()) return mutate("本机演示申请已提交") { LocalFamilyEngine.requestWithdrawal(it, amount) };viewModelScope.launch{when(val r=production.withdrawalQuote(amount)){is RemoteResult.Ok->{pendingWithdrawalQuote=r.value;message="请核对线下兑现费用和预计到账"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}} }
+    fun confirmWithdrawal(){val quote=pendingWithdrawalQuote?:return;viewModelScope.launch{when(val r=production.requestWithdrawal(quote.id)){is RemoteResult.Ok->{pendingWithdrawalQuote=null;syncProductionState();message="零钱回收申请已提交，尚未扣款"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun cancelWithdrawal(){pendingWithdrawalQuote=null;message="已取消申请，没有扣款"}
+    fun approveWithdrawal(id: String) { if(!remote.hasSession()) return mutate("本机演示申请已确认") { LocalFamilyEngine.approveWithdrawal(it, id) };productionAction({production.approveWithdrawal(id)},"申请已批准并冻结账本额度；线下支付后还需标记已支付") }
+    fun rejectWithdrawal(id:String){productionAction({production.rejectWithdrawal(id)},"申请已拒绝，没有扣款")}
+    fun cancelWithdrawalRequest(id:String){productionAction({production.cancelWithdrawalRequest(id)},"申请已取消，没有扣款")}
+    fun markWithdrawalPaid(id:String){productionAction({production.markWithdrawalPaid(id)},"已确认线下支付，扣款和费用已进入服务端流水")}
+    fun addReward(title: String, price: Int) {if(!remote.hasSession())return mutate { LocalFamilyEngine.addReward(it, title, price) };viewModelScope.launch{when(val r=production.createProduct(title,price)){is RemoteResult.Ok->{syncProductionState();message="奖励商品已保存到家庭服务"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun redeemReward(id: String) {if(!remote.hasSession())return mutate("本机演示兑换已记录") { LocalFamilyEngine.redeemReward(it, id) };productionAction({production.orderReward(id)},"奖励申请已提交，等待家长审核后才扣 Coin")}
+    fun reviewRewardOrder(id:String,approved:Boolean){productionAction({production.reviewReward(id,approved)},if(approved)"奖励申请已批准，Coin 已进入服务端流水" else "奖励申请已拒绝，没有扣 Coin")}
     fun toggleRewardInterest(id: String) {
         val selecting = id !in state.rewardInterestIds
         mutate(if (selecting) "已经记下你想要它，可以和家长说一说" else "已经先不选这个奖励") {
@@ -151,12 +177,17 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         val isCompleted = state.learningProgress.any { it.videoId == videoId && it.completed }
         if (!wasCompleted && isCompleted) message = "这节看完了，等家长确认"
     }
-    fun addSaving(title: String, target: BigDecimal) = mutate { LocalFamilyEngine.addSavingGoal(it, title, target) }
-    fun saveToGoal(id: String, amount: BigDecimal) = mutate("已存入目标") { LocalFamilyEngine.saveToGoal(it, id, amount) }
-    fun addWish(title: String, target: BigDecimal) = mutate { LocalFamilyEngine.addWish(it, title, target) }
-    fun buyFund(amount: BigDecimal) = mutate("已购买纯模拟份额") { LocalFamilyEngine.buyFund(it, amount) }
-    fun sellFund() = mutate("已赎回全部纯模拟份额") { LocalFamilyEngine.sellAllFund(it) }
-    fun updateNav(nav: BigDecimal) = mutate("教学 NAV 已更新") { LocalFamilyEngine.updateFundNav(it, nav) }
+    fun addSaving(title: String, target: BigDecimal) = mutate("储蓄目标名称仅保存在本机；资金变动由服务端账本负责") { LocalFamilyEngine.addSavingGoal(it, title, target) }
+    fun saveToGoal(id: String, amount: BigDecimal) {if(!remote.hasSession())return mutate("本机演示已存入目标") { LocalFamilyEngine.saveToGoal(it, id, amount) };productionAction({production.savingDeposit(amount)},"储蓄转入已进入服务端守恒流水")}
+    fun addWish(title: String, target: BigDecimal) {if(!remote.hasSession())return mutate { LocalFamilyEngine.addWish(it, title, target) };viewModelScope.launch{when(val r=production.createWish(title,target)){is RemoteResult.Ok->{syncProductionState();message="愿望已保存到家庭服务"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun allocateWish(id:String,amount:BigDecimal){if(!remote.hasSession())return failUnit("愿望分配需要连接家庭服务，避免本机余额与账本不一致");productionAction({production.allocateWish(id,amount)},"愿望分配已进入服务端守恒流水")}
+    fun buyFund(amount: BigDecimal) {if(!remote.hasSession())return mutate("本机纯模拟份额已购买") { LocalFamilyEngine.buyFund(it, amount) };fundTrade("BUY",amount,"模拟买入预览已生成")}
+    fun sellFund() {if(!remote.hasSession())return mutate("本机纯模拟份额已赎回") { LocalFamilyEngine.sellAllFund(it) };val shares=state.fund.shares;if(shares<=BigDecimal.ZERO)return failUnit("当前没有模拟持仓");fundTrade("SELL",shares,"模拟赎回预览已生成")}
+    fun updateNav(nav: BigDecimal) {if(!remote.hasSession())return mutate("本机教学 NAV 已更新") { LocalFamilyEngine.updateFundNav(it, nav) };viewModelScope.launch{val fund=ensureFund()?:return@launch;when(val r=production.updateNav(fund.id,nav)){is RemoteResult.Ok->{syncProductionState();message="教学 NAV 已保存到家庭服务"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun confirmFundTrade(){val preview=pendingFundTrade?:return;viewModelScope.launch{when(val r=production.confirmTrade(preview.id)){is RemoteResult.Ok->{pendingFundTrade=null;refreshProduction("纯模拟交易已确认并进入服务端账本")};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun cancelFundTrade(){pendingFundTrade=null;message="已取消模拟交易，没有账本变化"}
+    fun updateRetentionPolicy(days:Int){val policy=retentionPolicy?:return failUnit("请先连接并同步家庭服务");viewModelScope.launch{when(val r=production.updateRetentionPolicy(days,policy.version)){is RemoteResult.Ok->{retentionPolicy=r.value;message="使用明细保留期已保存；账本和最小审计不受影响"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun runRetentionNow(){viewModelScope.launch{when(val r=production.runRetention()){is RemoteResult.Ok->message="保留策略已执行：删除 ${r.value.usageEventsDeleted} 条过期使用明细，脱敏 ${r.value.allowancesRedacted} 条临时原因";RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
     fun updateUsage(daily: Int, session: Int) {
         if(!remote.hasSession())return mutate("本机防沉迷规则已更新；连接服务后可统一设置休息时段") { LocalFamilyEngine.updateUsagePolicy(it, daily, session) }
         viewModelScope.launch { when(val result=remote.configureUsage(daily,session,"21:30:00","06:30:00")) {
@@ -431,7 +462,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             val result = remote.connect(baseUrl, familyId, parentId, childId, pin)
             handleRemote(result, "已连接并同步家庭服务")
-            if (result is RemoteResult.Ok) { syncEducationResources(); reconcileAndFlushLearning(refreshFirst=false) }
+            if (result is RemoteResult.Ok) { syncEducationResources(); syncProductionState(); reconcileAndFlushLearning(refreshFirst=false) }
         }
     }
     fun refreshService() {
@@ -439,7 +470,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch {
             val result = remote.refresh()
             handleRemote(result, "已同步最新数据")
-            if (result is RemoteResult.Ok) { syncEducationResources(); reconcileAndFlushLearning(refreshFirst=false); flushUsageNow() }
+            if (result is RemoteResult.Ok) { syncEducationResources(); syncProductionState(); reconcileAndFlushLearning(refreshFirst=false); flushUsageNow() }
         }
     }
     fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); juniorLearningPlan=null; juniorLearningReport=null; seniorModuleConfiguration=null; seniorGoals=emptyList(); seniorReflections=emptyList(); seniorLearningReport=null;remoteUsageAccess=null;erasurePreview=null;stageTransitionPreview=null; learningSupportByAssignment=emptyMap(); primaryLearningReport=null; teachingCourses = emptyList(); connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
@@ -589,6 +620,23 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
 
     private suspend fun syncUsageAccess(){when(val result=remote.usageAccess()){is RemoteResult.Ok->remoteUsageAccess=result.value;RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->Unit}}
 
+    private fun productionAction(call:suspend()->RemoteResult<*>,success:String){viewModelScope.launch{when(val result=call()){is RemoteResult.Ok->refreshProduction(success);RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=result.message}}}
+    private suspend fun refreshProduction(success:String){when(val result=remote.refresh()){is RemoteResult.Ok->{handleRemote(result,success);syncProductionState()};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=result.message}}
+    private suspend fun syncProductionState(){
+        when(val r=production.products()){is RemoteResult.Ok->state=state.copy(rewards=r.value.map{LocalRewardItem(it.id,it.title,it.coinCost)});RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
+        when(val r=production.wishes()){is RemoteResult.Ok->state=state.copy(wishes=r.value.map{LocalWish(it.id,it.title,it.target)});RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
+        when(val r=production.withdrawals()){is RemoteResult.Ok->state=state.copy(withdrawals=r.value.map{LocalWithdrawalRequest(it.id,it.gross,it.fee,it.net,when(it.status){"APPROVED"->WithdrawalStatus.APPROVED;"PAID"->WithdrawalStatus.PAID;"REJECTED"->WithdrawalStatus.REJECTED;"CANCELLED"->WithdrawalStatus.CANCELLED;else->WithdrawalStatus.PENDING})});RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
+        when(val r=production.rewardOrders()){is RemoteResult.Ok->rewardOrders=r.value;RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
+        when(val r=production.savingBalance()){is RemoteResult.Ok->savingBalance=r.value;RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
+        when(val funds=production.funds()){is RemoteResult.Ok->{funds.value.firstOrNull()?.let{f->when(val p=production.fundPosition(f.id)){is RemoteResult.Ok->state=state.copy(fund=LocalFundPosition(p.value.nav,p.value.shares));else->Unit}}};else->Unit}
+        when(val r=production.todayReport()){is RemoteResult.Ok->todayUsageReport=r.value;else->Unit}
+        when(val r=production.monthlyReport()){is RemoteResult.Ok->monthlyUsageReport=r.value;else->Unit}
+        when(val r=production.retentionPolicy()){is RemoteResult.Ok->retentionPolicy=r.value;else->Unit}
+        store.save(state)
+    }
+    private suspend fun ensureFund():RemoteFund?{when(val existing=production.funds()){is RemoteResult.Ok->existing.value.firstOrNull()?.let{return it};RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return null};is RemoteResult.Failure->{message=existing.message;return null}};return when(val made=production.createFund()){is RemoteResult.Ok->{when(val nav=production.updateNav(made.value.id,BigDecimal.ONE.setScale(6))){is RemoteResult.Failure->{message=nav.message;return null};RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return null};else->Unit};when(val fees=production.configureFundFees(made.value.id)){is RemoteResult.Failure->{message=fees.message;return null};RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return null};else->Unit};made.value};RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");null};is RemoteResult.Failure->{message=made.message;null}}}
+    private fun fundTrade(side:String,input:BigDecimal,success:String){viewModelScope.launch{val fund=ensureFund()?:return@launch;when(val preview=production.tradePreview(fund.id,side,input)){is RemoteResult.Ok->{pendingFundTrade=preview.value;message="$success；请先核对 NAV、费用和份额"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=preview.message}}}
+
     private suspend fun syncSeniorLearning() {
         when(val result=remote.seniorModules()) { is RemoteResult.Ok->seniorModuleConfiguration=result.value;RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->Unit }
         when(val result=remote.seniorGoals()) { is RemoteResult.Ok->seniorGoals=result.value;RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->Unit }
@@ -692,7 +740,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             while (pendingUsage.isNotEmpty() && remote.hasSession()) {
                 val event = pendingUsage.first()
                 when (val result = remote.recordUsage(event.key, event.occurredAt)) {
-                    is RemoteResult.Ok -> pendingUsage.removeAt(0)
+                    is RemoteResult.Ok -> { pendingUsage.removeAt(0); syncUsageAccess() }
                     RemoteResult.Unauthorized -> { handleRemote(RemoteResult.Unauthorized, ""); return }
                     is RemoteResult.Failure -> { message = result.message; return }
                 }

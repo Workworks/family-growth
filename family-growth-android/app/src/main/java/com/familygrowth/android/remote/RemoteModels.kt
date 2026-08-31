@@ -38,7 +38,7 @@ data class RemoteSeniorGoal(val id:String,val assignmentId:String?,val module:Re
 data class RemoteSeniorReflection(val id:String,val goalId:String?,val assignmentId:String?,val evidenceSummary:String,val strategy:String,val nextAction:String,val supportRequested:Boolean,val createdAt:String)
 data class RemoteSeniorLearningReport(val recordedLearningMinutes:Long,val subjects:List<RemoteSubjectLearningFacts>,val activeGoals:Long,val archivedGoals:Long,val reflections:Long,val supportRequests:Long)
 data class RemoteUsagePolicy(val zoneId:String,val dailyLimitMinutes:Int,val sessionLimitMinutes:Int,val quietStart:String,val quietEnd:String,val version:Long)
-data class RemoteUsageAccess(val allowed:Boolean,val reasonCode:String,val message:String,val usedTodayMinutes:Int,val dailyLimitMinutes:Int,val allowanceExpiresAt:String?)
+data class RemoteUsageAccess(val allowed:Boolean,val reasonCode:String,val message:String,val usedTodayMinutes:Int,val dailyLimitMinutes:Int,val allowanceExpiresAt:String?,val sessionUsedMinutes:Int=0,val sessionLimitMinutes:Int=0,val restMinutes:Int=0,val restUntil:String?=null)
 data class RemoteChildDataExport(val generatedAt:String,val json:String)
 data class RemoteErasurePreview(val requestId:String,val confirmationToken:String,val confirmationExpiresAt:String,val deletedOrRedacted:List<String>,val retained:List<String>)
 data class RemoteErasureResult(val requestId:String,val status:String,val completedAt:String)

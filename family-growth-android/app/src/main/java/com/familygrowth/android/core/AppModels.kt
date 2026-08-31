@@ -9,7 +9,7 @@ enum class AppMode { CHILD, PARENT }
 enum class AppSection { TODAY, TASKS, WALLET, GROWTH, PARENT }
 enum class TaskStatus { TODO, SUBMITTED, APPROVED }
 enum class TaskSource { FAMILY, LEARNING_VIDEO }
-enum class WithdrawalStatus { PENDING, APPROVED }
+enum class WithdrawalStatus { PENDING, APPROVED, PAID, REJECTED, CANCELLED }
 enum class SchoolStage { PARENT_ONLY, KINDERGARTEN, PRIMARY, JUNIOR_MIDDLE, SENIOR_HIGH }
 enum class PrimaryGradeBand(val label: String, val guide: String) {
     LOWER_PRIMARY("低年级", "读懂 · 试一试 · 说发现"),
