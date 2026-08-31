@@ -127,6 +127,7 @@ public final class Stage20Models {
             Objects.requireNonNull(createdAt);
         }
     }
+    public record StageTransitionPreview(UUID childId,SchoolStage oldStage,SchoolStage newStage,int willArchiveUnstartedAutonomous,int willRestorePreviouslyArchived,String message){}
 
     public enum DocumentaryAccessMode { ORIGINAL_OFFLINE, LICENSED_OFFLINE, OFFICIAL_LINK }
     public enum DocumentaryStatus { DRAFT, APPROVED, WITHDRAWN }

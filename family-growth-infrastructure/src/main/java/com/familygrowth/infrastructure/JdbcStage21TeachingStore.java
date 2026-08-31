@@ -282,7 +282,7 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
             JOIN teaching_unit u ON u.id=l.unit_id JOIN learning_completion lc ON lc.assignment_id=a.id
             LEFT JOIN junior_lesson_metadata jm ON jm.lesson_id=l.id
             LEFT JOIN senior_lesson_metadata sm ON sm.lesson_id=l.id
-            WHERE a.family_id=? AND a.child_id=? AND a.id=? AND v.status='PUBLISHED'
+            WHERE a.family_id=? AND a.child_id=? AND a.id=? AND v.status='PUBLISHED' AND a.stage_archived_at IS NULL
             """, (rs, row) -> assignment(rs), familyId, childId, assignmentId).stream().findFirst().map(this::facts);
     }
 
@@ -301,7 +301,7 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
             JOIN teaching_unit u ON u.id=l.unit_id JOIN learning_completion lc ON lc.assignment_id=a.id
             LEFT JOIN junior_lesson_metadata jm ON jm.lesson_id=l.id
             LEFT JOIN senior_lesson_metadata sm ON sm.lesson_id=l.id
-            WHERE a.family_id=? AND a.child_id=? AND c.school_stage=? AND v.status='PUBLISHED'
+            WHERE a.family_id=? AND a.child_id=? AND c.school_stage=? AND v.status='PUBLISHED' AND a.stage_archived_at IS NULL
               AND (a.assignment_source='PARENT' OR v.version_number=(SELECT MAX(v2.version_number)
                    FROM teaching_course_version v2 WHERE v2.course_id=c.id AND v2.status='PUBLISHED'))
             ORDER BY a.updated_at DESC,a.id

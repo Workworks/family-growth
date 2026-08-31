@@ -16,7 +16,7 @@
 | P1 | 23 | `BLOCKED` | 可离线工作包已完成；连接目标平板回放小学报告、横竖屏、TalkBack、大字体、Reduced Motion 与数据保留 | 用户提供平板；Agent 回放 | Stage 23 报告、`evidence/stage-23/` |
 | P1 | 24 | `BLOCKED` | 可离线工作包已完成；连接目标平板回放横竖屏、大字体、TalkBack、Reduced Motion、触控排序和断网恢复 | 用户提供平板；Agent 回放 | Stage 24 报告、`evidence/stage-24/` |
 | P1 | 25 | `BLOCKED` | 可离线工作包已完成；连接目标平板回放研究板、TalkBack、Reduced Motion、断网冲突和数据保留 | 用户提供平板；Agent 回放 | Stage 25 报告、`evidence/stage-25/` |
-| P0 | 26 | `IN_PROGRESS` | 固化并实施跨学段迁移、儿童数据导出/删除/保留、完整 App 内防沉迷、Android 生产服务接入及发布门禁 | Agent；设备/服务验收由外部条件解除 | Stage 26 Spec、代码、门禁、Release 与 evidence |
+| P0 | 26 | `IN_PROGRESS` | WP26-2–7 已完成；递增 Android 版本，复用稳定签名发布公开 GitHub Release，并复验远端摘要、包名、版本和证书 | Agent；设备/服务验收由外部条件解除 | Stage 26 Spec、代码、门禁、Release 与 evidence |
 | P0 | 21 | `BLOCKED` | v0.3.6/12 已发布；在目标平板从 v0.3.5 应用内覆盖升级并回放 AndroidKeyStore 写前队列、杀进程/断网、重新登录、401/409、真实来源/官方播放和 TalkBack/旋转 | 用户提供平板/可访问服务；Agent 回放 | `stages/stage-23-report.md`、`evidence/stage-23/acceptance.json`、v0.3.6 Release |
 | P0 | 20 | `BLOCKED` | 用目标平板回放四学段、触觉开关、Reduced Motion、TalkBack、旋转、重启和真实服务同步 | 用户提供设备；Agent 回放 | `stages/stage-20-report.md`、`evidence/stage-20/acceptance.json` |
 | P0 | 18 | `BLOCKED` | 在平板用 v0.3.3→v0.3.4 更新链同时测试双视角、视频计时、奖励兴趣和重启保留 | 用户测试；Agent 根据反馈修复 | Stage 18/19 真机证据 |

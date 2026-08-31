@@ -580,6 +580,19 @@ paths:
       parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UsageEventRequest' } } } }
       responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/usage-access:
+    get:
+      operationId: getUsageAccess
+      description: Returns the server-authoritative quiet-window, daily-limit and temporary-allowance decision used by the child client.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/children/{childId}/usage-allowances:
+    post:
+      operationId: createTemporaryUsageAllowance
+      description: Parent-only, audited allowance of at most 60 minutes; it does not disable the usage policy.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/UsageAllowanceRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
   /families/{familyId}/children/{childId}/reports/today:
     get:
       operationId: getTodayReport
@@ -619,6 +632,38 @@ paths:
         - $ref: '#/components/parameters/ChildId'
         - { name: limit, in: query, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
       responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/children/{childId}/experience-profile/transition-preview:
+    get:
+      operationId: previewChildStageTransition
+      description: Parent-only impact preview required before changing the effective school stage; historical learning evidence is preserved.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - { name: birthDate, in: query, required: true, schema: { type: string, format: date } }
+        - { name: stageOverride, in: query, required: false, schema: { $ref: '#/components/schemas/SchoolStage' } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/children/{childId}/data-rights/exports:
+    post:
+      operationId: exportChildData
+      description: Parent-only machine-readable export with a stable schema; credentials, secrets and private answer text are excluded.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/data-rights/erasure-preview:
+    post:
+      operationId: previewChildDataErasure
+      description: Parent-only preview returning a one-time, ten-minute confirmation token and explicit preserve/redact categories.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/data-rights/erasures/{requestId}/confirm:
+    post:
+      operationId: confirmChildDataErasure
+      description: Confirms redaction using both the one-time token and the parent's service PIN. Ledger, audit and idempotency records are retained.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+        - { name: requestId, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/DataErasureConfirmRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
   /families/{familyId}/documentary-sources:
     get:
       operationId: listDocumentarySources
@@ -1467,6 +1512,20 @@ components:
         zoneId: { type: string, minLength: 1, maxLength: 60, example: Asia/Shanghai }
         dailyLimitMinutes: { type: integer, minimum: 10, maximum: 480 }
         sessionLimitMinutes: { type: integer, minimum: 5, maximum: 240 }
+        quietStart: { type: string, format: time, default: '21:30:00' }
+        quietEnd: { type: string, format: time, default: '06:30:00' }
+    UsageAllowanceRequest:
+      type: object
+      required: [minutes, reason]
+      properties:
+        minutes: { type: integer, minimum: 1, maximum: 60 }
+        reason: { type: string, minLength: 1, maxLength: 240 }
+    DataErasureConfirmRequest:
+      type: object
+      required: [confirmationToken, pin]
+      properties:
+        confirmationToken: { type: string, minLength: 1, maxLength: 100 }
+        pin: { type: string, pattern: '^\\d{6}$', writeOnly: true }
     UsageEventRequest:
       type: object
       required: [type, minutes, occurredAt]

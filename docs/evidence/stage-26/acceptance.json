@@ -1,0 +1,72 @@
+{
+  "stage": 26,
+  "capturedAt": "2026-08-31",
+  "status": "IN_PROGRESS",
+  "scope": "Stage transition continuity, constrained child data rights, server-authoritative quiet hours and temporary allowance, Android privacy and limit surfaces, offline production gates and release preparation",
+  "results": [
+    {
+      "id": "V26-01/V26-04-H2",
+      "status": "PASS",
+      "command": ".\\mvnw.cmd test",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "All H2 tests passed: 26 domain, 2 infrastructure and 32 Boot tests, with six PostgreSQL-only tests skipped by design. Flyway applied 22 migrations. Stage transition, quiet hours, allowance, export and two-step erasure regressions passed."
+    },
+    {
+      "id": "V26-01/V26-03/V26-04-POSTGRES",
+      "status": "PASS",
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am -Dtest=PostgresSchemaValidationTest,Stage20ApiTest,Stage26UsageAccessApiTest,Stage26DataRightsApiTest,Stage23AutonomousLearningApiTest,Stage25SeniorLearningApiTest -Dsurefire.failIfNoSpecifiedTests=false test",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Disposable PostgreSQL 16.15 validated 22 migrations and 76 production tables. Nine selected tests passed with zero skips. A follow-up PostgreSQL run revalidated schema and the strengthened erasure policy after adding free-text, wish and non-financial usage redaction. The exact disposable container was stopped and removed after each run."
+    },
+    {
+      "id": "V26-05-ANDROID",
+      "status": "PASS_OFFLINE",
+      "command": ".\\gradlew.bat :app:testDebugUnitTest :app:testReleaseUnitTest :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease --no-daemon",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Both JVM variants, both lint variants and both APK assemblies completed successfully in 111 Gradle tasks. Privacy center, stage transition preview, server usage access and gentle locked-state code compiled for debug and release."
+    },
+    {
+      "id": "V26-06",
+      "status": "PASS_OFFLINE",
+      "command": "OpenAPI parse, Markdown local-link validation, evidence JSON parse, git diff --check and tracked secret scan",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "OpenAPI 3.1 parsed with 86 paths, 92 Markdown files had no broken local links, all Stage evidence JSON parsed, git diff whitespace checks passed, and the tracked secret pattern scan returned no findings. Final release metadata will be checked again after publication."
+    },
+    {
+      "id": "V26-07",
+      "status": "IN_PROGRESS",
+      "command": "Signed APK and GitHub Release publication and remote identity verification",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": null,
+      "passed": false,
+      "result": "Version increment and public release are the next work package."
+    },
+    {
+      "id": "V26-08",
+      "status": "BLOCKED",
+      "command": "NOT_RUN: target-tablet and device-accessible HTTPS total acceptance",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": null,
+      "passed": false,
+      "result": "No target Android tablet or device-accessible trusted HTTPS family service is available. Installation, in-app upgrade, TalkBack, rotation, large text, Reduced Motion, physical haptics, offline recovery and data retention remain unverified."
+    }
+  ],
+  "remaining": [
+    "Publish and remotely verify the next stable signed GitHub Release",
+    "Target-tablet and trusted HTTPS V26-08 runtime acceptance"
+  ]
+}

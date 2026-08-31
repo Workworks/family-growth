@@ -37,6 +37,9 @@ public interface Stage20Store {
     StoredExperience experience(UUID familyId, UUID childId, Instant now);
     StoredExperience updateExperience(UUID familyId, UUID childId, UUID actorId, ExperienceUpdate update, Instant now);
     List<ExperienceAudit> experienceAudit(UUID familyId, UUID childId, int limit);
+    int countStageArchiveCandidates(UUID familyId,UUID childId,SchoolStage oldStage);
+    int countStageRestoreCandidates(UUID familyId,UUID childId,SchoolStage newStage);
+    void applyStageTransition(UUID familyId,UUID childId,UUID actorId,SchoolStage oldStage,SchoolStage newStage,String reason,Instant now);
 
     Optional<DocumentarySource> documentaryByKey(UUID familyId, String idempotencyKey);
     DocumentarySource createDocumentary(UUID familyId, DocumentarySource source, String idempotencyKey, String payloadHash);

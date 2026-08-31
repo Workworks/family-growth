@@ -53,12 +53,18 @@
 | POST | `/families/{familyId}/withdrawal-requests/{requestId}/cancel` | REQUESTED 本人/PARENT；APPROVED 仅 PARENT | 取消待审或释放已批准冻结额 |
 | POST | `/families/{familyId}/withdrawal-requests/{requestId}/paid` | PARENT | 确认已线下支付；原子减少总额/冻结额并追加 WITHDRAWAL Money 流水 |
 | GET | `/families/{familyId}/children/{childId}/sync` | PARENT/CHILD 本人 | Android 聚合同步任务/最新 Completion、钱包和今日审核摘要 |
-| GET/PUT | `/families/{familyId}/children/{childId}/usage-policy` | PARENT/CHILD 本人 / PARENT | 查询或配置家庭时区、每日和单次 App 内时长上限；缺省为 Asia/Shanghai 20/10 分钟 |
+| GET/PUT | `/families/{familyId}/children/{childId}/usage-policy` | PARENT/CHILD 本人 / PARENT | 查询或配置家庭时区、每日/单次 App 内时长上限和睡眠时段；缺省为 Asia/Shanghai、20/10 分钟、21:30–06:30 |
+| GET | `/families/{familyId}/children/{childId}/usage-access` | PARENT/CHILD 本人 | 返回服务端对睡眠时段、日上限和有效临时放行的统一判定 |
+| POST | `/families/{familyId}/children/{childId}/usage-allowances` | PARENT | 幂等创建 1–60 分钟临时放行，必须说明原因并自动到期 |
 | POST | `/families/{familyId}/children/{childId}/usage-events` | PARENT/CHILD 本人 | 幂等记录本 App 的活跃/学习分钟；只接受最近 31 天且不超过未来 5 分钟的事件 |
 | GET | `/families/{familyId}/children/{childId}/reports/today` | PARENT/CHILD 本人 | 按家庭时区返回本人适龄使用、任务、待审核和钱包摘要 |
 | GET | `/families/{familyId}/children/{childId}/reports/monthly` | PARENT | 从 Usage/Completion/Ledger/Saving/Fund 事实表聚合月度成长和财商报告 |
 | GET/PUT | `/families/{familyId}/children/{childId}/experience-profile` | PARENT/CHILD 本人 / PARENT | 查询服务端推荐/有效学段、小学低/高年级带与反馈档案；家长按版本修改出生日期、覆盖学段、小学分段和触觉开关。`primaryBandOverride` 仅在有效学段为 `PRIMARY` 时允许 |
 | GET | `/families/{familyId}/children/{childId}/experience-profile/audit` | PARENT | 查询出生日期、覆盖学段、小学分段和触觉配置的不可变审计记录 |
+| GET | `/families/{familyId}/children/{childId}/experience-profile/transition-preview` | PARENT | 修改年龄/覆盖学段前预览旧学段未开始自主课程归档和新学段恢复数量；历史证据不删除 |
+| POST | `/families/{familyId}/children/{childId}/data-rights/exports` | PARENT | 幂等生成稳定 schema 的儿童数据 JSON；排除 PIN/Token/secret、答案键和家长私密说明 |
+| POST | `/families/{familyId}/children/{childId}/data-rights/erasure-preview` | PARENT | 返回明确删除/保留清单和十分钟一次性确认 token |
+| POST | `/families/{familyId}/children/{childId}/data-rights/erasures/{requestId}/confirm` | PARENT | 用一次性 token 与服务端 6 位 PIN 确认去标识化；保留账本、必要审计和幂等事实 |
 | GET/POST | `/families/{familyId}/documentary-sources` | PARENT | 查询或幂等创建带权利依据、访问模式、学段和生命周期的纪录片来源 |
 | GET | `/families/{familyId}/children/{childId}/documentaries` | PARENT/CHILD 本人 | 只投影有效学段内已批准且未过期的条目；孩子响应不含可启动 URL 或权利元数据 |
 | POST | `/families/{familyId}/documentary-sources/{sourceId}/approve` | PARENT | 幂等批准 DRAFT 来源 |
@@ -97,6 +103,8 @@
 月度报告不保存第二份余额：Money/Coin 收支来自不可变 Ledger，压岁钱、兑换费、储蓄和模拟基金分别来自业务事实表；`walletLedgerBalanced` 直接比较 Wallet 与全量流水。CHILD 会话不能读取月度财务报告，也不能读取其他孩子的今日摘要。
 
 学段推荐边界为 0–2 岁 `PARENT_ONLY`、3–5 岁 `KINDERGARTEN`、6–11 岁 `PRIMARY`、12–14 岁 `JUNIOR_MIDDLE`、15 岁及以上 `SENIOR_HIGH`。家长覆盖不能选择 `PARENT_ONLY`，且必须说明原因；更新使用 `expectedVersion` 防止并发覆盖并追加审计。纪录片 `OFFICIAL_LINK` 只接受无凭据 HTTPS 地址且始终要求家长操作；原创离线和已授权离线内容分别只接受 `asset://`、`content-package://` 引用。目录仅证明来源已登记和审批，不证明第三方内容已获下载、剪辑或再分发授权。
+
+有效学段变化采用“先预览、后更新”：只归档旧学段中尚未开始的自主 Assignment，并恢复目标学段过去被该机制归档的 Assignment。进行中、待回应、返工、完成、家长手动布置、Attempt、Completion、奖励和 Ledger 均不删除或改写。儿童数据删除是受约束去标识化，不承诺物理备份即时擦除；直接标识、儿童自由文本、愿望标题、非财务使用明细、临时放行和有效儿童会话会被删除或替换，账本、必要审计、幂等及最小学习状态保留。
 
 免费教育来源发现不是通用爬虫：服务端不执行 JavaScript、不提交表单、不携带 Cookie/认证，只读取最多 512 KiB HTML，最多跟随 3 次同源重定向并保存 30 个同源导航栏目。URL 创建、DNS 结果和每次重定向均拒绝 loopback、私网、链路本地、组播、保留地址和 IP 字面量。成功刷新会把来源重新置为 `DRAFT`，必须由家长再次批准新快照；失败返回 `FAILED`、保留最近成功快照和既有批准状态。不同站点的栏目结构可能无法自动识别，由家长更换为该站稳定的栏目首页。
 

@@ -140,7 +140,13 @@
 - [Stage 17](evidence/stage-17/acceptance.json)
 - [Stage 18](evidence/stage-18/acceptance.json)
 - [Stage 19](evidence/stage-19/acceptance.json)
+- [Stage 20](evidence/stage-20/acceptance.json)
+- [Stage 21](evidence/stage-21/acceptance.json)
 - [Stage 22](evidence/stage-22/acceptance.json)
+- [Stage 23](evidence/stage-23/acceptance.json)
+- [Stage 24](evidence/stage-24/acceptance.json)
+- [Stage 25](evidence/stage-25/acceptance.json)
+- [Stage 26](evidence/stage-26/acceptance.json)
 
 ## 目录约定
 

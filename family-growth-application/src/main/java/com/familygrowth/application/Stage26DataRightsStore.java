@@ -1,0 +1,3 @@
+package com.familygrowth.application;
+import com.familygrowth.domain.Stage26DataRightsModels.*;import java.time.Instant;import java.util.Map;import java.util.Optional;import java.util.UUID;
+public interface Stage26DataRightsStore {Map<String,Object> exportFacts(UUID family,UUID child);Optional<StoredRequest> byKey(UUID family,String key);Optional<StoredRequest> byId(UUID family,UUID id);StoredRequest create(UUID family,UUID child,UUID actor,String type,String tokenHash,Instant expires,String key,String payloadHash,Instant now);StoredRequest completeErasure(UUID family,UUID child,UUID request,UUID actor,Instant now);void recordExport(UUID family,UUID child,UUID request,UUID actor,Instant now);}

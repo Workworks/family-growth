@@ -56,6 +56,10 @@ class Stage20ApiTest {
         mvc.perform(get(url).header("Authorization", bearer(other.token)))
             .andExpect(status().isNotFound());
         mvc.perform(get(url)).andExpect(status().isUnauthorized());
+        mvc.perform(get(url+"/transition-preview?birthDate=2017-08-26&stageOverride=PRIMARY").header("Authorization",bearer(parent.token)))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data.oldStage").value("KINDERGARTEN"))
+            .andExpect(jsonPath("$.data.newStage").value("PRIMARY"))
+            .andExpect(jsonPath("$.data.message").value(org.hamcrest.Matchers.containsString("不会删除")));
 
         String update = """
             {"birthDate":"2017-08-26","stageOverride":"PRIMARY","primaryBandOverride":"UPPER_PRIMARY",
@@ -104,6 +108,8 @@ class Stage20ApiTest {
             Integer.class, child)).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM activity_attempt WHERE id=?",
             Integer.class, existingAttempt)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM child_stage_transition_action WHERE child_id=?",
+            Integer.class, child)).isEqualTo(1);
     }
 
     @Test

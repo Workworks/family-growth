@@ -9,6 +9,7 @@ import com.familygrowth.domain.Stage20Models.ExperienceAudit;
 import com.familygrowth.domain.Stage20Models.ExperienceProfile;
 import com.familygrowth.domain.Stage20Models.SchoolStage;
 import com.familygrowth.domain.Stage20Models.PrimaryGradeBand;
+import com.familygrowth.domain.Stage20Models.StageTransitionPreview;
 import com.familygrowth.domain.Stage3Models.Actor;
 import com.familygrowth.domain.Stage3Models.ActorRole;
 import java.nio.charset.StandardCharsets;
@@ -63,11 +64,17 @@ public class Stage20Service {
         if (primaryBandOverride != null && effective != SchoolStage.PRIMARY) {
             throw new IllegalArgumentException("primaryBandOverride requires PRIMARY effective stage");
         }
+        var oldStored=store.experience(familyId,childId,clock.instant());
+        SchoolStage oldRecommended=SchoolStage.recommended(oldStored.birthDate(),LocalDate.now(clock));
+        SchoolStage oldEffective=oldStored.stageOverride()==null?oldRecommended:oldStored.stageOverride();
         var stored = store.updateExperience(familyId, childId, actor.actorId(),
             new Stage20Store.ExperienceUpdate(birthDate, stageOverride, primaryBandOverride, normalize(overrideReason),
                 hapticsEnabled, expectedVersion, requireText(auditReason, "auditReason")), clock.instant());
+        if(oldEffective!=effective)store.applyStageTransition(familyId,childId,actor.actorId(),oldEffective,effective,requireText(auditReason,"auditReason"),clock.instant());
         return profile(familyId, childId, stored);
     }
+
+    @Transactional(readOnly=true)public StageTransitionPreview transitionPreview(Actor actor,UUID familyId,UUID childId,LocalDate birthDate,SchoolStage override){auth.requireParent(actor,familyId);var old=store.experience(familyId,childId,clock.instant());SchoolStage oldStage=old.stageOverride()==null?SchoolStage.recommended(old.birthDate(),LocalDate.now(clock)):old.stageOverride();SchoolStage newStage=override==null?SchoolStage.recommended(birthDate,LocalDate.now(clock)):override;int archive=oldStage==newStage?0:store.countStageArchiveCandidates(familyId,childId,oldStage);int restore=oldStage==newStage?0:store.countStageRestoreCandidates(familyId,childId,newStage);return new StageTransitionPreview(childId,oldStage,newStage,archive,restore,"已开始、待回应、返工、已完成、家长手动布置、奖励和账本历史不会删除或改写。");}
 
     @Transactional(readOnly = true)
     public List<ExperienceAudit> audit(Actor actor, UUID familyId, UUID childId, int limit) {

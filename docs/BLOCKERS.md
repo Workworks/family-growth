@@ -11,6 +11,18 @@
 
 ## 1. 外部阻塞
 
+### Stage 26：连续性、隐私、防沉迷与发布总验收
+
+状态：`IN_PROGRESS`（发布后转 `BLOCKED`）　文档：[Stage 26](stages/stage-26-report.md)
+
+已完成：跨学段迁移预览/归档/恢复与审计、儿童 JSON 导出、一次性 token + 服务端 PIN 的受约束去标识化、睡眠时段/临时放行/统一使用判定、Android 隐私中心和温和锁定页；H2、PostgreSQL 16.15、Android 双变体门禁通过。
+
+当前 Agent 可执行：递增版本并发布稳定签名 GitHub Release，完成远端摘要、包名、版本和证书复验。
+
+外部缺少：目标 Android 平板，以及设备可访问并信任证书的 HTTPS 家庭服务。没有这些条件，首装/覆盖升级、TalkBack、横竖屏、大字体、Reduced Motion、物理触觉、断网恢复、四学段切换和删除后数据保留不能作运行态验收。
+
+推进方：Agent 完成发布；用户提供设备/服务后由 Agent 回放 WP26-9/V26-08。
+
 ### Stage 2：工程骨架与 Family / Growth 基础
 
 状态：`BLOCKED`　文档：[Stage 2](stages/stage-2-report.md)

@@ -8,6 +8,7 @@ import com.familygrowth.domain.Stage20Models.ExperienceAudit;
 import com.familygrowth.domain.Stage20Models.ExperienceProfile;
 import com.familygrowth.domain.Stage20Models.SchoolStage;
 import com.familygrowth.domain.Stage20Models.PrimaryGradeBand;
+import com.familygrowth.domain.Stage20Models.StageTransitionPreview;
 import com.familygrowth.domain.Stage3Models;
 import com.familygrowth.domain.Stage3Models.Actor;
 import jakarta.validation.Valid;
@@ -73,6 +74,9 @@ class Stage20Controller {
     ) {
         return ApiResponse.ok(service.audit(actor, familyId, childId, limit));
     }
+
+    @GetMapping("/children/{childId}/experience-profile/transition-preview")
+    ApiResponse<StageTransitionPreview> transitionPreview(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE)Actor actor,@PathVariable UUID familyId,@PathVariable UUID childId,@RequestParam @PastOrPresent LocalDate birthDate,@RequestParam(required=false)SchoolStage stageOverride){return ApiResponse.ok(service.transitionPreview(actor,familyId,childId,birthDate,stageOverride));}
 
     @PostMapping("/documentary-sources")
     @ResponseStatus(HttpStatus.CREATED)

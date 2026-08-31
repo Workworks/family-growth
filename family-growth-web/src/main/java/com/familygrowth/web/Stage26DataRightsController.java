@@ -1,0 +1,8 @@
+package com.familygrowth.web;
+import com.familygrowth.application.Stage26DataRightsService;import com.familygrowth.domain.Stage3Models;import com.familygrowth.domain.Stage3Models.Actor;import com.familygrowth.domain.Stage26DataRightsModels.*;import jakarta.validation.Valid;import jakarta.validation.constraints.*;import java.util.UUID;import org.springframework.web.bind.annotation.*;
+@RestController @RequestMapping("/api/v1/families/{familyId}/children/{childId}/data-rights") class Stage26DataRightsController {private final Stage26DataRightsService service;Stage26DataRightsController(Stage26DataRightsService service){this.service=service;}
+ @PostMapping("/exports")ApiResponse<ChildDataExport> export(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE)Actor actor,@PathVariable UUID familyId,@PathVariable UUID childId,@RequestHeader("Idempotency-Key")String key){return ApiResponse.ok(service.export(actor,familyId,childId,key));}
+ @PostMapping("/erasure-preview")ApiResponse<ErasurePreview> preview(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE)Actor actor,@PathVariable UUID familyId,@PathVariable UUID childId,@RequestHeader("Idempotency-Key")String key){return ApiResponse.ok(service.preview(actor,familyId,childId,key));}
+ @PostMapping("/erasures/{requestId}/confirm")ApiResponse<ErasureResult> confirm(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE)Actor actor,@PathVariable UUID familyId,@PathVariable UUID childId,@PathVariable UUID requestId,@Valid @RequestBody ConfirmRequest request){return ApiResponse.ok(service.confirm(actor,familyId,childId,requestId,request.confirmationToken(),request.pin()));}
+ record ConfirmRequest(@NotBlank @Size(max=100)String confirmationToken,@Pattern(regexp="\\d{6}")String pin){}
+}

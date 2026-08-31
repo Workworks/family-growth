@@ -205,7 +205,7 @@ private fun ChildLimitScreen(viewModel: FamilyAppViewModel, onParentRequest: () 
         Text("🌙", style = MaterialTheme.typography.displaySmall)
         Spacer(Modifier.height(12.dp))
         Text("现在休息一下", style = MaterialTheme.typography.headlineMedium)
-        Text("小任务已经帮你保存好了。放下平板，动一动，或者找家长聊聊天。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(viewModel.remoteUsageAccess?.message ?: "小任务已经帮你保存好了。放下平板，动一动，或者找家长聊聊天。", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(20.dp))
         Button(onClick = { feedback(onParentRequest) }, modifier = Modifier.heightIn(min = 60.dp)) { Text("请家长帮忙") }
     }

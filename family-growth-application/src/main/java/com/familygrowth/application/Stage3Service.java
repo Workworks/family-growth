@@ -95,6 +95,9 @@ public class Stage3Service {
         return issueSession(new Actor(actor.familyId(), child.id(), ActorRole.CHILD, child.id()), clock.instant());
     }
 
+    @Transactional(noRollbackFor = {AuthenticationException.class, PinLockedException.class})
+    public void verifyParentPin(Actor actor,String pin){requireParent(actor,actor.familyId());var now=clock.instant();var credential=store.findPinCredential(actor.familyId(),actor.actorId()).orElseThrow(AuthenticationException::new);if(credential.lockedUntil()!=null&&credential.lockedUntil().isAfter(now))throw new PinLockedException(credential.lockedUntil());if(!encoder.matches(pin,credential.pinHash())){int failures=credential.failedAttempts()+1;Instant lockedUntil=failures>=MAX_PIN_FAILURES?now.plus(PIN_LOCK_TIME):null;store.recordFailedPin(actor.actorId(),failures,lockedUntil,now);if(lockedUntil!=null)throw new PinLockedException(lockedUntil);throw new AuthenticationException();}store.clearFailedPin(actor.actorId(),now);}
+
     public ChildProfile addChild(
         Actor actor, UUID familyId, String name, LocalDate birthDate, com.familygrowth.domain.AgeStage stage
     ) {

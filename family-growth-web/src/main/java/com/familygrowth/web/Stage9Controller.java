@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -26,7 +27,7 @@ class Stage9Controller {
     @PutMapping("/usage-policy")
     ApiResponse<UsagePolicy> policy(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE) Actor actor,
         @PathVariable UUID familyId, @PathVariable UUID childId, @Valid @RequestBody PolicyRequest request) {
-        return ApiResponse.ok(service.configure(actor, familyId, childId, request.zoneId(), request.dailyLimitMinutes(), request.sessionLimitMinutes()));
+        return ApiResponse.ok(service.configure(actor, familyId, childId, request.zoneId(), request.dailyLimitMinutes(), request.sessionLimitMinutes(),request.quietStart()==null?LocalTime.of(21,30):request.quietStart(),request.quietEnd()==null?LocalTime.of(6,30):request.quietEnd()));
     }
 
     @GetMapping("/usage-policy")
@@ -55,7 +56,14 @@ class Stage9Controller {
         return ApiResponse.ok(service.month(actor, familyId, childId, month));
     }
 
+    @GetMapping("/usage-access")
+    ApiResponse<UsageAccessState> access(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE) Actor actor,@PathVariable UUID familyId,@PathVariable UUID childId){return ApiResponse.ok(service.access(actor,familyId,childId));}
+
+    @PostMapping("/usage-allowances")
+    ApiResponse<TemporaryAllowance> allowance(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE) Actor actor,@PathVariable UUID familyId,@PathVariable UUID childId,@RequestHeader("Idempotency-Key") String key,@Valid @RequestBody AllowanceRequest request){return ApiResponse.ok(service.allow(actor,familyId,childId,request.minutes(),request.reason(),key));}
+
     record PolicyRequest(@NotBlank @Size(max = 60) String zoneId,
-        @Min(10) @Max(480) int dailyLimitMinutes, @Min(5) @Max(240) int sessionLimitMinutes) {}
+        @Min(10) @Max(480) int dailyLimitMinutes, @Min(5) @Max(240) int sessionLimitMinutes,LocalTime quietStart,LocalTime quietEnd) {}
     record EventRequest(@NotNull UsageEventType type, @Min(1) @Max(60) int minutes, @NotNull Instant occurredAt) {}
+    record AllowanceRequest(@Min(1) @Max(60) int minutes,@NotBlank @Size(max=240) String reason){}
 }

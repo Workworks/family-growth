@@ -58,6 +58,14 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     var seniorLearningReport by mutableStateOf<RemoteSeniorLearningReport?>(null)
         private set
+    var remoteUsageAccess by mutableStateOf<RemoteUsageAccess?>(null)
+        private set
+    var erasurePreview by mutableStateOf<RemoteErasurePreview?>(null)
+        private set
+    var lastExportPath by mutableStateOf<String?>(null)
+        private set
+    var stageTransitionPreview by mutableStateOf<RemoteStageTransitionPreview?>(null)
+        private set
     var learningSupportByAssignment by mutableStateOf<Map<String,List<RemoteSupportEvent>>>(emptyMap())
         private set
     var primaryLearningReport by mutableStateOf<RemotePrimaryLearningReport?>(null)
@@ -70,7 +78,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         private set
 
     val isChildLocked: Boolean get() = mode == AppMode.CHILD &&
-        (state.usage.usedMinutes >= state.usage.dailyLimitMinutes || sessionUsedMinutes >= state.usage.sessionLimitMinutes)
+        (remoteUsageAccess?.allowed==false || state.usage.usedMinutes >= state.usage.dailyLimitMinutes || sessionUsedMinutes >= state.usage.sessionLimitMinutes)
 
     init {
         store.load().onSuccess { state = it }.onFailure { message = "本地数据读取失败，已进入空白安全状态" }
@@ -149,7 +157,18 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     fun buyFund(amount: BigDecimal) = mutate("已购买纯模拟份额") { LocalFamilyEngine.buyFund(it, amount) }
     fun sellFund() = mutate("已赎回全部纯模拟份额") { LocalFamilyEngine.sellAllFund(it) }
     fun updateNav(nav: BigDecimal) = mutate("教学 NAV 已更新") { LocalFamilyEngine.updateFundNav(it, nav) }
-    fun updateUsage(daily: Int, session: Int) = mutate("本机防沉迷规则已更新") { LocalFamilyEngine.updateUsagePolicy(it, daily, session) }
+    fun updateUsage(daily: Int, session: Int) {
+        if(!remote.hasSession())return mutate("本机防沉迷规则已更新；连接服务后可统一设置休息时段") { LocalFamilyEngine.updateUsagePolicy(it, daily, session) }
+        viewModelScope.launch { when(val result=remote.configureUsage(daily,session,"21:30:00","06:30:00")) {
+            is RemoteResult.Ok->{mutate("防沉迷规则已同步：休息时段 21:30–06:30"){LocalFamilyEngine.updateUsagePolicy(it,daily,session)};syncUsageAccess()}
+            RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"")
+            is RemoteResult.Failure->message=result.message
+        } }
+    }
+    fun grantTemporaryUsage(minutes:Int,reason:String){if(reason.isBlank())return failUnit("请写明临时放行原因");viewModelScope.launch{when(val result=remote.createUsageAllowance(minutes,reason.trim())){is RemoteResult.Ok->{syncUsageAccess();message="已临时允许 $minutes 分钟，到时自动结束"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=result.message}}}
+    fun exportChildData(){viewModelScope.launch{when(val result=remote.exportChildData()){is RemoteResult.Ok->{val dir=getApplication<Application>().getExternalFilesDir(android.os.Environment.DIRECTORY_DOCUMENTS)?:getApplication<Application>().filesDir;val file=java.io.File(dir,"family-growth-child-export-${System.currentTimeMillis()}.json");runCatching{file.writeText(result.value.json,Charsets.UTF_8)}.onSuccess{lastExportPath=file.absolutePath;message="儿童数据已导出到应用文档目录"}.onFailure{message="导出已生成，但设备文件保存失败"}};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=result.message}}}
+    fun previewChildErasure(){viewModelScope.launch{when(val result=remote.erasurePreview()){is RemoteResult.Ok->{erasurePreview=result.value;message="删除预览已生成，十分钟内需 PIN 再确认"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=result.message}}}
+    fun confirmChildErasure(pin:String){val preview=erasurePreview?:return failUnit("请先生成删除预览");if(pin.length!=6)return failUnit("请输入 6 位服务端 PIN");viewModelScope.launch{when(val result=remote.confirmErasure(preview,pin)){is RemoteResult.Ok->{remote.disconnect();erasurePreview=null;remoteUsageAccess=null;lastExportPath=null;state=FamilyLocalState();store.save(state);connectionState=ConnectionState.Disconnected;mode=AppMode.PARENT;message="儿童直接标识和自由文本已删除；账本与最小审计已去标识化保留"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=result.message}}}
     fun updateLearningReward(money: BigDecimal, coin: Int, xp: Int) {
         if (!remote.hasSession()) return mutate("本机自主学习奖励已保存；连接服务后需再次确认服务端规则") {
             LocalFamilyEngine.updateLearningRewardPolicy(it, money, coin, xp)
@@ -167,9 +186,12 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     fun updateExperience(birthDate: String, stageOverride: SchoolStage?, primaryBandOverride: PrimaryGradeBand?, overrideReason: String, hapticsEnabled: Boolean) {
         val parsed = runCatching { java.time.LocalDate.parse(birthDate) }.getOrElse { return failUnit("请填写 YYYY-MM-DD 格式的出生日期") }
         if (remote.hasSession()) {
+            val intended=stageOverride?:ChildExperiencePolicy.recommendedStage(parsed)
+            if(stageTransitionPreview?.newStage!=intended.name)return failUnit("配置已变化，请重新查看学段迁移预览")
             viewModelScope.launch {
                 handleRemote(remote.updateExperience(parsed, stageOverride, primaryBandOverride, overrideReason, hapticsEnabled,
                     state.experience.version), "学习阶段已保存到家庭服务")
+                stageTransitionPreview=null
             }
         } else {
             mutate("本机学习阶段已更新；连接服务后以服务端配置为准") {
@@ -178,6 +200,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             }
         }
     }
+    fun previewExperienceTransition(birthDate:String,stageOverride:SchoolStage?){runCatching{LocalDate.parse(birthDate)}.getOrElse{return failUnit("请填写 YYYY-MM-DD 格式的出生日期")};viewModelScope.launch{when(val result=remote.stageTransitionPreview(birthDate,stageOverride?.name)){is RemoteResult.Ok->{stageTransitionPreview=result.value;message="迁移预览已生成，请核对后再保存"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=result.message}}}
     fun addEducationSource(title: String, url: String, stages: List<SchoolStage>, usageNote: String) {
         if (title.isBlank() || url.isBlank() || stages.isEmpty() || usageNote.isBlank()) return failUnit("请完整填写来源、网址、学段和免费使用说明")
         viewModelScope.launch {
@@ -419,7 +442,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             if (result is RemoteResult.Ok) { syncEducationResources(); reconcileAndFlushLearning(refreshFirst=false); flushUsageNow() }
         }
     }
-    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); juniorLearningPlan=null; juniorLearningReport=null; seniorModuleConfiguration=null; seniorGoals=emptyList(); seniorReflections=emptyList(); seniorLearningReport=null; learningSupportByAssignment=emptyMap(); primaryLearningReport=null; teachingCourses = emptyList(); connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
+    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); juniorLearningPlan=null; juniorLearningReport=null; seniorModuleConfiguration=null; seniorGoals=emptyList(); seniorReflections=emptyList(); seniorLearningReport=null;remoteUsageAccess=null;erasurePreview=null;stageTransitionPreview=null; learningSupportByAssignment=emptyMap(); primaryLearningReport=null; teachingCourses = emptyList(); connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
 
     private fun changeEducationSource(id: String, action: String, success: String) {
         viewModelScope.launch {
@@ -545,6 +568,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             is RemoteResult.Failure -> message = catalog.message
         }
         syncLearningAssignments()
+        syncUsageAccess()
         if(state.experience.effectiveStage==SchoolStage.JUNIOR_MIDDLE) {
             syncJuniorPlan()
             when(val report=remote.juniorLearningReport()) {
@@ -562,6 +586,8 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         else { seniorModuleConfiguration=null;seniorGoals=emptyList();seniorReflections=emptyList();seniorLearningReport=null }
         syncTeachingCourses()
     }
+
+    private suspend fun syncUsageAccess(){when(val result=remote.usageAccess()){is RemoteResult.Ok->remoteUsageAccess=result.value;RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->Unit}}
 
     private suspend fun syncSeniorLearning() {
         when(val result=remote.seniorModules()) { is RemoteResult.Ok->seniorModuleConfiguration=result.value;RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->Unit }

@@ -353,10 +353,11 @@ fun ChildExperienceDialog(viewModel: FamilyAppViewModel, dismiss: () -> Unit) {
                     Column(Modifier.weight(1f)) { Text("儿童适龄触觉"); Text("可随时关闭；系统设置优先", style = MaterialTheme.typography.bodySmall) }
                     Switch(checked = haptics, onCheckedChange = { haptics = it })
                 }
+                if(viewModel.connectionState is com.familygrowth.android.remote.ConnectionState.Connected){OutlinedButton(onClick={viewModel.previewExperienceTransition(birthDate,override)},Modifier.fillMaxWidth()){Text("查看迁移影响")};viewModel.stageTransitionPreview?.let{preview->Surface(shape=MaterialTheme.shapes.medium,color=MaterialTheme.colorScheme.surfaceVariant){Column(Modifier.padding(12.dp)){Text("${preview.oldStage} → ${preview.newStage}",fontWeight=FontWeight.Bold);Text("归档未开始自主课程 ${preview.willArchiveUnstartedAutonomous} · 恢复原阶段课程 ${preview.willRestorePreviouslyArchived}");Text(preview.message,style=MaterialTheme.typography.bodySmall)}}}}
             }
         },
         confirmButton = {
-            Button(onClick = { viewModel.updateExperience(birthDate, override, primaryBand, reason, haptics); dismiss() }, enabled = override == null || reason.isNotBlank()) { Text("保存阶段") }
+            Button(onClick = { viewModel.updateExperience(birthDate, override, primaryBand, reason, haptics); if(viewModel.connectionState !is com.familygrowth.android.remote.ConnectionState.Connected||viewModel.stageTransitionPreview!=null)dismiss() }, enabled = (override == null || reason.isNotBlank())&&(viewModel.connectionState !is com.familygrowth.android.remote.ConnectionState.Connected||viewModel.stageTransitionPreview!=null)) { Text("保存阶段") }
         },
         dismissButton = { TextButton(onClick = dismiss) { Text("取消") } },
     )

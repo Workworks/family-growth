@@ -2,6 +2,8 @@ package com.familygrowth.android.ui
 
 import android.net.Uri
 import android.widget.VideoView
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -466,6 +468,8 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
     var showExperience by remember { mutableStateOf(false) }
     var showLearningReward by remember { mutableStateOf(false) }
     var showEducationSource by remember { mutableStateOf(false) }
+    var showPrivacy by remember { mutableStateOf(false) }
+    var showAllowance by remember { mutableStateOf(false) }
     val state = viewModel.state
     val approved = state.tasks.count { it.status == TaskStatus.APPROVED }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -477,6 +481,7 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
         item { LearningRewardPolicyCard(state.learningRewardPolicy) { showLearningReward = true } }
         item { ParentTeachingStudio(viewModel) }
         item { EducationResourceShelfCard(viewModel) { showEducationSource = true } }
+        item { PrivacyCenterCard(viewModel){showPrivacy=true} }
         item {
             BoxWithConstraints {
                 val wide = maxWidth >= 720.dp
@@ -489,6 +494,7 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
                 }
             }
         }
+        item { if(viewModel.connectionState is ConnectionState.Connected) OutlinedButton(onClick={showAllowance=true},Modifier.fillMaxWidth().heightIn(min=52.dp)){Text("临时允许使用（最多 60 分钟）")} }
         item { UpdatePanel(updateViewModel) }
         item {
             GrowthCard {
@@ -506,7 +512,15 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
         showLearningReward = false
     }
     if (showEducationSource) EducationResourceSourceDialog(viewModel) { showEducationSource = false }
+    if(showPrivacy) PrivacyCenterDialog(viewModel){showPrivacy=false}
+    if(showAllowance) TemporaryAllowanceDialog({showAllowance=false}){minutes,reason->viewModel.grantTemporaryUsage(minutes,reason);showAllowance=false}
 }
+
+@Composable private fun PrivacyCenterCard(viewModel:FamilyAppViewModel,open:()->Unit){GrowthCard{SectionTitle("儿童隐私中心","家长专属 · 导出不含 PIN、Token、答案或私密说明"){TextButton(onClick=open,enabled=viewModel.connectionState is ConnectionState.Connected){Text("管理")}};Text("可导出机器可读 JSON；删除采用预览、十分钟确认和服务端 PIN 再认证。",color=MaterialTheme.colorScheme.onSurfaceVariant);Text("账本、费用、幂等与最小审计会去标识化保留，以维持守恒和安全追责。",style=MaterialTheme.typography.bodySmall);viewModel.lastExportPath?.let{Text("最近导出：$it",style=MaterialTheme.typography.bodySmall,fontFamily=FontFamily.Monospace)}}}
+
+@Composable private fun PrivacyCenterDialog(viewModel:FamilyAppViewModel,dismiss:()->Unit){var pin by remember{mutableStateOf("")};val preview=viewModel.erasurePreview;AlertDialog(onDismissRequest=dismiss,title={Text("儿童隐私中心")},text={Column(Modifier.heightIn(max=560.dp).verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(10.dp)){Text("数据导出",style=MaterialTheme.typography.titleMedium);Text("生成包含资料、学习、使用和账本事实的 JSON；不会包含认证秘密、答案键和家长私密说明。");Button(onClick=viewModel::exportChildData,Modifier.fillMaxWidth()){Text("导出儿童数据")};HorizontalDivider();Text("删除儿童数据",style=MaterialTheme.typography.titleMedium,color=MaterialTheme.colorScheme.error);if(preview==null){Text("先查看将删除/脱敏与必须保留的范围。此步骤不会立即删除。");OutlinedButton(onClick=viewModel::previewChildErasure,Modifier.fillMaxWidth()){Text("生成删除预览")}}else{Text("将删除或脱敏：");preview.deletedOrRedacted.forEach{Text("• $it")};Text("仍会保留：");preview.retained.forEach{Text("• $it")};Text("确认有效至 ${preview.confirmationExpiresAt}",style=MaterialTheme.typography.bodySmall);OutlinedTextField(pin,{pin=it.filter(Char::isDigit).take(6)},label={Text("6 位服务端 PIN")},singleLine=true);Button(onClick={viewModel.confirmChildErasure(pin)},enabled=pin.length==6,colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.error),modifier=Modifier.fillMaxWidth()){Text("确认删除并断开服务")}}}},confirmButton={TextButton(onClick=dismiss){Text("关闭")}})}
+
+@Composable private fun TemporaryAllowanceDialog(dismiss:()->Unit,save:(Int,String)->Unit){var minutes by remember{mutableStateOf("15")};var reason by remember{mutableStateOf("")};val parsed=minutes.toIntOrNull();AlertDialog(onDismissRequest=dismiss,title={Text("临时允许使用")},text={Column(verticalArrangement=Arrangement.spacedBy(10.dp)){Text("只用于具体家庭安排，到时自动结束。孩子不能自行延长。");OutlinedTextField(minutes,{minutes=it.filter(Char::isDigit).take(2)},label={Text("分钟（1–60）")});OutlinedTextField(reason,{reason=it.take(240)},label={Text("具体原因")},minLines=2)}},confirmButton={Button(onClick={save(parsed!!,reason.trim())},enabled=parsed in 1..60&&reason.isNotBlank()){Text("允许一次")}},dismissButton={TextButton(onClick=dismiss){Text("取消")}})}
 
 @Composable
 private fun LearningRewardPolicyCard(policy: LearningRewardPolicy, edit: () -> Unit) {
@@ -603,6 +617,7 @@ private fun UsagePolicyCard(state: FamilyLocalState, modifier: Modifier = Modifi
         SectionTitle("本 App 防沉迷", "只统计孩子模式，不控制其他应用") { TextButton(onClick = edit) { Text("调整") } }
         Text("每日 ${state.usage.dailyLimitMinutes} 分钟", style = MaterialTheme.typography.titleLarge)
         Text("单次 ${state.usage.sessionLimitMinutes} 分钟 · 今日已用 ${state.usage.usedMinutes} 分钟", color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text("连接服务后统一执行休息时段 21:30–06:30；临时放行必须由家长说明原因。",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
         LinearProgressIndicator(progress = { (state.usage.usedMinutes.toFloat() / state.usage.dailyLimitMinutes).coerceIn(0f, 1f) }, Modifier.fillMaxWidth())
     }
 }
