@@ -408,6 +408,13 @@ paths:
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RewardProductRequest' } } } }
       responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' } }
   /families/{familyId}/children/{childId}/reward-orders:
+    get:
+      operationId: listRewardOrders
+      description: Lists the child's persisted reward requests so Android can recover pending parent review after restart.
+      parameters:
+        - $ref: '#/components/parameters/FamilyId'
+        - $ref: '#/components/parameters/ChildId'
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
     post:
       operationId: createRewardOrder
       parameters:
@@ -583,7 +590,7 @@ paths:
   /families/{familyId}/children/{childId}/usage-access:
     get:
       operationId: getUsageAccess
-      description: Returns the server-authoritative quiet-window, daily-limit and temporary-allowance decision used by the child client.
+      description: Returns the server-authoritative quiet-window, daily-limit, contiguous-session/rest-cycle and temporary-allowance decision used by the child client. The response includes sessionUsedMinutes, sessionLimitMinutes, restMinutes and restUntil.
       parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
       responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' }, '404': { $ref: '#/components/responses/NotFound' } }
   /families/{familyId}/children/{childId}/usage-allowances:
@@ -648,6 +655,24 @@ paths:
       description: Parent-only machine-readable export with a stable schema; credentials, secrets and private answer text are excluded.
       parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
       responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/data-rights/retention-policy:
+    get:
+      operationId: getChildDataRetentionPolicy
+      description: Parent-only policy read. Financial ledger, immutable audit and idempotency facts are outside automatic deletion scope.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+    put:
+      operationId: updateChildDataRetentionPolicy
+      description: Parent-only optimistic update of the 30–365 day usage-detail retention window with an immutable reasoned action.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RetentionPolicyRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/data-rights/retention-runs:
+    post:
+      operationId: runChildDataRetention
+      description: Parent-triggered execution of the same bounded policy used by the daily scheduler; returns deleted/redacted counts and never deletes ledger entries.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
   /families/{familyId}/children/{childId}/data-rights/erasure-preview:
     post:
       operationId: previewChildDataErasure
@@ -1512,6 +1537,7 @@ components:
         zoneId: { type: string, minLength: 1, maxLength: 60, example: Asia/Shanghai }
         dailyLimitMinutes: { type: integer, minimum: 10, maximum: 480 }
         sessionLimitMinutes: { type: integer, minimum: 5, maximum: 240 }
+        restMinutes: { type: integer, minimum: 5, maximum: 60, default: 10 }
         quietStart: { type: string, format: time, default: '21:30:00' }
         quietEnd: { type: string, format: time, default: '06:30:00' }
     UsageAllowanceRequest:
@@ -1519,6 +1545,13 @@ components:
       required: [minutes, reason]
       properties:
         minutes: { type: integer, minimum: 1, maximum: 60 }
+        reason: { type: string, minLength: 1, maxLength: 240 }
+    RetentionPolicyRequest:
+      type: object
+      required: [usageDetailDays, expectedVersion, reason]
+      properties:
+        usageDetailDays: { type: integer, minimum: 30, maximum: 365 }
+        expectedVersion: { type: integer, format: int64, minimum: 0 }
         reason: { type: string, minLength: 1, maxLength: 240 }
     DataErasureConfirmRequest:
       type: object

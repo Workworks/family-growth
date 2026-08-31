@@ -87,4 +87,4 @@
 
 ## 当前限制
 
-可离线工程范围已经收口：V18/V19 共新增 7 张生产表，高中模块、目标、复盘与事实报告贯通服务端和 Android；`SENIOR-PACK-1.0.0` 覆盖语文、数学、英语、物理、历史和信息技术。H2、PostgreSQL 16.15、Android 双变体和契约/文档门禁均通过。目标平板仍不可用，因此横竖屏、大字体、TalkBack、Reduced Motion、断网冲突恢复和数据保留不能冒充已验收，Stage 保持 `BLOCKED`。
+可离线工程范围已经收口并随 [v0.3.7](https://github.com/Workworks/family-growth/releases/tag/v0.3.7) 进入公开稳定 APK：V18/V19 共新增 7 张生产表，高中模块、目标、复盘与事实报告贯通服务端和 Android；`SENIOR-PACK-1.0.0` 覆盖语文、数学、英语、物理、历史和信息技术。H2、PostgreSQL 16.15、Android 双变体和契约/文档门禁均通过。目标平板仍不可用，因此横竖屏、大字体、TalkBack、Reduced Motion、断网冲突恢复和数据保留不能冒充已验收，Stage 保持 `BLOCKED`。

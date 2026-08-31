@@ -241,3 +241,14 @@
 - 版本递增为 0.3.7/versionCode 13，提交 `fbb3535` 和 tag `v0.3.7` 推送；GitHub Actions `33352844845` 使用既有稳定 release 身份完成单测、Lint、签名构建和公开 Release，用时 4m39s。
 - 公开资产 `family-growth-0.3.7.apk` 已下载到 `dist/`：11,748,771 字节，GitHub digest 与下载 SHA-256 `22c7e376...e1cb908` 一致；`aapt2` 复验包名 `com.familygrowth.android`、0.3.7/13，`apksigner` 复验为历史稳定证书。
 - Stage 26 WP26-1–8 完成，REQ-050 的所有 Agent 可执行排期已收口；目标平板/可信 HTTPS 的首装、覆盖升级、无障碍、旋转、触觉、断网和数据保留仍属于真实外部阻塞，Stage 20–26 不虚假标记完成。
+
+## 2026-08-31 · Activity 77 · 重新打开 Stage 26 完成性缺口
+
+- 按持久目标逐项核对原始 backlog、ViewModel 和服务端判定，发现 Activity 76 的“所有 Agent 可执行排期已收口”证据不足：Android 多个财商操作仍直接调用 `LocalFamilyEngine`；服务端 `usage-access` 未执行单次会话后的休息周期；数据权利没有自动保留任务。
+- 三项分别对应 P-13、P-18、P-17，均不是设备、许可或部署环境才能解除的事项。Stage 26 从 `BLOCKED` 恢复为 `IN_PROGRESS`，增加 WP26-10–13 和 AC26-08–11；v0.3.7/13 的真实发布结果不撤销，但只作为中间里程碑。
+
+## 2026-08-31 · Activity 78 · Stage 26 工程缺口修复与最终离线门禁
+
+- Flyway V23 增加服务端连续会话/强制休息状态、30–365 天儿童非财务数据保留策略、运行记录和不可变策略动作；跨午夜、延迟/重放和完整休息后的纯状态转换有领域测试，清理边界证明 Ledger 不变。
+- Android 连接态已把礼金、兑换、奖励商店/订单审核、储蓄、愿望、模拟基金、零钱回收和今日/月报接到生产 API；费用/净额二次确认和 REQUESTED→APPROVED→PAID 状态保留，本机引擎只作明确未连接演示，远端失败不回退。
+- 最终离线门禁：H2 `clean verify` 通过 29 个领域、2 个基础设施和 33 个 Boot 测试（6 个 PostgreSQL 条件用例按预期跳过）；PostgreSQL 16.15 全量 64 个测试零失败零跳过、23 条迁移/80 表；Android `test lint assembleDebug assembleRelease` 通过 105 个可执行任务。准备发布 v0.3.8/14，目标平板/可信 HTTPS 仍独立阻塞。

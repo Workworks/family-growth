@@ -127,4 +127,4 @@
 
 ## 当前限制与交接
 
-Stage 22 的目标平板阻塞继续独立存在。Stage 23 全部可离线工作包已经收口，公开稳定版仍为 [v0.3.6](https://github.com/Workworks/family-growth/releases/tag/v0.3.6)；WP23-4/5/6 尚未发布新 APK。8 个原创模板是首批内容而非“足量全学科课程库”；家长报告是事实汇总而非成绩或能力评估。目标平板验收仍 `BLOCKED`，下一工程顺位进入 Stage 24 初中阶段深度。
+Stage 22 的目标平板阻塞继续独立存在。Stage 23 全部可离线工作包已经收口，WP23-4/5/6 已随 [v0.3.7](https://github.com/Workworks/family-growth/releases/tag/v0.3.7) 进入公开稳定 APK。8 个原创模板是首批内容而非“足量全学科课程库”；家长报告是事实汇总而非成绩或能力评估。目标平板验收仍 `BLOCKED`。

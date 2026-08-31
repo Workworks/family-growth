@@ -87,4 +87,4 @@
 
 ## 当前限制
 
-Stage 24 可离线工程已经收口。目标平板尚未连接，因此 V24-07 的横竖屏、大字体、TalkBack、Reduced Motion、触控排序和断网恢复不能标记通过；本 Stage 保持 `BLOCKED`。这些能力也尚未进入公开 APK，统一由后续发布 Stage 收口。
+Stage 24 可离线工程已经收口并随 [v0.3.7](https://github.com/Workworks/family-growth/releases/tag/v0.3.7) 进入公开稳定 APK。目标平板尚未连接，因此 V24-07 的横竖屏、大字体、TalkBack、Reduced Motion、触控排序和断网恢复不能标记通过；本 Stage保持 `BLOCKED`。

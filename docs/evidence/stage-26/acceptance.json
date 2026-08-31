@@ -1,38 +1,38 @@
 {
   "stage": 26,
   "capturedAt": "2026-08-31",
-  "status": "BLOCKED",
-  "scope": "Stage transition continuity, constrained child data rights, server-authoritative quiet hours and temporary allowance, Android privacy and limit surfaces, offline production gates and release preparation",
+  "status": "IN_PROGRESS",
+  "scope": "Stage transition continuity, constrained child data rights and retention, server-authoritative quiet hours/session rest/temporary allowance, Android production business loops, offline production gates and release preparation",
   "results": [
     {
       "id": "V26-01/V26-04-H2",
       "status": "PASS",
-      "command": ".\\mvnw.cmd test",
+      "command": ".\\mvnw.cmd clean verify",
       "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "All H2 tests passed: 26 domain, 2 infrastructure and 32 Boot tests, with six PostgreSQL-only tests skipped by design. Flyway applied 22 migrations. Stage transition, quiet hours, allowance, export and two-step erasure regressions passed."
+      "result": "All H2 tests passed: 29 domain, 2 infrastructure and 33 Boot tests, with six PostgreSQL-only tests skipped by design. Flyway applied 23 migrations. Session/rest transitions, automatic retention, stage transition, quiet hours, allowance, export and two-step erasure regressions passed."
     },
     {
       "id": "V26-01/V26-03/V26-04-POSTGRES",
       "status": "PASS",
-      "command": ".\\mvnw.cmd -pl family-growth-boot -am -Dtest=PostgresSchemaValidationTest,Stage20ApiTest,Stage26UsageAccessApiTest,Stage26DataRightsApiTest,Stage23AutonomousLearningApiTest,Stage25SeniorLearningApiTest -Dsurefire.failIfNoSpecifiedTests=false test",
+      "command": "$env:FAMILY_GROWTH_TEST_POSTGRES_URL='jdbc:postgresql://127.0.0.1:55436/family_growth_test'; .\\mvnw.cmd clean verify",
       "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "Disposable PostgreSQL 16.15 validated 22 migrations and 76 production tables. Nine selected tests passed with zero skips. A follow-up PostgreSQL run revalidated schema and the strengthened erasure policy after adding free-text, wish and non-financial usage redaction. The exact disposable container was stopped and removed after each run."
+      "result": "Disposable PostgreSQL 16.15 validated 23 migrations and 80 production tables. The complete 64-test reactor passed with zero failures, errors or skips. The exact disposable container identity was checked and removed after the run."
     },
     {
       "id": "V26-05-ANDROID",
       "status": "PASS_OFFLINE",
-      "command": ".\\gradlew.bat :app:testDebugUnitTest :app:testReleaseUnitTest :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease --no-daemon",
+      "command": ".\\gradlew.bat clean test lint assembleDebug assembleRelease",
       "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "Both JVM variants, both lint variants and both APK assemblies completed successfully in 111 Gradle tasks. Privacy center, stage transition preview, server usage access and gentle locked-state code compiled for debug and release."
+      "result": "Both JVM variants, lint and both APK assemblies completed successfully; the definitive rerun completed 105 actionable tasks. Production finance/report APIs, retention controls, session/rest status, privacy center, stage transition preview and gentle locked-state code compiled for debug and release."
     },
     {
       "id": "V26-06",
@@ -42,7 +42,7 @@
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "OpenAPI 3.1 parsed with 86 paths, 92 Markdown files had no broken local links, all Stage evidence JSON parsed, git diff whitespace checks passed, and the tracked secret pattern scan returned no findings. Final release metadata will be checked again after publication."
+      "result": "OpenAPI 3.1 parsed with 88 paths, 92 Markdown files had no broken local links, all 26 Stage evidence JSON files parsed, git diff whitespace checks passed, and the tracked token/private-key scan returned no findings. These gates will run again after publication metadata is recorded."
     },
     {
       "id": "V26-07",
@@ -66,6 +66,7 @@
     }
   ],
   "remaining": [
+    "Full regression and next stable signed release",
     "Target-tablet and trusted HTTPS V26-08 runtime acceptance"
   ]
 }
