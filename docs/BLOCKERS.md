@@ -170,6 +170,18 @@
 
 推进方：Agent 负责发布准备；用户仅提供最终设备条件。
 
+### Stage 25：高中自主学习室
+
+状态：`IN_PROGRESS`　文档：[Stage 25](stages/stage-25-report.md)
+
+已完成：WP25-1 Spec、两遍视觉、安全/事实不变量、工作包、验证方法和证据骨架。
+
+缺少：WP25-2–7 的 Android 独立研究板、高中模块配置与审计、本周目标/复盘事实源、原创模板、家长报告和全部门禁。
+
+解除方式：Agent 按 Stage 25 Spec 连续实施；目标平板部分在可离线范围完成后独立保留。
+
+推进方：Agent。
+
 ### Stage 21：共用课程、活动与学习证据引擎
 
 状态：`BLOCKED`　文档：[Stage 21](stages/stage-21-report.md)
