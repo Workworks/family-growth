@@ -88,10 +88,10 @@
 | P-01 | P1 | GrowthPlan/Goal 全字段与状态机 | `PASS_OFFLINE`（Stage 27）：category、ageStage、target、计划/目标状态机、版本与动作审计已通过 H2/PostgreSQL |
 | P-02 | P1 | 成长里程碑与 Artifact | `PASS_OFFLINE`（Stage 27）：日期/观察与最多 5 MiB 的受控 JPEG/PNG/WebP 家庭档案已通过后端和 Android 门禁；相册真机回放仍属 E-01 |
 | P-03 | P1 | 0–2 岁家长记录模式 | `PASS_OFFLINE`（Stage 27）：五类家长模板和事实报告已完成，不创建儿童屏幕任务 |
-| P-04 | P1 | 奖励规则和预算 | 当前审核直接给奖励；缺版本化 RewardRule、每日/周/月 Money 上限、超限转 Coin/XP 或等待批准策略 |
-| P-05 | P1 | 兑换控制深化 | 已有双向比例、费用和单次上限；缺每日/月度额度、方向开关和可配置家长审批 |
+| P-04 | P1 | 奖励规则和预算 | `BLOCKED`（Stage 28 可离线工程完成）：仅缺目标平板回放 |
+| P-05 | P1 | 兑换控制深化 | `BLOCKED`（Stage 28 可离线工程完成）：仅缺目标平板回放 |
 | P-06 | P2 | 家庭储蓄奖励利率 | Saving 已完成守恒转账，但 Parent Paid Interest/版本化周期奖励尚未实现 |
-| P-07 | P1 | 奖励履约闭环 | 服务端订单到 APPROVED/REJECTED/CANCELED；缺 FULFILLED、履约备注和孩子可理解的完成反馈 |
+| P-07 | P1 | 奖励履约闭环 | `BLOCKED`（Stage 28 可离线工程完成）：仅缺目标平板回放 |
 | P-08 | P2 | 自动模拟市场引擎 | 家长可写入涨跌 NAV；缺按虚拟风险/波动率生成周期 NAV 的可复现引擎和教育复盘 |
 | P-09 | P2 | 持有期与提前赎回费 | 已有买卖费用，缺按持有时间分层的提前赎回费和交易频率成本报告 |
 | P-10 | P2 | 家庭经济实验室统一界面 | 规则 API 分散；缺预算、兑换、储蓄奖励、虚拟基金和零钱回收的统一家长配置页 |

@@ -90,6 +90,12 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     var rewardOrders by mutableStateOf<List<RemoteRewardOrder>>(emptyList())
         private set
+    var rewardBudget by mutableStateOf<RemoteRewardBudget?>(null)
+        private set
+    var exchangeControl by mutableStateOf<RemoteExchangeControl?>(null)
+        private set
+    var exchangeApprovals by mutableStateOf<List<RemoteExchangeApproval>>(emptyList())
+        private set
     var savingBalance by mutableStateOf<BigDecimal?>(null)
         private set
     var retentionPolicy by mutableStateOf<RemoteRetentionPolicy?>(null)
@@ -158,8 +164,8 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         viewModelScope.launch { handleRemote(remote.approveTask(completion), "家长已确认，稳定奖励已进入服务端账本") }
     }
     fun depositGift(amount: BigDecimal) { if(!remote.hasSession()) return mutate("本机演示账本已记录；连接服务后不会自动上传") { LocalFamilyEngine.depositGiftMoney(it, amount) }; productionAction({production.gift(amount)},"压岁钱已进入服务端账本") }
-    fun exchange(amount: BigDecimal) { if(!remote.hasSession()) return mutate("本机演示兑换已完成") { LocalFamilyEngine.exchangeMoneyToCoin(it, amount) }; viewModelScope.launch{when(val r=production.exchangePreview(amount)){is RemoteResult.Ok->{pendingExchangePreview=r.value;message="请核对兑换金额、费用和到账 Coin"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}} }
-    fun confirmExchange(){val preview=pendingExchangePreview?:return;viewModelScope.launch{when(val r=production.confirmExchange(preview.id)){is RemoteResult.Ok->{pendingExchangePreview=null;refreshProduction("兑换已确认，服务端账本已更新")};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun exchange(amount: BigDecimal) { if(!remote.hasSession()) return mutate("本机演示兑换已完成") { LocalFamilyEngine.exchangeMoneyToCoin(it, amount) }; viewModelScope.launch{when(val r=production.exchangePreview(amount,mode==AppMode.CHILD)){is RemoteResult.Ok->{pendingExchangePreview=r.value;message="请核对兑换金额、费用和到账 Coin"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}} }
+    fun confirmExchange(){val preview=pendingExchangePreview?:return;viewModelScope.launch{if(mode==AppMode.CHILD&&exchangeControl?.childRequiresApproval==true){when(val r=production.requestExchangeApproval(preview.id)){is RemoteResult.Ok->{pendingExchangePreview=null;syncRewardGovernance(true);message="已经请家长看看，等待回应时不会扣除 Money"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}else when(val r=production.confirmExchange(preview.id,mode==AppMode.CHILD)){is RemoteResult.Ok->{pendingExchangePreview=null;refreshProduction("兑换已确认，服务端账本已更新")};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
     fun cancelExchange(){pendingExchangePreview=null;message="已取消兑换，没有扣款"}
     fun withdraw(amount: BigDecimal) { if(!remote.hasSession()) return mutate("本机演示申请已提交") { LocalFamilyEngine.requestWithdrawal(it, amount) };viewModelScope.launch{when(val r=production.withdrawalQuote(amount)){is RemoteResult.Ok->{pendingWithdrawalQuote=r.value;message="请核对线下兑现费用和预计到账"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}} }
     fun confirmWithdrawal(){val quote=pendingWithdrawalQuote?:return;viewModelScope.launch{when(val r=production.requestWithdrawal(quote.id)){is RemoteResult.Ok->{pendingWithdrawalQuote=null;syncProductionState();message="零钱回收申请已提交，尚未扣款"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
@@ -171,6 +177,9 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     fun addReward(title: String, price: Int) {if(!remote.hasSession())return mutate { LocalFamilyEngine.addReward(it, title, price) };viewModelScope.launch{when(val r=production.createProduct(title,price)){is RemoteResult.Ok->{syncProductionState();message="奖励商品已保存到家庭服务"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
     fun redeemReward(id: String) {if(!remote.hasSession())return mutate("本机演示兑换已记录") { LocalFamilyEngine.redeemReward(it, id) };productionAction({production.orderReward(id)},"奖励申请已提交，等待家长审核后才扣 Coin")}
     fun reviewRewardOrder(id:String,approved:Boolean){productionAction({production.reviewReward(id,approved)},if(approved)"奖励申请已批准，Coin 已进入服务端流水" else "奖励申请已拒绝，没有扣 Coin")}
+    fun fulfillRewardOrder(id:String){productionAction({production.fulfillReward(id,"家庭已经完成这份现实奖励约定")},"已经记录为兑现；这一步不会再次扣除 Coin")}
+    fun configureRewardGovernance(daily:BigDecimal,weekly:BigDecimal,monthly:BigDecimal,moneyDaily:BigDecimal,moneyMonthly:BigDecimal){viewModelScope.launch{when(val b=production.configureRewardBudget(daily,weekly,monthly,"CONVERT_TO_COIN")){is RemoteResult.Ok->when(val e=production.configureExchangeControl(moneyDaily,moneyMonthly,moneyDaily,moneyMonthly,true)){is RemoteResult.Ok->{syncRewardGovernance(false);message="家庭奖励约定已保存：超额转 Coin，孩子兑换先请家长确认"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=e.message};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=b.message}}}
+    fun reviewExchangeApproval(id:String,approved:Boolean){productionAction({production.reviewExchangeApproval(id,approved)},if(approved)"本次兑换已批准并写入服务端账本" else "本次兑换已婉拒，没有扣款")}
     fun toggleRewardInterest(id: String) {
         val selecting = id !in state.rewardInterestIds
         mutate(if (selecting) "已经记下你想要它，可以和家长说一说" else "已经先不选这个奖励") {
@@ -637,6 +646,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         when(val r=production.wishes()){is RemoteResult.Ok->state=state.copy(wishes=r.value.map{LocalWish(it.id,it.title,it.target)});RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
         when(val r=production.withdrawals()){is RemoteResult.Ok->state=state.copy(withdrawals=r.value.map{LocalWithdrawalRequest(it.id,it.gross,it.fee,it.net,when(it.status){"APPROVED"->WithdrawalStatus.APPROVED;"PAID"->WithdrawalStatus.PAID;"REJECTED"->WithdrawalStatus.REJECTED;"CANCELLED"->WithdrawalStatus.CANCELLED;else->WithdrawalStatus.PENDING})});RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
         when(val r=production.rewardOrders()){is RemoteResult.Ok->rewardOrders=r.value;RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
+        syncRewardGovernance(mode==AppMode.CHILD)
         when(val r=production.savingBalance()){is RemoteResult.Ok->savingBalance=r.value;RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
         when(val funds=production.funds()){is RemoteResult.Ok->{funds.value.firstOrNull()?.let{f->when(val p=production.fundPosition(f.id)){is RemoteResult.Ok->state=state.copy(fund=LocalFundPosition(p.value.nav,p.value.shares));else->Unit}}};else->Unit}
         when(val r=production.todayReport()){is RemoteResult.Ok->todayUsageReport=r.value;else->Unit}
@@ -645,6 +655,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         syncGrowthArchive()
         store.save(state)
     }
+    private suspend fun syncRewardGovernance(asChild:Boolean){if(!asChild)when(val r=production.rewardBudgetSummary()){is RemoteResult.Ok->rewardBudget=r.value;else->rewardBudget=null};when(val r=production.activeExchangeControl(asChild)){is RemoteResult.Ok->exchangeControl=r.value;else->exchangeControl=null};when(val r=production.exchangeApprovals(asChild)){is RemoteResult.Ok->exchangeApprovals=r.value;else->Unit}}
     private suspend fun syncGrowthArchive(){
         when(val r=production.growthPlans()){is RemoteResult.Ok->growthPlans=r.value;RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
         when(val r=production.growthMilestones()){is RemoteResult.Ok->growthMilestones=r.value;RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}

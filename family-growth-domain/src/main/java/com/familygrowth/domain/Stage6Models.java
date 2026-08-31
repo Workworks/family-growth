@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public final class Stage6Models {
     private Stage6Models() {}
-    public enum RewardOrderStatus { CREATED, APPROVED, REJECTED, CANCELED }
+    public enum RewardOrderStatus { CREATED, APPROVED, REJECTED, CANCELED, FULFILLED }
     public enum SavingDirection { DEPOSIT, WITHDRAW }
 
     public record RewardProduct(UUID id, UUID familyId, String title, long coinCost,
@@ -22,7 +22,10 @@ public final class Stage6Models {
     public record RewardOrder(UUID id, UUID familyId, UUID childId, UUID productId,
                               String productTitle, long coinCost, RewardOrderStatus status,
                               String submitKey, String reviewKey, UUID reviewedBy,
-                              UUID ledgerGroupId, Instant createdAt, Instant reviewedAt) {}
+                              UUID ledgerGroupId, Instant createdAt, Instant reviewedAt,
+                              String fulfillmentNote,String fulfillKey,UUID fulfilledBy,Instant fulfilledAt) {
+        public RewardOrder(UUID id,UUID familyId,UUID childId,UUID productId,String productTitle,long coinCost,RewardOrderStatus status,String submitKey,String reviewKey,UUID reviewedBy,UUID ledgerGroupId,Instant createdAt,Instant reviewedAt){this(id,familyId,childId,productId,productTitle,coinCost,status,submitKey,reviewKey,reviewedBy,ledgerGroupId,createdAt,reviewedAt,"",null,null,null);}
+    }
     public record SavingAccount(UUID familyId, UUID childId, BigDecimal balance, long version) {
         public SavingAccount { balance = money(balance); if (balance.signum() < 0) throw new IllegalArgumentException("Saving balance cannot be negative"); }
     }

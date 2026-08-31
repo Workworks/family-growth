@@ -1,0 +1,61 @@
+{
+  "stage": 28,
+  "capturedAt": "2026-08-31",
+  "status": "BLOCKED",
+  "scope": "Versioned reward budgets and overflow decisions, exchange direction/quota/approval controls, reward fulfillment and Android production integration",
+  "results": [
+    {
+      "id": "V28-01/V28-02/V28-03/V28-04/V28-05/V28-06-H2",
+      "status": "PASS",
+      "command": ".\\mvnw.cmd test; targeted Stage26DataRightsApiTest,Stage28RewardGovernanceApiTest rerun",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "33 domain tests, 2 infrastructure tests and 35 Boot tests completed with zero failures/errors; six PostgreSQL-only tests skipped by condition. Targeted post-erasure-integration rerun also passed. Flyway applied 25 migrations. Budget conversions/HOLD override, role and object isolation, direction switches, child approval, fulfillment zero-ledger behavior and concurrent quota confirmation passed."
+    },
+    {
+      "id": "V28-01/V28-02/V28-03/V28-04/V28-05/V28-06-POSTGRES",
+      "status": "PASS",
+      "command": "FAMILY_GROWTH_TEST_POSTGRES_*=[REDACTED_TEST_VALUES]; .\\mvnw.cmd clean verify",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Disposable PostgreSQL 16.15 validated 25 migrations and 94 production tables. All 70 tests ran with zero failures, errors or skips, including the conditional atomic day/month exchange quota race. The exact-name temporary container was stopped and removed after verification."
+    },
+    {
+      "id": "V28-07-ANDROID",
+      "status": "PASS_OFFLINE",
+      "command": ".\\gradlew.bat clean test lint assembleDebug assembleRelease --no-daemon --console=plain",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "106 JVM tests passed across debug/release; lint reported zero errors and seven existing warnings; 106-task debug/release build passed. Parent family-agreement configuration, approvals and fulfillment use production APIs; child wording remains neutral."
+    },
+    {
+      "id": "V28-07-DOCS",
+      "status": "PASS_OFFLINE",
+      "command": "OpenAPI parse, Markdown local-link validation, evidence JSON parse, git diff --check and tracked secret scan",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "OpenAPI 3.1 parsed with 107 paths; Stage/API/manual/governance facts were synchronized and structural gates passed."
+    },
+    {
+      "id": "V28-08",
+      "status": "BLOCKED",
+      "command": "NOT_RUN: target-tablet family-agreement, approval, fulfillment, accessibility and persistence acceptance",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": null,
+      "passed": false,
+      "result": "No target Android tablet or device-accessible trusted HTTPS family service is available. TalkBack, rotation, large text, restart recovery and real parent/child handoff remain unverified."
+    }
+  ],
+  "remaining": [
+    "Target-tablet V28-08 runtime acceptance"
+  ]
+}

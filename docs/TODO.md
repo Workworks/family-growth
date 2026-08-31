@@ -11,7 +11,6 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P1 | 28 | `NOT_STARTED` | 先建立 Spec，再实现版本化奖励预算、兑换额度/审批和奖励履约状态机 | Agent | Stage 28 Spec/迁移/API/Android/证据 |
 | P1 | 29–30 | `NOT_STARTED` | 依次完成家庭协作和可靠同步 | Agent | 后续 Stage Spec/迁移/API/Android/证据 |
 | P2 | 31–32 | `NOT_STARTED` | 完成虚拟经济深化、Android 工具链和最终治理验收 | Agent | 后续 Stage Spec/测试/证据 |
 | P0 | 22 | `BLOCKED` | WP22-1–5 已完成；连接目标平板回放年龄带/五领域折页、布置、孩子离屏完成、家长一句观察、TalkBack、旋转、Reduced Motion 和触觉关闭 | 用户提供平板；Agent 回放 | Stage 22 报告、`evidence/stage-22/` |
@@ -20,6 +19,7 @@
 | P1 | 25 | `BLOCKED` | 可离线工作包已完成；连接目标平板回放研究板、TalkBack、Reduced Motion、断网冲突和数据保留 | 用户提供平板；Agent 回放 | Stage 25 报告、`evidence/stage-25/` |
 | P0 | 26 | `BLOCKED` | WP26-1–13 和 v0.3.8/14 已完成；连接目标平板与可信 HTTPS 服务回放首装/覆盖升级、四学段、TalkBack/旋转/大字体/Reduced Motion、触觉、断网和数据保留 | 用户提供设备/服务；Agent 回放 | Stage 26 报告、v0.3.8 Release、`evidence/stage-26/` |
 | P1 | 27 | `BLOCKED` | 可离线工程已完成；连接目标平板回放系统相册、JPEG/PNG/WebP 上传、TalkBack、大字体、旋转、Reduced Motion 与重启保留 | 用户提供设备/服务；Agent 回放 | Stage 27 报告、`evidence/stage-27/` |
+| P1 | 28 | `BLOCKED` | 可离线工程已完成；连接目标平板回放家庭奖励约定、孩子兑换待回应、家长审批和现实奖励兑现 | 用户提供设备/服务；Agent 回放 | Stage 28 报告、`evidence/stage-28/` |
 | P0 | 21 | `BLOCKED` | v0.3.6/12 已发布；在目标平板从 v0.3.5 应用内覆盖升级并回放 AndroidKeyStore 写前队列、杀进程/断网、重新登录、401/409、真实来源/官方播放和 TalkBack/旋转 | 用户提供平板/可访问服务；Agent 回放 | `stages/stage-23-report.md`、`evidence/stage-23/acceptance.json`、v0.3.6 Release |
 | P0 | 20 | `BLOCKED` | 用目标平板回放四学段、触觉开关、Reduced Motion、TalkBack、旋转、重启和真实服务同步 | 用户提供设备；Agent 回放 | `stages/stage-20-report.md`、`evidence/stage-20/acceptance.json` |
 | P0 | 18 | `BLOCKED` | 在平板用 v0.3.3→v0.3.4 更新链同时测试双视角、视频计时、奖励兴趣和重启保留 | 用户测试；Agent 根据反馈修复 | Stage 18/19 真机证据 |
@@ -34,7 +34,7 @@
 
 ## 2. 可由 Agent 继续推进
 
-Stage 27 的 P-01/02/03/12 可离线工程已完成并转为目标平板阻塞。当前继续 Stage 28–32，先做 P-04/05/07；真实平板与可信 HTTPS 继续作为独立外部验收，不阻塞后续工程实现。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
+Stage 27–28 的 P-01/02/03/04/05/07/12 可离线工程已完成并转为目标平板阻塞。当前继续 Stage 29–32；真实平板与可信 HTTPS 继续作为独立外部验收，不阻塞后续工程实现。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
 
 ## 3. 只能由外部条件解除
 

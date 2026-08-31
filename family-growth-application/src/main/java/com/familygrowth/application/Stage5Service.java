@@ -19,10 +19,11 @@ public class Stage5Service {
     private static final Duration PREVIEW_LIFETIME = Duration.ofMinutes(10);
     private final Stage3Service authorization;
     private final Stage5Store store;
+    private final Stage28RewardStore governance;
     private final Clock clock;
 
-    public Stage5Service(Stage3Service authorization, Stage5Store store, Clock clock) {
-        this.authorization = authorization; this.store = store; this.clock = clock;
+    public Stage5Service(Stage3Service authorization, Stage5Store store, Stage28RewardStore governance, Clock clock) {
+        this.authorization = authorization; this.store = store; this.governance = governance; this.clock = clock;
     }
 
     public GiftMoney depositGift(Actor actor, UUID familyId, UUID childId, BigDecimal amount,
@@ -68,7 +69,9 @@ public class Stage5Service {
             .orElseThrow(() -> new Stage3Service.ConflictException("No active exchange rule"));
         var quote = com.familygrowth.domain.Stage5Models.quote(rule, direction, sourceAmount);
         var now = clock.instant();
-        return store.savePreview(familyId, childId, direction, quote, rule, now.plus(PREVIEW_LIFETIME), now);
+        var preview = store.savePreview(familyId, childId, direction, quote, rule, now.plus(PREVIEW_LIFETIME), now);
+        governance.validateAndBindPreview(familyId, childId, direction, quote.sourceAmount(), preview.id(), now);
+        return preview;
     }
 
     public ExchangeOrder confirm(Actor actor, UUID familyId, UUID previewId, String key) {
@@ -90,6 +93,8 @@ public class Stage5Service {
         if (!active.id().equals(preview.ruleId()) || active.version() != preview.ruleVersion()) {
             throw new Stage3Service.ConflictException("Exchange rule changed; preview again");
         }
+        governance.validateExchangeConfirm(familyId, previewId,
+            actor.role() == com.familygrowth.domain.Stage3Models.ActorRole.CHILD, clock.instant());
         return store.confirm(familyId, previewId, key, actor.actorId(), clock.instant());
     }
 

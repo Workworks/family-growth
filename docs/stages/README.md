@@ -29,7 +29,7 @@
 - [Stage 25：高中自主学习室](stage-25-report.md) — `BLOCKED`
 - [Stage 26：连续性、隐私、防沉迷与发布总验收](stage-26-report.md) — `BLOCKED`
 - [Stage 27：成长计划、里程碑与家庭成长档案](stage-27-report.md) — `BLOCKED`（可离线工程完成）
-- Stage 28：奖励预算、兑换额度与履约闭环 — `NOT_STARTED`
+- [Stage 28：奖励预算、兑换额度与履约闭环](stage-28-report.md) — `BLOCKED`（可离线工程完成）
 - Stage 29：多家长/多孩子、配对与最小通知 — `NOT_STARTED`
 - Stage 30：Room/加密迁移、增量同步与冲突传播 — `NOT_STARTED`
 - Stage 31：储蓄利息、模拟市场、持有期费用与统一实验室 — `NOT_STARTED`

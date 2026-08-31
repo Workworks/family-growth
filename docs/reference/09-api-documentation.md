@@ -101,8 +101,16 @@
 | POST/GET | `/families/{familyId}/children/{childId}/growth-archive/milestones/{milestoneId}/artifacts`、`.../artifacts/{artifactId}` | PARENT | 上传并读取 JPEG/PNG/WebP 成长照片；服务端核验魔数和 5 MiB 上限，响应 no-store；导出只含元数据 |
 | GET | `/families/{familyId}/children/{childId}/growth-archive/parent-record-templates` | PARENT | 返回 0–2 岁亲子阅读、运动、语言、自理与情感连接的家长记录模板 |
 | GET | `/families/{familyId}/children/{childId}/growth-archive/report` | PARENT | 只聚合计划、记录、图片和既有任务事实，不产生评分、人格标签或能力推断 |
+| POST/GET | `/families/{familyId}/children/{childId}/reward-budget-rules`、`.../active` | PARENT | 配置并读取版本化日/周/月奖励 Money 预算与超限策略；旧版本和审计不覆盖 |
+| GET/POST | `/families/{familyId}/children/{childId}/reward-budget-summary`、`.../reward-budget-overrides` | PARENT | 读取当前已用/剩余额度，或为精确 Completion 与奖励摘要创建一次性超限覆盖 |
+| POST/GET | `/families/{familyId}/exchange-control-rules`、`.../active` | PARENT 写；PARENT/CHILD 本人读 | 配置兑换方向、日/月 source 额度及儿童是否先经家长批准；规则版本随 Preview 固化 |
+| GET/POST | `/families/{familyId}/children/{childId}/exchange-approval-requests` | PARENT/CHILD 本人读；CHILD 本人提交 | 待审批只保存家庭请求且不扣账；孩子端仅展示中性回应状态 |
+| POST | `/families/{familyId}/exchange-approval-requests/{requestId}/review` | PARENT | 批准时在同一事务复验额度并确认兑换，拒绝不产生账本变化 |
+| POST | `/families/{familyId}/reward-orders/{orderId}/fulfill` | PARENT | 将已批准实体奖励一次性标记为 FULFILLED 并保存现实履约备注；不再次改变 Wallet/Ledger |
 
 批准审核会锁定 Completion 与 Wallet；Coin/Money 流水先追加，再在同一事务更新余额和 Completion。重复提交返回首次结果；重复/冲突审核返回 409，不能重复发奖。XP 的奖励事实保存在 Completion 快照并更新 `child_progress`。
+
+奖励预算在普通任务审核事务内裁决实际 Money/Coin/XP；超额转换使用规则固定比例并向下取整，提议值与实际值同时留痕。兑换额度在 Preview 阶段提供即时反馈，在 Confirm 阶段通过日/月额度桶的条件原子更新占用，后续钱包或流水失败会整体回滚，因此并发确认最多一笔穿过剩余额度。审批请求和 `FULFILLED` 履约事实本身均不制造账本变化。
 
 自主学习奖励与普通成长任务奖励共用 Wallet/Ledger 不变量，但业务类型为 `LEARNING_ASSIGNMENT`。策略修改不追溯已有 Assignment；零奖励只记录结算时间，不生成零金额流水。自动同步只投影当前有效学段的最新已发布课程版本，历史 Attempt/完成记录继续保留。
 

@@ -36,6 +36,7 @@ public class Stage3Service {
     private final FamilyGrowthService familyService;
     private final FamilyGrowthStore familyStore;
     private final Stage3Store store;
+    private final Stage28RewardStore rewardGovernance;
     private final Clock clock;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
@@ -43,11 +44,13 @@ public class Stage3Service {
         FamilyGrowthService familyService,
         FamilyGrowthStore familyStore,
         Stage3Store store,
+        Stage28RewardStore rewardGovernance,
         Clock clock
     ) {
         this.familyService = familyService;
         this.familyStore = familyStore;
         this.store = store;
+        this.rewardGovernance = rewardGovernance;
         this.clock = clock;
     }
 
@@ -168,8 +171,17 @@ public class Stage3Service {
         if (!approve && (rewards.xp() != 0 || rewards.coin() != 0 || rewards.money().signum() != 0)) {
             throw new IllegalArgumentException("Rejected completion cannot grant rewards");
         }
+        RewardGrant actualRewards = approve
+            ? rewardGovernance.governReward(familyId, completion.childId(), completionId, rewards,
+                actor.actorId(), idempotencyKey, clock.instant())
+            : rewards;
+        boolean proposedSomething = rewards.xp() != 0 || rewards.coin() != 0 || rewards.money().signum() != 0;
+        if (approve && proposedSomething && actualRewards.xp() == 0 && actualRewards.coin() == 0
+            && actualRewards.money().signum() == 0) {
+            throw new ConflictException("Reward budget would produce an empty reward");
+        }
         return store.reviewCompletion(
-            familyId, completionId, actor.actorId(), approve, rewards,
+            familyId, completionId, actor.actorId(), approve, actualRewards,
             normalize(reviewNote), idempotencyKey, clock.instant());
     }
 

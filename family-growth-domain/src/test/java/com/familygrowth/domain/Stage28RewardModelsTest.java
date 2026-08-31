@@ -1,0 +1,5 @@
+package com.familygrowth.domain;import static org.assertj.core.api.Assertions.*;import static com.familygrowth.domain.Stage28RewardModels.convert;import com.familygrowth.domain.Stage28RewardModels.*;import com.familygrowth.domain.Stage3Models.RewardGrant;import java.math.BigDecimal;import org.junit.jupiter.api.Test;
+class Stage28RewardModelsTest{
+ @Test void convertsOnlyOverflowWithExplicitFixedRates(){var proposed=new RewardGrant(5,2,new BigDecimal("10.00"));assertThat(convert(proposed,new BigDecimal("6.25"),OverflowPolicy.CONVERT_TO_COIN,new BigDecimal("2.000000"),BigDecimal.ZERO.setScale(6))).isEqualTo(new RewardGrant(5,9,new BigDecimal("6.25")));assertThat(convert(proposed,new BigDecimal("6.25"),OverflowPolicy.CONVERT_TO_XP,BigDecimal.ZERO.setScale(6),new BigDecimal("3.000000"))).isEqualTo(new RewardGrant(16,2,new BigDecimal("6.25")));}
+ @Test void holdNeverSilentlyCutsMoney(){assertThatThrownBy(()->convert(new RewardGrant(0,0,new BigDecimal("1.00")),BigDecimal.ZERO.setScale(2),OverflowPolicy.HOLD_FOR_PARENT,BigDecimal.ZERO.setScale(6),BigDecimal.ZERO.setScale(6))).isInstanceOf(IllegalStateException.class);}
+}

@@ -1070,6 +1070,58 @@ paths:
     get:
       operationId: getFactualGrowthReport
       responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /families/{familyId}/children/{childId}/reward-budget-rules:
+    post:
+      operationId: createRewardBudgetRule
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RewardBudgetRuleRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/reward-budget-rules/active:
+    get:
+      operationId: getActiveRewardBudgetRule
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /families/{familyId}/children/{childId}/reward-budget-summary:
+    get:
+      operationId: getRewardBudgetSummary
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/reward-budget-overrides:
+    post:
+      operationId: createRewardBudgetOverride
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RewardBudgetOverrideRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/exchange-control-rules:
+    post:
+      operationId: createExchangeControlRule
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ExchangeControlRuleRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '403': { $ref: '#/components/responses/Forbidden' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/exchange-control-rules/active:
+    get:
+      operationId: getActiveExchangeControlRule
+      description: Parent or owning child; the child receives neutral configuration facts and never reward-budget reasons.
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /families/{familyId}/children/{childId}/exchange-approval-requests:
+    get:
+      operationId: listExchangeApprovalRequests
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      operationId: requestExchangeApproval
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ExchangeApprovalRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '403': { $ref: '#/components/responses/Forbidden' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/exchange-approval-requests/{requestId}/review:
+    post:
+      operationId: reviewExchangeApproval
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ExchangeApprovalReviewRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/reward-orders/{orderId}/fulfill:
+    post:
+      operationId: fulfillRewardOrder
+      parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RewardFulfillmentRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
 components:
   securitySchemes:
     bearerAuth:
@@ -1690,6 +1742,52 @@ components:
           required: [expectedRevision]
           properties:
             expectedRevision: { type: integer, format: int64, minimum: 0 }
+    RewardBudgetRuleRequest:
+      type: object
+      required: [zoneId, dailyMoneyLimit, weeklyMoneyLimit, monthlyMoneyLimit, overflowPolicy, excessCoinPerMoney, excessXpPerMoney]
+      properties:
+        zoneId: { type: string, minLength: 1, maxLength: 64 }
+        dailyMoneyLimit: { type: number, minimum: 0, multipleOf: 0.01 }
+        weeklyMoneyLimit: { type: number, minimum: 0, multipleOf: 0.01 }
+        monthlyMoneyLimit: { type: number, minimum: 0, multipleOf: 0.01 }
+        overflowPolicy: { type: string, enum: [HOLD_FOR_PARENT, CONVERT_TO_COIN, CONVERT_TO_XP] }
+        excessCoinPerMoney: { type: number, minimum: 0, multipleOf: 0.000001 }
+        excessXpPerMoney: { type: number, minimum: 0, multipleOf: 0.000001 }
+    RewardBudgetOverrideRequest:
+      type: object
+      required: [completionId, xp, coin, money, reason]
+      properties:
+        completionId: { type: string, format: uuid }
+        xp: { type: integer, format: int64, minimum: 0 }
+        coin: { type: integer, format: int64, minimum: 0 }
+        money: { type: number, minimum: 0, multipleOf: 0.01 }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    ExchangeControlRuleRequest:
+      type: object
+      required: [moneyToCoinEnabled, coinToMoneyEnabled, moneyToCoinDailyLimit, moneyToCoinMonthlyLimit, coinToMoneyDailyLimit, coinToMoneyMonthlyLimit, childRequiresParentApproval, zoneId]
+      properties:
+        moneyToCoinEnabled: { type: boolean }
+        coinToMoneyEnabled: { type: boolean }
+        moneyToCoinDailyLimit: { type: number, minimum: 0, multipleOf: 0.01 }
+        moneyToCoinMonthlyLimit: { type: number, minimum: 0, multipleOf: 0.01 }
+        coinToMoneyDailyLimit: { type: number, minimum: 0, multipleOf: 0.01 }
+        coinToMoneyMonthlyLimit: { type: number, minimum: 0, multipleOf: 0.01 }
+        childRequiresParentApproval: { type: boolean }
+        zoneId: { type: string, minLength: 1, maxLength: 64 }
+    ExchangeApprovalRequest:
+      type: object
+      required: [previewId]
+      properties: { previewId: { type: string, format: uuid } }
+    ExchangeApprovalReviewRequest:
+      type: object
+      required: [approved]
+      properties:
+        approved: { type: boolean }
+        note: { type: string, maxLength: 500 }
+    RewardFulfillmentRequest:
+      type: object
+      required: [note]
+      properties: { note: { type: string, minLength: 1, maxLength: 500 } }
     ApiError:
       type: object
       required: [code, message]
