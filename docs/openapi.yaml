@@ -804,6 +804,62 @@ paths:
       description: Parent-only trailing-seven-day factual report of learning minutes, assignment states, open support, revisit facts and the current plan revision. It contains no score, ability inference, answer key or parent private note.
       parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
       responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/senior-learning/modules:
+    get:
+      operationId: getSeniorModuleConfiguration
+      description: Parent or owning child reads the server-authoritative senior module boundary. Historical learning facts are preserved after changes.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+    put:
+      operationId: updateSeniorModuleConfiguration
+      description: Parent-only idempotent optimistic update with immutable audit. Children cannot enable modules.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SeniorModuleConfigurationRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/senior-learning/goals:
+    get:
+      operationId: listSeniorWeeklyGoals
+      description: Parent or owning child reads preserved factual weekly goals.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      operationId: createSeniorWeeklyGoal
+      description: Owning child creates a goal only inside a parent-enabled module. A goal never settles a reward or creates mastery.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SeniorGoalCreateRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/senior-learning/goals/{goalId}:
+    put:
+      operationId: updateSeniorWeeklyGoal
+      description: Owning child idempotently updates an active goal using optimistic revision.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { name: goalId, in: path, required: true, schema: { type: string, format: uuid } }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SeniorGoalUpdateRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/senior-learning/goals/{goalId}/archive:
+    post:
+      operationId: archiveSeniorWeeklyGoal
+      description: Owning child idempotently archives an active goal; assignment and reward facts remain unchanged.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { name: goalId, in: path, required: true, schema: { type: string, format: uuid } }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RevisionRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/senior-learning/reflections:
+    get:
+      operationId: listSeniorReflections
+      description: Parent or owning child reads immutable evidence-based reflections without ability labels.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+    post:
+      operationId: createSeniorReflection
+      description: Owning child appends an immutable reflection and may explicitly request support. It never changes rewards or mastery.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SeniorReflectionRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/senior-learning/report:
+    get:
+      operationId: getSeniorLearningReport
+      description: Parent-only trailing-seven-day factual report of learning minutes, assignment states, goals, reflections and support requests; no score, prediction, risk or ability inference.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
   /families/{familyId}/children/{childId}/autonomous-learning/assignments/{assignmentId}/activities/{activityId}/help:
     post:
       operationId: requestLearningHelp
@@ -1025,7 +1081,57 @@ components:
         knowledgePoints: { type: array, minItems: 1, maxItems: 8, uniqueItems: true, items: { type: string, minLength: 1, maxLength: 80 }, description: Required at publication for JUNIOR_MIDDLE and forbidden for other stages. }
         learningGoal: { type: [string, 'null'], minLength: 1, maxLength: 500, description: Required at publication for JUNIOR_MIDDLE and forbidden for other stages. }
         safetyNote: { type: [string, 'null'], minLength: 1, maxLength: 500, description: Required at publication for JUNIOR_MIDDLE. High-risk home experiment guidance is rejected. }
+        moduleType: { type: [string, 'null'], enum: [REQUIRED, SELECTIVE_REQUIRED, ELECTIVE, null], description: Required at publication for SENIOR_HIGH and forbidden for other stages. }
+        topicTitle: { type: [string, 'null'], minLength: 1, maxLength: 160, description: Required at publication for SENIOR_HIGH. }
+        inquiryQuestion: { type: [string, 'null'], minLength: 1, maxLength: 500, description: Required at publication for SENIOR_HIGH. }
+        expectedEvidence: { type: [string, 'null'], minLength: 1, maxLength: 500, description: Required at publication for SENIOR_HIGH. }
+        seniorSafetyNote: { type: [string, 'null'], minLength: 1, maxLength: 500, description: Required at publication for SENIOR_HIGH. High-risk or manipulative guidance is rejected. }
         activities: { type: array, minItems: 1, maxItems: 20, items: { $ref: '#/components/schemas/TeachingActivityRequest' } }
+    SeniorModuleSelection:
+      type: object
+      required: [subjectCode, moduleType]
+      properties:
+        subjectCode: { type: string, pattern: '^[A-Z0-9_-]+$', maxLength: 40 }
+        moduleType: { type: string, enum: [REQUIRED, SELECTIVE_REQUIRED, ELECTIVE] }
+    SeniorModuleConfigurationRequest:
+      type: object
+      required: [selections, expectedRevision, reason]
+      properties:
+        selections: { type: array, minItems: 1, maxItems: 12, uniqueItems: true, items: { $ref: '#/components/schemas/SeniorModuleSelection' } }
+        expectedRevision: { type: integer, format: int64, minimum: 0 }
+        reason: { type: string, minLength: 1, maxLength: 500 }
+    SeniorGoalCreateRequest:
+      type: object
+      required: [module, weekStart, title, evidenceTarget, nextAction]
+      properties:
+        assignmentId: { type: [string, 'null'], format: uuid }
+        module: { $ref: '#/components/schemas/SeniorModuleSelection' }
+        weekStart: { type: string, format: date }
+        title: { type: string, minLength: 1, maxLength: 160 }
+        evidenceTarget: { type: string, minLength: 1, maxLength: 500 }
+        nextAction: { type: string, minLength: 1, maxLength: 500 }
+    SeniorGoalUpdateRequest:
+      type: object
+      required: [title, evidenceTarget, nextAction, expectedRevision]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 160 }
+        evidenceTarget: { type: string, minLength: 1, maxLength: 500 }
+        nextAction: { type: string, minLength: 1, maxLength: 500 }
+        expectedRevision: { type: integer, format: int64, minimum: 0 }
+    RevisionRequest:
+      type: object
+      required: [expectedRevision]
+      properties: { expectedRevision: { type: integer, format: int64, minimum: 0 } }
+    SeniorReflectionRequest:
+      type: object
+      required: [evidenceSummary, strategy, nextAction, supportRequested]
+      properties:
+        goalId: { type: [string, 'null'], format: uuid }
+        assignmentId: { type: [string, 'null'], format: uuid }
+        evidenceSummary: { type: string, minLength: 1, maxLength: 1000 }
+        strategy: { type: string, enum: [CONTINUE, REVIEW_FOUNDATION, TRY_ANOTHER_METHOD, ASK_FOR_SUPPORT, PAUSE_AND_REPLAN] }
+        nextAction: { type: string, minLength: 1, maxLength: 500 }
+        supportRequested: { type: boolean }
     TeachingUnitRequest:
       type: object
       required: [title, lessons]

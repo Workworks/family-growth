@@ -4,6 +4,8 @@ import android.net.Uri
 import android.widget.VideoView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -32,6 +34,8 @@ import com.familygrowth.android.core.PrimaryGradeBand
 import com.familygrowth.android.remote.PrimaryLearningPolicy
 import com.familygrowth.android.remote.RemoteLearningActivity
 import com.familygrowth.android.remote.RemoteLearningAssignment
+import com.familygrowth.android.remote.RemoteSeniorGoal
+import com.familygrowth.android.remote.RemoteSeniorModule
 import kotlinx.coroutines.delay
 import kotlin.math.ceil
 
@@ -68,6 +72,11 @@ fun ChildLearningPath(viewModel: FamilyAppViewModel) {
         video?.let { activity -> DynamicLearningVideoDialog(activity, { video=null }) { played,duration ->
             viewModel.completeLearningVideo(assignment.id,activity.id,played,duration)
         } }
+        return
+    }
+    if(viewModel.state.experience.effectiveStage==SchoolStage.SENIOR_HIGH) {
+        SeniorLearningRoom(viewModel,assignment,active){video=it}
+        video?.let{activity->DynamicLearningVideoDialog(activity,{video=null}){played,duration->viewModel.completeLearningVideo(assignment.id,activity.id,played,duration)}}
         return
     }
     GrowthCard {
@@ -132,6 +141,37 @@ fun ChildLearningPath(viewModel: FamilyAppViewModel) {
         }
     }
 }
+
+private object SeniorRoomColors {
+    val Carbon=Color(0xFF263238);val Pine=Color(0xFF3E6B62);val Paper=Color(0xFFFAFAF7);val Archive=Color(0xFF8A9491);val Evidence=Color(0xFFC58B2B);val Annotation=Color(0xFF356C8C)
+}
+
+@Composable
+private fun SeniorLearningRoom(viewModel:FamilyAppViewModel,assignment:RemoteLearningAssignment,active:RemoteLearningActivity?,playVideo:(RemoteLearningActivity)->Unit) {
+    var showGoal by remember{mutableStateOf(false)};var showReflection by remember{mutableStateOf(false)}
+    val module=viewModel.seniorModuleConfiguration?.selections?.firstOrNull{it.subjectCode==assignment.subjectCode}
+        ?: RemoteSeniorModule(assignment.subjectCode,assignment.seniorMetadata?.moduleType?:"REQUIRED")
+    val goal=viewModel.seniorGoals.firstOrNull{it.status=="ACTIVE"&&it.module.subjectCode==assignment.subjectCode}
+    Surface(shape=MaterialTheme.shapes.extraLarge,color=SeniorRoomColors.Paper,border=BorderStroke(1.dp,SeniorRoomColors.Pine.copy(alpha=.45f))){
+        Column(Modifier.fillMaxWidth().padding(22.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
+            Row(verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("自主学习室",style=MaterialTheme.typography.labelLarge,color=SeniorRoomColors.Pine,fontFamily=FontFamily.Monospace);Text(assignment.lessonTitle,style=MaterialTheme.typography.headlineSmall,color=SeniorRoomColors.Carbon,fontWeight=FontWeight.Bold);Text("${PrimaryLearningPolicy.subjectLabel(assignment.subjectCode)} · ${module.moduleType}",color=SeniorRoomColors.Archive)};LearningStatus(assignment.status)}
+            assignment.seniorMetadata?.let{m->Surface(shape=MaterialTheme.shapes.medium,color=Color.White,border=BorderStroke(1.dp,SeniorRoomColors.Annotation.copy(alpha=.35f))){Column(Modifier.padding(14.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){Text(m.topicTitle,fontWeight=FontWeight.Bold,color=SeniorRoomColors.Annotation);Text("研究问题：${m.inquiryQuestion}");Text("证据要求：${m.expectedEvidence}",color=SeniorRoomColors.Evidence);Text("边界：${m.safetyNote}",style=MaterialTheme.typography.bodySmall,color=SeniorRoomColors.Archive)}}}
+            goal?.let{g->Surface(shape=MaterialTheme.shapes.medium,color=SeniorRoomColors.Pine.copy(alpha=.08f)){Column(Modifier.padding(14.dp)){Text("本周目标",style=MaterialTheme.typography.labelLarge,color=SeniorRoomColors.Pine);Text(g.title,fontWeight=FontWeight.Bold);Text("证据：${g.evidenceTarget}");Text("下一步：${g.nextAction}",color=SeniorRoomColors.Annotation)}}} ?: OutlinedButton(onClick={showGoal=true},Modifier.fillMaxWidth()){Text("为这门课写本周目标")}
+            when(assignment.status){"SUBMITTED"->GentleNotice("证据已提交，等家长回应。你可以先离开屏幕。 ");"COMPLETED"->GentleNotice("这段学习已完成。记录保留，不形成排名或能力标签。")
+                else->active?.let{a->Column(verticalArrangement=Arrangement.spacedBy(10.dp)){Text("当前行动",style=MaterialTheme.typography.labelLarge,color=SeniorRoomColors.Evidence);Text(a.title,style=MaterialTheme.typography.titleLarge);Text(a.instruction,color=MaterialTheme.colorScheme.onSurfaceVariant);if(a.type=="SHORT_VIDEO")Button(onClick={playVideo(a)},Modifier.fillMaxWidth()){Text("播放并核对证据")}else if(a.options.isNotEmpty())a.options.forEach{o->OutlinedButton(onClick={viewModel.attemptLearningActivity(assignment.id,a.id,o.value)},Modifier.fillMaxWidth()){Text(o.label)}}else Button(onClick={viewModel.attemptLearningActivity(assignment.id,a.id,"已形成证据")},Modifier.fillMaxWidth(),colors=ButtonDefaults.buttonColors(containerColor=SeniorRoomColors.Pine)){Text("记录已形成证据")};OutlinedButton(onClick={viewModel.requestLearningHelp(assignment.id,a.id,"我需要一起厘清研究问题或证据边界。")},Modifier.fillMaxWidth()){Text("请求支持")}}}
+            }
+            if(assignment.canSubmit())Button(onClick={viewModel.submitLearningAssignment(assignment.id,assignment.version)},Modifier.fillMaxWidth(),colors=ButtonDefaults.buttonColors(containerColor=SeniorRoomColors.Carbon)){Text("提交证据给家长")}
+            Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){OutlinedButton(onClick={showReflection=true},Modifier.weight(1f)){Text("写复盘")};goal?.let{OutlinedButton(onClick={viewModel.archiveSeniorGoal(it)},Modifier.weight(1f)){Text("归档目标")}}}
+            Text("自主安排不等于延长在线时间。建议单段不超过 45 分钟，证据可在线下形成；随时可以暂停和重排。",style=MaterialTheme.typography.bodySmall,color=SeniorRoomColors.Archive)
+        }
+    }
+    if(showGoal)SeniorGoalDialog(module,assignment,{showGoal=false}){title,evidence,next->viewModel.createSeniorGoal(module,assignment.id,title,evidence,next);showGoal=false}
+    if(showReflection)SeniorReflectionDialog(goal,assignment,{showReflection=false}){evidence,strategy,next,support->viewModel.createSeniorReflection(goal,assignment.id,evidence,strategy,next,support);showReflection=false}
+}
+
+@Composable private fun SeniorGoalDialog(module:RemoteSeniorModule,assignment:RemoteLearningAssignment,dismiss:()->Unit,save:(String,String,String)->Unit){var title by remember{mutableStateOf(assignment.lessonTitle)};var evidence by remember{mutableStateOf(assignment.seniorMetadata?.expectedEvidence?:"一份可复查的学习证据")};var next by remember{mutableStateOf("先完成第一段材料或实验记录")};AlertDialog(onDismissRequest=dismiss,title={Text("本周目标 · ${PrimaryLearningPolicy.subjectLabel(module.subjectCode)}")},text={Column(verticalArrangement=Arrangement.spacedBy(8.dp)){OutlinedTextField(title,{title=it.take(160)},label={Text("目标")});OutlinedTextField(evidence,{evidence=it.take(500)},label={Text("预期证据")});OutlinedTextField(next,{next=it.take(500)},label={Text("下一步")})}},confirmButton={Button(onClick={save(title,evidence,next)},enabled=title.isNotBlank()&&evidence.isNotBlank()&&next.isNotBlank()){Text("保存")}},dismissButton={TextButton(onClick=dismiss){Text("取消")}})}
+
+@Composable private fun SeniorReflectionDialog(goal:RemoteSeniorGoal?,assignment:RemoteLearningAssignment,dismiss:()->Unit,save:(String,String,String,Boolean)->Unit){var evidence by remember{mutableStateOf("")};var strategy by remember{mutableStateOf("CONTINUE")};var next by remember{mutableStateOf("")};var support by remember{mutableStateOf(false)};val choices=listOf("CONTINUE" to "继续当前方法","REVIEW_FOUNDATION" to "回看基础","TRY_ANOTHER_METHOD" to "换一种方法","PAUSE_AND_REPLAN" to "暂停并重排");AlertDialog(onDismissRequest=dismiss,title={Text("证据复盘 · ${assignment.lessonTitle}")},text={Column(Modifier.verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(8.dp)){OutlinedTextField(evidence,{evidence=it.take(1000)},label={Text("我形成了什么证据")},minLines=2);choices.forEach{(value,label)->FilterChip(selected=strategy==value,onClick={strategy=value},label={Text(label)})};OutlinedTextField(next,{next=it.take(500)},label={Text("下一步")});Row(verticalAlignment=Alignment.CenterVertically){Checkbox(support,{support=it;if(it)strategy="ASK_FOR_SUPPORT"});Text("需要家长或老师支持")}}},confirmButton={Button(onClick={save(evidence,strategy,next,support)},enabled=evidence.isNotBlank()&&next.isNotBlank()){Text("保存复盘")}},dismissButton={TextButton(onClick=dismiss){Text("取消")}})}
 
 private object JuniorLabColors {
     val Navy=Color(0xFF17324D); val Measure=Color(0xFF4E8799); val Evidence=Color(0xFFE2B44A)
@@ -504,6 +544,7 @@ fun ParentLearningReviews(viewModel: FamilyAppViewModel) {
             }
         }
     }
+    viewModel.seniorLearningReport?.let{report->GrowthCard{SectionTitle("最近 7 天高中学习事实","只汇总课程、目标、复盘和求助，不生成分数或能力预测");Text("已记录学习 ${report.recordedLearningMinutes} 分钟 · 进行中目标 ${report.activeGoals} · 已归档 ${report.archivedGoals}",style=MaterialTheme.typography.titleMedium);Text("复盘 ${report.reflections} · 主动求助 ${report.supportRequests}",color=MaterialTheme.colorScheme.onSurfaceVariant);report.subjects.forEach{fact->Text("${PrimaryLearningPolicy.subjectLabel(fact.subjectCode)} · 完成 ${fact.completed} · 待回应 ${fact.submitted} · 求助 ${fact.openSupport}",color=MaterialTheme.colorScheme.onSurfaceVariant)}}}
     support.forEach { (assignmentId,events) ->
         val assignment=viewModel.learningAssignments.firstOrNull { it.id==assignmentId } ?: return@forEach
         val classified=events.filter { it.type=="MISCONCEPTION_CLASSIFIED" }.mapNotNull { it.parentEventId }.toSet()

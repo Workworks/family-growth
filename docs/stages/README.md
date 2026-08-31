@@ -26,4 +26,5 @@
 - [Stage 22：幼儿园故事舞台与亲子现实活动](stage-22-report.md) — `BLOCKED`
 - [Stage 23：小学探索手册](stage-23-report.md) — `BLOCKED`
 - [Stage 24：初中学科实验台](stage-24-report.md) — `BLOCKED`
-- [Stage 25：高中自主学习室](stage-25-report.md) — `IN_PROGRESS`
+- [Stage 25：高中自主学习室](stage-25-report.md) — `BLOCKED`
+- [Stage 26：连续性、隐私、防沉迷与发布总验收](stage-26-report.md) — `IN_PROGRESS`

@@ -12,10 +12,12 @@ import com.familygrowth.domain.Stage21TeachingModels.CourseVersionStatus;
 import com.familygrowth.domain.Stage21TeachingModels.KindergartenAgeBand;
 import com.familygrowth.domain.Stage21TeachingModels.KindergartenDomain;
 import com.familygrowth.domain.Stage21TeachingModels.JuniorLessonMetadata;
+import com.familygrowth.domain.Stage21TeachingModels.SeniorLessonMetadata;
 import com.familygrowth.domain.Stage21TeachingModels.LessonContent;
 import com.familygrowth.domain.Stage21TeachingModels.QuestionOption;
 import com.familygrowth.domain.Stage21TeachingModels.UnitContent;
 import com.familygrowth.domain.Stage20Models.SchoolStage;
+import com.familygrowth.domain.Stage25SeniorModels.ModuleType;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -90,10 +92,32 @@ class Stage21TeachingModelsTest {
             .hasMessageContaining("high-risk");
     }
 
+    @Test
+    void seniorPublicationRequiresModuleInquiryEvidenceAndSafeBoundedBlocks() {
+        SeniorLessonMetadata metadata = new SeniorLessonMetadata(ModuleType.REQUIRED, "变化率专题", "怎样解释变化快慢",
+            "数据表、图像和文字解释", "只使用纸笔或安全日常测量");
+        Stage21TeachingModels.validateForPublish(senior(List.of(content(ActivityType.OFFLINE_PRACTICE, 40, List.of())), metadata));
+        assertThatThrownBy(() -> Stage21TeachingModels.validateForPublish(senior(
+            List.of(content(ActivityType.OFFLINE_PRACTICE, 46, List.of())), metadata))).hasMessageContaining("45 minutes");
+        assertThatThrownBy(() -> Stage21TeachingModels.validateForPublish(senior(
+            List.of(content(ActivityType.OFFLINE_PRACTICE, 20, List.of())), null))).hasMessageContaining("Senior lesson metadata");
+        ActivityContent unsafe = new ActivityContent(UUID.randomUUID(), ActivityType.OFFLINE_PRACTICE,
+            "观察", "使用高压设备记录", "", 20, "", "", List.of(), "");
+        assertThatThrownBy(() -> Stage21TeachingModels.validateForPublish(senior(List.of(unsafe), metadata)))
+            .hasMessageContaining("high-risk");
+    }
+
     private static CourseVersion junior(List<ActivityContent> activities, JuniorLessonMetadata metadata) {
         return new CourseVersion(UUID.randomUUID(),UUID.randomUUID(),UUID.randomUUID(),SchoolStage.JUNIOR_MIDDLE,
             "MATH","变量实验台",1,"用证据解释","家庭原创",null,List.of(),CourseVersionStatus.DRAFT,
             List.of(new UnitContent(UUID.randomUUID(),"函数",List.of(new LessonContent(UUID.randomUUID(),"一次函数","观察关系",activities,metadata)))),null);
+    }
+
+    private static CourseVersion senior(List<ActivityContent> activities, SeniorLessonMetadata metadata) {
+        return new CourseVersion(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), SchoolStage.SENIOR_HIGH,
+            "MATH", "研究工作室", 1, "专题证据", "家庭原创", null, List.of(), CourseVersionStatus.DRAFT,
+            List.of(new UnitContent(UUID.randomUUID(), "函数", List.of(new LessonContent(UUID.randomUUID(),
+                "变化率", "用数据解释", activities, null, metadata)))), null);
     }
 
     private static CourseVersion kindergarten(List<ActivityContent> activities) {

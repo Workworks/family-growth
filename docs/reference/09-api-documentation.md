@@ -79,6 +79,11 @@
 | GET | `/families/{familyId}/children/{childId}/junior-learning/plan` | PARENT/CHILD 本人 | 读取当前初中未开始自主课程顺序；进行中、待回应、已完成和返工项不进入可排序投影 |
 | POST | `/families/{familyId}/children/{childId}/junior-learning/plan/move` | PARENT/CHILD 本人 | 按计划 revision 幂等上移/下移未开始项；跨家庭隔离、冲突返回 409，每次有效移动追加不可变审计 |
 | GET | `/families/{familyId}/children/{childId}/junior-learning/report` | PARENT | 最近 7 天明确学习分钟、各学科 Assignment/求助/再练事实与计划版本；不含评分、能力推断、答案键或私密说明 |
+| GET/PUT | `/families/{familyId}/children/{childId}/senior-learning/modules` | PARENT；GET 允许 CHILD 本人 | 读取或由家长按 revision 幂等配置高中必修/选择性必修/选修边界；保留不可变审计和历史事实 |
+| GET/POST | `/families/{familyId}/children/{childId}/senior-learning/goals` | PARENT/CHILD 本人读取；CHILD 本人创建 | 在已启用模块内建立本周目标、证据要求和下一行动；不形成掌握、不结算奖励 |
+| PUT/POST | `/families/{familyId}/children/{childId}/senior-learning/goals/{goalId}`、`.../archive` | CHILD 本人 | 按 revision 更新或归档本人目标；幂等、跨家庭隔离，历史不删除 |
+| GET/POST | `/families/{familyId}/children/{childId}/senior-learning/reflections` | PARENT/CHILD 本人读取；CHILD 本人追加 | 保存不可覆盖的证据摘要、策略、下一行动和主动求助；不含能力标签 |
+| GET | `/families/{familyId}/children/{childId}/senior-learning/report` | PARENT | 最近 7 天学习分钟、Assignment 状态、目标、复盘和求助事实；不生成评分、预测、风险或能力推断 |
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/activities/{activityId}/attempts` | CHILD 本人 | 幂等记录活动尝试；视频须报告至少 90% 实际播放计数，客观题由服务端判定，现实活动只记 ATTEMPTED |
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/submit` | CHILD 本人 | required evidence 齐备且 `expectedVersion` 一致时提交课节；返工后还必须先产生新的 Attempt |
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/review` | PARENT | `APPROVE` 追加家长确认与 MASTERED，并在同一事务按 Assignment 快照结算一次 XP/Money/Coin；`REWORK` 不发奖 |

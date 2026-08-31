@@ -27,12 +27,16 @@ import com.familygrowth.android.core.PrimaryGradeBand
 import com.familygrowth.android.core.JuniorCourseTemplates
 import com.familygrowth.android.core.JuniorSubject
 import com.familygrowth.android.core.SchoolStage
+import com.familygrowth.android.core.SeniorCourseTemplates
+import com.familygrowth.android.core.SeniorSubject
+import com.familygrowth.android.remote.RemoteSeniorModule
 import com.familygrowth.android.remote.ConnectionState
 import com.familygrowth.android.remote.LearningActionState
 
 @Composable
 fun ParentTeachingStudio(viewModel: FamilyAppViewModel) {
     var showCreate by remember { mutableStateOf(false) }
+    var showSeniorModules by remember { mutableStateOf(false) }
     val canCreate = viewModel.connectionState is ConnectionState.Connected &&
         viewModel.state.experience.effectiveStage != SchoolStage.PARENT_ONLY && !viewModel.teachingActionRunning
     GrowthCard {
@@ -42,6 +46,12 @@ fun ParentTeachingStudio(viewModel: FamilyAppViewModel) {
             }
         }
         LearningOutboxParentStatus(viewModel)
+        if(viewModel.state.experience.effectiveStage==SchoolStage.SENIOR_HIGH) {
+            val config=viewModel.seniorModuleConfiguration
+            OutlinedButton(onClick={showSeniorModules=true},enabled=config!=null,modifier=Modifier.fillMaxWidth()) {
+                Text(if(config==null)"正在同步高中模块…" else "配置高中课程模块（${config.selections.size}）")
+            }
+        }
         if (viewModel.teachingActionRunning) LinearProgressIndicator(Modifier.fillMaxWidth())
         if (viewModel.state.experience.effectiveStage == SchoolStage.PARENT_ONLY) {
             Text("0–2 岁只由家长记录现实成长，不向孩子布置屏幕课程。", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -86,6 +96,7 @@ fun ParentTeachingStudio(viewModel: FamilyAppViewModel) {
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
     if (showCreate) CreateTeachingCourseDialog(viewModel) { showCreate = false }
+    if(showSeniorModules) SeniorModuleDialog(viewModel){showSeniorModules=false}
 }
 
 @Composable
@@ -136,7 +147,44 @@ private fun CreateTeachingCourseDialog(viewModel: FamilyAppViewModel, dismiss: (
         CreateJuniorTemplateDialog(viewModel,dismiss)
         return
     }
+    if(viewModel.state.experience.effectiveStage==SchoolStage.SENIOR_HIGH) {
+        CreateSeniorTemplateDialog(viewModel,dismiss)
+        return
+    }
     CreateGeneralTeachingCourseDialog(viewModel, dismiss)
+}
+
+@Composable
+private fun CreateSeniorTemplateDialog(viewModel:FamilyAppViewModel,dismiss:()->Unit) {
+    var subject by remember { mutableStateOf(SeniorSubject.CHINESE) }
+    val template=SeniorCourseTemplates.find(subject)
+    AlertDialog(onDismissRequest=dismiss,
+        title={Column{Text("选一个高中研究活动");Text("原创内容包 SENIOR-PACK-1.0.0",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}},
+        text={Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(12.dp)){
+            FlowRow(horizontalArrangement=Arrangement.spacedBy(7.dp),verticalArrangement=Arrangement.spacedBy(7.dp)){SeniorSubject.entries.forEach{v->FilterChip(selected=subject==v,onClick={subject=v},label={Text(v.label)})}}
+            Surface(shape=MaterialTheme.shapes.large,border=BorderStroke(1.dp,MaterialTheme.colorScheme.outlineVariant)){Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)){
+                Text(template.courseTitle,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold)
+                Text("${template.topicTitle} · ${template.expectedMinutes} 分钟 · ${template.subject.defaultModule}",style=MaterialTheme.typography.bodySmall)
+                Text("研究问题：${template.inquiryQuestion}")
+                Text("预期证据：${template.expectedEvidence}")
+                HorizontalDivider();Text(template.instruction);Text("安全边界：${template.safetyNote}",color=MaterialTheme.colorScheme.primary)
+            }}
+            Text("保存后仍是草稿；家长发布、布置后才进入孩子学习室。固定奖励仍需家长完成审核。",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+        }},confirmButton={Button(onClick={viewModel.createSeniorTeachingCourse(template);dismiss()}){Text("保存为草稿")}},dismissButton={TextButton(onClick=dismiss){Text("取消")}})
+}
+
+@Composable
+private fun SeniorModuleDialog(viewModel:FamilyAppViewModel,dismiss:()->Unit) {
+    val current=viewModel.seniorModuleConfiguration ?: return
+    var selected by remember(current.revision){mutableStateOf(current.selections.map{it.subjectCode}.toSet())}
+    AlertDialog(onDismissRequest=dismiss,title={Text("高中课程模块")},
+        text={Column(Modifier.verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(8.dp)){
+            Text("按孩子当前真实课程选择；孩子不能自行改动。变更保留审计，不删除历史。",color=MaterialTheme.colorScheme.onSurfaceVariant)
+            SeniorSubject.entries.forEach{subject->
+                val checked=subject.apiValue in selected
+                Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Checkbox(checked=checked,onCheckedChange={yes->selected=if(yes)selected+subject.apiValue else selected-subject.apiValue});Column{Text(subject.label);Text(subject.defaultModule,style=MaterialTheme.typography.bodySmall)}}
+            }
+        }},confirmButton={Button(onClick={viewModel.updateSeniorModules(SeniorSubject.entries.filter{it.apiValue in selected}.map{RemoteSeniorModule(it.apiValue,it.defaultModule)});dismiss()},enabled=selected.isNotEmpty()){Text("保存")}},dismissButton={TextButton(onClick=dismiss){Text("取消")}})
 }
 
 @Composable

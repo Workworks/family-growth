@@ -31,6 +31,12 @@ data class RemoteSupportEvent(val id:String,val assignmentId:String,val activity
                               val revisitAt:String?,val parentEventId:String?,val createdAt:String)
 data class RemoteRewardPolicy(val money:String,val coin:Long,val xp:Long,val version:Long)
 data class RemoteJuniorMetadata(val chapterTitle:String,val knowledgePoints:List<String>,val learningGoal:String,val safetyNote:String)
+data class RemoteSeniorMetadata(val moduleType:String,val topicTitle:String,val inquiryQuestion:String,val expectedEvidence:String,val safetyNote:String)
+data class RemoteSeniorModule(val subjectCode:String,val moduleType:String)
+data class RemoteSeniorModuleConfiguration(val revision:Long,val selections:List<RemoteSeniorModule>)
+data class RemoteSeniorGoal(val id:String,val assignmentId:String?,val module:RemoteSeniorModule,val weekStart:String,val title:String,val evidenceTarget:String,val nextAction:String,val status:String,val revision:Long)
+data class RemoteSeniorReflection(val id:String,val goalId:String?,val assignmentId:String?,val evidenceSummary:String,val strategy:String,val nextAction:String,val supportRequested:Boolean,val createdAt:String)
+data class RemoteSeniorLearningReport(val recordedLearningMinutes:Long,val subjects:List<RemoteSubjectLearningFacts>,val activeGoals:Long,val archivedGoals:Long,val reflections:Long,val supportRequests:Long)
 data class RemoteJuniorPlanItem(val assignmentId:String,val subjectCode:String,val courseTitle:String,val lessonTitle:String,val status:String,val position:Int)
 data class RemoteJuniorPlan(val revision:Long,val items:List<RemoteJuniorPlanItem>)
 data class RemoteJuniorLearningReport(val recordedLearningMinutes:Long,val subjects:List<RemoteSubjectLearningFacts>,val planRevision:Long)
@@ -38,7 +44,7 @@ data class RemoteSubjectLearningFacts(val subjectCode:String,val assigned:Long,v
  val completed:Long,val reworkRequired:Long,val openSupport:Long,val scheduledRevisits:Long,val dueRevisits:Long)
 data class RemotePrimaryLearningReport(val effectiveStage:String,val effectivePrimaryBand:String?,
  val recordedLearningMinutes:Long,val subjects:List<RemoteSubjectLearningFacts>)
-data class RemoteLearningAssignment(val id:String,val courseTitle:String,val unitTitle:String,val lessonTitle:String,val lessonSummary:String,val schoolStage:String,val subjectCode:String,val status:String,val version:Long,val activities:List<RemoteLearningActivity>,val reviewNote:String,val assignmentSource:String="PARENT",val reward:RemoteRewardSnapshot=RemoteRewardSnapshot(),val juniorMetadata:RemoteJuniorMetadata?=null) {
+data class RemoteLearningAssignment(val id:String,val courseTitle:String,val unitTitle:String,val lessonTitle:String,val lessonSummary:String,val schoolStage:String,val subjectCode:String,val status:String,val version:Long,val activities:List<RemoteLearningActivity>,val reviewNote:String,val assignmentSource:String="PARENT",val reward:RemoteRewardSnapshot=RemoteRewardSnapshot(),val juniorMetadata:RemoteJuniorMetadata?=null,val seniorMetadata:RemoteSeniorMetadata?=null) {
  fun canSubmit():Boolean = status=="IN_PROGRESS" && activities.isNotEmpty() && activities.all(RemoteLearningActivity::childReady)
 }
 data class RemoteCourseSummary(val courseId:String,val title:String,val schoolStage:String,val subjectCode:String,val versionId:String,val versionNumber:Int,val status:String,val lessonCount:Int)

@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import org.mindrot.jbcrypt.BCrypt
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
 class FamilyAppViewModel(application: Application) : AndroidViewModel(application) {
@@ -48,6 +49,14 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     var juniorLearningPlan by mutableStateOf<RemoteJuniorPlan?>(null)
         private set
     var juniorLearningReport by mutableStateOf<RemoteJuniorLearningReport?>(null)
+        private set
+    var seniorModuleConfiguration by mutableStateOf<RemoteSeniorModuleConfiguration?>(null)
+        private set
+    var seniorGoals by mutableStateOf<List<RemoteSeniorGoal>>(emptyList())
+        private set
+    var seniorReflections by mutableStateOf<List<RemoteSeniorReflection>>(emptyList())
+        private set
+    var seniorLearningReport by mutableStateOf<RemoteSeniorLearningReport?>(null)
         private set
     var learningSupportByAssignment by mutableStateOf<Map<String,List<RemoteSupportEvent>>>(emptyMap())
         private set
@@ -320,6 +329,56 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             } finally { updateTeachingActionState(false) }
         }
     }
+    fun createSeniorTeachingCourse(template:SeniorCourseTemplate) {
+        if(state.experience.effectiveStage!=SchoolStage.SENIOR_HIGH) return failUnit("当前学段不是高中，请刷新家长配置")
+        if(teachingActionRunningInternal)return
+        updateTeachingActionState(true)
+        viewModelScope.launch {
+            try {
+                val draft=RemoteTeachingCourseDraft(stage=SchoolStage.SENIOR_HIGH.name,subject=template.subject.apiValue,
+                    courseTitle=template.courseTitle,lessonTitle=template.lessonTitle,lessonSummary=template.inquiryQuestion,
+                    activityType="OFFLINE_PRACTICE",activityTitle="形成研究证据",instruction=template.instruction,
+                    expectedMinutes=template.expectedMinutes,rightsBasis=template.rightsBasis,
+                    seniorModuleType=template.subject.defaultModule,topicTitle=template.topicTitle,
+                    inquiryQuestion=template.inquiryQuestion,expectedEvidence=template.expectedEvidence,
+                    seniorSafetyNote=template.safetyNote)
+                when(val result=remote.createTeachingCourse(draft)) {
+                    is RemoteResult.Ok->{message="高中原创研究活动草稿已保存";syncTeachingCourses()}
+                    RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"")
+                    is RemoteResult.Failure->message=result.message
+                }
+            } finally { updateTeachingActionState(false) }
+        }
+    }
+    fun updateSeniorModules(selections:List<RemoteSeniorModule>) {
+        val current=seniorModuleConfiguration ?: return failUnit("模块配置尚未同步")
+        viewModelScope.launch { when(val result=remote.updateSeniorModules(selections,current.revision)) {
+            is RemoteResult.Ok->{seniorModuleConfiguration=result.value;message="高中课程模块已保存"}
+            RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"")
+            is RemoteResult.Failure->{message=result.message;if(result.kind==RemoteFailureKind.CONFLICT)syncSeniorLearning()}
+        } }
+    }
+    fun createSeniorGoal(module:RemoteSeniorModule,assignmentId:String?,title:String,evidence:String,next:String) {
+        if(listOf(title,evidence,next).any{it.isBlank()})return failUnit("请写清目标、证据和下一步")
+        viewModelScope.launch { when(val result=remote.createSeniorGoal(module,assignmentId,LocalDate.now().with(java.time.DayOfWeek.MONDAY).toString(),title.trim(),evidence.trim(),next.trim())) {
+            is RemoteResult.Ok->{syncSeniorLearning();message="本周目标已保存"}
+            RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"")
+            is RemoteResult.Failure->message=result.message
+        } }
+    }
+    fun archiveSeniorGoal(goal:RemoteSeniorGoal) { viewModelScope.launch { when(val result=remote.archiveSeniorGoal(goal)) {
+        is RemoteResult.Ok->{syncSeniorLearning();message="目标已归档，学习事实仍保留"}
+        RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"")
+        is RemoteResult.Failure->{message=result.message;if(result.kind==RemoteFailureKind.CONFLICT)syncSeniorLearning()}
+    } } }
+    fun createSeniorReflection(goal:RemoteSeniorGoal?,assignmentId:String?,evidence:String,strategy:String,next:String,support:Boolean) {
+        if(evidence.isBlank()||next.isBlank())return failUnit("请写下证据和下一步")
+        viewModelScope.launch { when(val result=remote.createSeniorReflection(goal?.id,assignmentId,evidence.trim(),strategy,next.trim(),support)) {
+            is RemoteResult.Ok->{syncSeniorLearning();message=if(support)"复盘已保存，也已记下需要支持" else "复盘已保存"}
+            RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"")
+            is RemoteResult.Failure->message=result.message
+        } }
+    }
     fun publishTeachingCourse(versionId:String) = runTeachingAction {
         when (val result=remote.publishTeachingVersion(versionId)) {
             is RemoteResult.Ok -> { message="课程已发布，可以布置给孩子"; syncTeachingCourses() }
@@ -360,7 +419,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             if (result is RemoteResult.Ok) { syncEducationResources(); reconcileAndFlushLearning(refreshFirst=false); flushUsageNow() }
         }
     }
-    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); juniorLearningPlan=null; juniorLearningReport=null; learningSupportByAssignment=emptyMap(); primaryLearningReport=null; teachingCourses = emptyList(); connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
+    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); juniorLearningPlan=null; juniorLearningReport=null; seniorModuleConfiguration=null; seniorGoals=emptyList(); seniorReflections=emptyList(); seniorLearningReport=null; learningSupportByAssignment=emptyMap(); primaryLearningReport=null; teachingCourses = emptyList(); connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
 
     private fun changeEducationSource(id: String, action: String, success: String) {
         viewModelScope.launch {
@@ -499,7 +558,16 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized,"")
             is RemoteResult.Failure -> Unit
         } else primaryLearningReport=null
+        if(state.experience.effectiveStage==SchoolStage.SENIOR_HIGH) syncSeniorLearning()
+        else { seniorModuleConfiguration=null;seniorGoals=emptyList();seniorReflections=emptyList();seniorLearningReport=null }
         syncTeachingCourses()
+    }
+
+    private suspend fun syncSeniorLearning() {
+        when(val result=remote.seniorModules()) { is RemoteResult.Ok->seniorModuleConfiguration=result.value;RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->Unit }
+        when(val result=remote.seniorGoals()) { is RemoteResult.Ok->seniorGoals=result.value;RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->Unit }
+        when(val result=remote.seniorReflections()) { is RemoteResult.Ok->seniorReflections=result.value;RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->Unit }
+        when(val result=remote.seniorReport()) { is RemoteResult.Ok->seniorLearningReport=result.value;RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->Unit }
     }
 
     private suspend fun syncLearningAssignments():Boolean {

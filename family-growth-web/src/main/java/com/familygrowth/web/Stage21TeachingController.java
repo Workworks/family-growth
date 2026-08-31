@@ -10,6 +10,8 @@ import com.familygrowth.domain.Stage21TeachingModels.LearningAssignment;
 import com.familygrowth.domain.Stage21TeachingModels.KindergartenAgeBand;
 import com.familygrowth.domain.Stage21TeachingModels.KindergartenDomain;
 import com.familygrowth.domain.Stage21TeachingModels.JuniorLessonMetadata;
+import com.familygrowth.domain.Stage21TeachingModels.SeniorLessonMetadata;
+import com.familygrowth.domain.Stage25SeniorModels.ModuleType;
 import com.familygrowth.domain.Stage21TeachingModels.LessonDraft;
 import com.familygrowth.domain.Stage21TeachingModels.ParentCourseSummary;
 import com.familygrowth.domain.Stage21TeachingModels.QuestionOption;
@@ -150,12 +152,16 @@ class Stage21TeachingController {
                          @Size(max=160) String chapterTitle,
                          @Size(max=8) List<@NotBlank @Size(max=80) String> knowledgePoints,
                          @Size(max=500) String learningGoal, @Size(max=500) String safetyNote,
+                         ModuleType moduleType,@Size(max=160) String topicTitle,@Size(max=500) String inquiryQuestion,
+                         @Size(max=500) String expectedEvidence,@Size(max=500) String seniorSafetyNote,
                          @NotEmpty @Size(max=20) List<@Valid ActivityRequest> activities) {
         LessonDraft toDomain() {
             boolean metadataPresent = chapterTitle != null || knowledgePoints != null || learningGoal != null || safetyNote != null;
             JuniorLessonMetadata metadata = metadataPresent
                 ? new JuniorLessonMetadata(chapterTitle, knowledgePoints, learningGoal, safetyNote) : null;
-            return new LessonDraft(title, summary, activities.stream().map(ActivityRequest::toDomain).toList(), metadata);
+            boolean seniorPresent=moduleType!=null||topicTitle!=null||inquiryQuestion!=null||expectedEvidence!=null||seniorSafetyNote!=null;
+            SeniorLessonMetadata senior=seniorPresent?new SeniorLessonMetadata(moduleType,topicTitle,inquiryQuestion,expectedEvidence,seniorSafetyNote):null;
+            return new LessonDraft(title, summary, activities.stream().map(ActivityRequest::toDomain).toList(), metadata,senior);
         }
     }
     record ActivityRequest(@NotNull ActivityType type, @NotBlank @Size(max=160) String title,

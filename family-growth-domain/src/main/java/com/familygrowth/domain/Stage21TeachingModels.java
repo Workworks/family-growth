@@ -3,6 +3,7 @@ package com.familygrowth.domain;
 import com.familygrowth.domain.Stage20Models.SchoolStage;
 import com.familygrowth.domain.Stage23LearningModels.AssignmentSource;
 import com.familygrowth.domain.Stage23LearningModels.RewardSnapshot;
+import com.familygrowth.domain.Stage25SeniorModels.ModuleType;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -103,15 +104,27 @@ public final class Stage21TeachingModels {
         }
     }
 
+    public record SeniorLessonMetadata(ModuleType moduleType,String topicTitle,String inquiryQuestion,
+                                       String expectedEvidence,String safetyNote) {
+        public SeniorLessonMetadata {
+            Objects.requireNonNull(moduleType);topicTitle=text(topicTitle,"topicTitle",160);
+            inquiryQuestion=text(inquiryQuestion,"inquiryQuestion",500);expectedEvidence=text(expectedEvidence,"expectedEvidence",500);
+            safetyNote=text(safetyNote,"safetyNote",500);String value=topicTitle+" "+inquiryQuestion+" "+expectedEvidence+" "+safetyNote;
+            if(List.of("明火","高压","强酸","强碱","药品配制","锋利刀具").stream().anyMatch(value::contains))
+                throw new IllegalArgumentException("Senior home learning cannot include high-risk experiment guidance");
+        }
+    }
+
     public record LessonDraft(String title, String summary, List<ActivityDraft> activities,
-                              JuniorLessonMetadata juniorMetadata) {
+                              JuniorLessonMetadata juniorMetadata,SeniorLessonMetadata seniorMetadata) {
         public LessonDraft {
             title = text(title, "lesson title", 160);
             summary = text(summary, "lesson summary", 500);
             activities = activities == null ? List.of() : List.copyOf(activities);
             if (activities.isEmpty() || activities.size() > 20) throw new IllegalArgumentException("Lesson requires 1 to 20 activities");
         }
-        public LessonDraft(String title, String summary, List<ActivityDraft> activities) { this(title, summary, activities, null); }
+        public LessonDraft(String title, String summary, List<ActivityDraft> activities) { this(title, summary, activities, null,null); }
+        public LessonDraft(String title,String summary,List<ActivityDraft> activities,JuniorLessonMetadata juniorMetadata){this(title,summary,activities,juniorMetadata,null);}
     }
 
     public record UnitDraft(String title, List<LessonDraft> lessons) {
@@ -139,8 +152,9 @@ public final class Stage21TeachingModels {
     public record ActivityContent(UUID id, ActivityType type, String title, String instruction, String contentRef, int expectedMinutes,
                                   String prompt, String hint, List<QuestionOption> options, String answerKey) { }
     public record LessonContent(UUID id, String title, String summary, List<ActivityContent> activities,
-                                JuniorLessonMetadata juniorMetadata) {
-        public LessonContent(UUID id, String title, String summary, List<ActivityContent> activities) { this(id,title,summary,activities,null); }
+                                JuniorLessonMetadata juniorMetadata,SeniorLessonMetadata seniorMetadata) {
+        public LessonContent(UUID id, String title, String summary, List<ActivityContent> activities) { this(id,title,summary,activities,null,null); }
+        public LessonContent(UUID id,String title,String summary,List<ActivityContent> activities,JuniorLessonMetadata juniorMetadata){this(id,title,summary,activities,juniorMetadata,null);}
     }
     public record UnitContent(UUID id, String title, List<LessonContent> lessons) { }
     public record CourseVersion(UUID courseId, UUID versionId, UUID familyId, SchoolStage schoolStage,
@@ -166,15 +180,19 @@ public final class Stage21TeachingModels {
                                      SchoolStage schoolStage, String subjectCode, AssignmentStatus status,
                                      long version, List<ActivityProgress> activities, String reviewNote,
                                      Instant updatedAt, AssignmentSource assignmentSource,
-                                     RewardSnapshot reward, JuniorLessonMetadata juniorMetadata) {
+                                     RewardSnapshot reward, JuniorLessonMetadata juniorMetadata,SeniorLessonMetadata seniorMetadata) {
         public LearningAssignment(UUID id, UUID childId, UUID courseVersionId, UUID lessonId,
                                   String courseTitle, String unitTitle, String lessonTitle, String lessonSummary,
                                   SchoolStage schoolStage, String subjectCode, AssignmentStatus status,
                                   long version, List<ActivityProgress> activities, String reviewNote,
                                   Instant updatedAt, AssignmentSource assignmentSource, RewardSnapshot reward) {
             this(id,childId,courseVersionId,lessonId,courseTitle,unitTitle,lessonTitle,lessonSummary,schoolStage,
-                subjectCode,status,version,activities,reviewNote,updatedAt,assignmentSource,reward,null);
+                subjectCode,status,version,activities,reviewNote,updatedAt,assignmentSource,reward,null,null);
         }
+        public LearningAssignment(UUID id,UUID childId,UUID courseVersionId,UUID lessonId,String courseTitle,String unitTitle,
+                                  String lessonTitle,String lessonSummary,SchoolStage schoolStage,String subjectCode,AssignmentStatus status,
+                                  long version,List<ActivityProgress> activities,String reviewNote,Instant updatedAt,AssignmentSource assignmentSource,
+                                  RewardSnapshot reward,JuniorLessonMetadata juniorMetadata){this(id,childId,courseVersionId,lessonId,courseTitle,unitTitle,lessonTitle,lessonSummary,schoolStage,subjectCode,status,version,activities,reviewNote,updatedAt,assignmentSource,reward,juniorMetadata,null);}
     }
     public record AssignmentFacts(LearningAssignment projection, Map<UUID, ActivityContent> contentByActivity) { }
 
@@ -203,6 +221,12 @@ public final class Stage21TeachingModels {
         } else if (version.units().stream().flatMap(unit -> unit.lessons().stream()).anyMatch(lesson -> lesson.juniorMetadata() != null)) {
             throw new IllegalArgumentException("Junior metadata is only valid for junior-middle courses");
         }
+        if(version.schoolStage()==SchoolStage.SENIOR_HIGH){for(UnitContent unit:version.units())for(LessonContent lesson:unit.lessons()){
+            if(lesson.seniorMetadata()==null)throw new IllegalArgumentException("Senior lesson metadata is required");
+            int minutes=lesson.activities().stream().mapToInt(ActivityContent::expectedMinutes).sum();if(minutes>45)throw new IllegalArgumentException("Senior learning block must not exceed 45 minutes");
+            String safety=lesson.title()+" "+lesson.summary()+" "+lesson.seniorMetadata().inquiryQuestion()+" "+lesson.seniorMetadata().expectedEvidence()+" "+lesson.seniorMetadata().safetyNote()+" "+lesson.activities().stream().map(a->a.title()+" "+a.instruction()+" "+a.prompt()+" "+a.hint()).collect(java.util.stream.Collectors.joining(" "));
+            if(List.of("明火","高压","强酸","强碱","药品配制","锋利刀具").stream().anyMatch(safety::contains))throw new IllegalArgumentException("Senior home learning cannot include high-risk experiment guidance");
+        }}else if(version.units().stream().flatMap(unit->unit.lessons().stream()).anyMatch(lesson->lesson.seniorMetadata()!=null))throw new IllegalArgumentException("Senior metadata is only valid for senior-high courses");
         if (version.schoolStage() != SchoolStage.KINDERGARTEN) {
             if (version.kindergartenAgeBand() != null || !version.kindergartenDomains().isEmpty()) {
                 throw new IllegalArgumentException("Kindergarten metadata is only valid for kindergarten courses");

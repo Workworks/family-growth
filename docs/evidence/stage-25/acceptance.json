@@ -1,22 +1,62 @@
 {
   "stage": 25,
   "capturedAt": "2026-08-31",
-  "status": "IN_PROGRESS",
-  "scope": "Stage 25 senior-high autonomous study room specification and planned work packages",
+  "status": "BLOCKED",
+  "scope": "Stage 25 senior-high module boundaries, weekly goals, immutable reflections, original research pack, factual parent report and offline production gates",
   "results": [
     {
-      "id": "V25-01-SPEC",
+      "id": "V25-01/V25-04-ANDROID",
+      "status": "PASS_OFFLINE",
+      "command": ".\\gradlew.bat :app:testDebugUnitTest :app:testReleaseUnitTest :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease --no-daemon",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "The distinct senior research room, parent module configuration, weekly goal and reflection dialogs, six-subject SENIOR-PACK-1.0.0, factual report and both APK variants passed JVM, lint and assembly gates."
+    },
+    {
+      "id": "V25-02/V25-03/V25-05-H2",
       "status": "PASS",
-      "command": "Documentation-only specification initialization",
+      "command": ".\\mvnw.cmd test",
       "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "Goals, scope, two-pass visual direction, safety invariants, work packages, verification methods and acceptance criteria were fixed before Stage 25 implementation."
+      "result": "All H2 tests passed: 26 domain, 2 infrastructure and 30 Boot tests with 6 PostgreSQL-only skips. Senior publication metadata, RBAC, audit, replay, stale revision, cross-family isolation, real concurrency, immutable reflection, factual report and zero ledger writes passed."
+    },
+    {
+      "id": "V25-02/V25-03/V25-05-POSTGRES",
+      "status": "PASS",
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am -Dtest=PostgresSchemaValidationTest,Stage23AutonomousLearningApiTest,Stage24JuniorPlanApiTest,Stage25SeniorLearningApiTest -Dsurefire.failIfNoSpecifiedTests=false test",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Disposable PostgreSQL 16.15 validated 19 migrations and 71 production tables. Seven selected tests passed with zero skips, including module and goal concurrency with exactly one accepted revision. The exact disposable container was stopped and auto-removed."
+    },
+    {
+      "id": "V25-06",
+      "status": "PASS_OFFLINE",
+      "command": "Full Maven, PostgreSQL, Android two-variant, OpenAPI and documentation gates recorded for Stage 25",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Offline code, schema, contract and documentation gates passed. No device result is inferred from build or static checks."
+    },
+    {
+      "id": "V25-07",
+      "status": "BLOCKED",
+      "command": "NOT_RUN: target-tablet senior research room runtime acceptance",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": null,
+      "passed": false,
+      "result": "No target Android tablet is connected. Rotation, large text, TalkBack, Reduced Motion, goal conflict, offline recovery and data-preserving upgrade remain unverified."
     }
   ],
   "remaining": [
-    "WP25-2 through WP25-7 implementation and verification",
-    "Target-tablet runtime acceptance"
+    "Target-tablet V25-07 runtime acceptance",
+    "Include Stage 25 changes in the next signed public APK release"
   ]
 }
