@@ -12,6 +12,7 @@ public interface Stage6Store {
     List<RewardProduct> products(UUID familyId,boolean activeOnly);
     Optional<RewardOrder> orderBySubmitKey(UUID familyId,String key);
     Optional<RewardOrder> order(UUID familyId,UUID orderId);
+    List<RewardOrder> orders(UUID familyId,UUID childId);
     RewardOrder createOrder(UUID familyId,UUID childId,UUID productId,String key,UUID actorId,Instant now);
     RewardOrder reviewOrder(UUID familyId,UUID orderId,boolean approve,String key,UUID actorId,Instant now);
     RewardOrder cancelOrder(UUID familyId,UUID orderId,String key,UUID actorId,Instant now);

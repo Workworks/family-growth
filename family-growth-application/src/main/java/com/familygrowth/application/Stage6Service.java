@@ -33,6 +33,8 @@ public class Stage6Service {
     public RewardOrder reviewOrder(Actor actor,UUID familyId,UUID orderId,boolean approve,String key){
         authorization.requireParent(actor,familyId); requireKey(key); return store.reviewOrder(familyId,orderId,approve,key,actor.actorId(),clock.instant());
     }
+    @Transactional(readOnly=true)
+    public List<RewardOrder> orders(Actor actor,UUID familyId,UUID childId){authorization.requireChildOrParent(actor,familyId,childId);return store.orders(familyId,childId);}
     public RewardOrder cancelOrder(Actor actor,UUID familyId,UUID orderId,String key){
         requireKey(key); RewardOrder order=store.order(familyId,orderId).orElseThrow(FamilyGrowthService.NotFoundException::new);
         authorization.requireChildOrParent(actor,familyId,order.childId()); return store.cancelOrder(familyId,orderId,key,actor.actorId(),clock.instant());

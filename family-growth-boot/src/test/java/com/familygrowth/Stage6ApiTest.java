@@ -81,6 +81,9 @@ class Stage6ApiTest {
         mvc.perform(post("/api/v1/families/"+parent.family+"/reward-orders/"+canceled+"/cancel")
             .header("Authorization",bearer(childToken)).header("Idempotency-Key","cancel-1"))
             .andExpect(status().isOk()).andExpect(jsonPath("$.data.status").value("CANCELED"));
+        mvc.perform(get(orders).header("Authorization",bearer(parent.token)))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.data.length()").value(4))
+            .andExpect(jsonPath("$.data[0].id").value(canceled.toString()));
         mvc.perform(get("/api/v1/families/"+parent.family+"/children/"+child+"/wallet").header("Authorization",bearer(parent.token)))
             .andExpect(status().isOk()).andExpect(jsonPath("$.data.coinBalance").value(70));
         UUID raced=createOrder(parent,child,childToken,orders,product,"order-race");

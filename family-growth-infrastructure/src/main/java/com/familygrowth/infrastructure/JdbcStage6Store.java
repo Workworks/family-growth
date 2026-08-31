@@ -29,6 +29,7 @@ class JdbcStage6Store implements Stage6Store {
     }
     @Override public Optional<RewardOrder> orderBySubmitKey(UUID familyId,String key){return jdbc.query("SELECT * FROM reward_order WHERE family_id=? AND submit_key=?",this::orderRow,familyId,key).stream().findFirst();}
     @Override public Optional<RewardOrder> order(UUID familyId,UUID id){return jdbc.query("SELECT * FROM reward_order WHERE family_id=? AND id=?",this::orderRow,familyId,id).stream().findFirst();}
+    @Override public List<RewardOrder> orders(UUID familyId,UUID childId){return jdbc.query("SELECT * FROM reward_order WHERE family_id=? AND child_id=? ORDER BY created_at DESC",this::orderRow,familyId,childId);}
     @Override public RewardOrder createOrder(UUID familyId,UUID childId,UUID productId,String key,UUID actorId,Instant now){
         RewardProduct product=product(familyId,productId); if(!product.active()||product.stockCount()==0)throw new Stage3Service.ConflictException("Reward product is unavailable");
         UUID id=UUID.randomUUID(); jdbc.update("INSERT INTO reward_order(id,family_id,child_id,product_id,product_title,coin_cost,status,submit_key,created_at) VALUES(?,?,?,?,?,?,'CREATED',?,?)",

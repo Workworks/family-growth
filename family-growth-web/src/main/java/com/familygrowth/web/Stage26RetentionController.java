@@ -1,0 +1,8 @@
+package com.familygrowth.web;
+import com.familygrowth.application.Stage26RetentionService;import com.familygrowth.domain.Stage3Models;import com.familygrowth.domain.Stage3Models.Actor;import com.familygrowth.domain.Stage26RetentionModels.*;import jakarta.validation.Valid;import jakarta.validation.constraints.*;import java.util.UUID;import org.springframework.web.bind.annotation.*;
+@RestController @RequestMapping("/api/v1/families/{familyId}/children/{childId}/data-rights") class Stage26RetentionController {private final Stage26RetentionService service;Stage26RetentionController(Stage26RetentionService service){this.service=service;}
+ @GetMapping("/retention-policy")ApiResponse<RetentionPolicy> policy(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE)Actor actor,@PathVariable UUID familyId,@PathVariable UUID childId){return ApiResponse.ok(service.policy(actor,familyId,childId));}
+ @PutMapping("/retention-policy")ApiResponse<RetentionPolicy> update(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE)Actor actor,@PathVariable UUID familyId,@PathVariable UUID childId,@Valid @RequestBody Request request){return ApiResponse.ok(service.update(actor,familyId,childId,request.usageDetailDays(),request.expectedVersion(),request.reason()));}
+ @PostMapping("/retention-runs")ApiResponse<RetentionRun> run(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE)Actor actor,@PathVariable UUID familyId,@PathVariable UUID childId){return ApiResponse.ok(service.run(actor,familyId,childId));}
+ record Request(@Min(30)@Max(365)int usageDetailDays,@Min(0)long expectedVersion,@NotBlank@Size(max=240)String reason){}
+}

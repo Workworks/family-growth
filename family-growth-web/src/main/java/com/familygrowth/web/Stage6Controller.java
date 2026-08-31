@@ -27,6 +27,8 @@ class Stage6Controller {
     ApiResponse<List<RewardProduct>> products(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE)Actor actor,@PathVariable UUID familyId,@RequestParam(defaultValue="true")boolean activeOnly){return ApiResponse.ok(service.products(actor,familyId,activeOnly));}
     @PostMapping("/children/{childId}/reward-orders") @ResponseStatus(HttpStatus.CREATED)
     ApiResponse<RewardOrder> order(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE)Actor actor,@PathVariable UUID familyId,@PathVariable UUID childId,@RequestHeader("Idempotency-Key")String key,@Valid @RequestBody OrderRequest request){return ApiResponse.ok(service.createOrder(actor,familyId,childId,request.productId(),key));}
+    @GetMapping("/children/{childId}/reward-orders")
+    ApiResponse<List<RewardOrder>> orders(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE)Actor actor,@PathVariable UUID familyId,@PathVariable UUID childId){return ApiResponse.ok(service.orders(actor,familyId,childId));}
     @PostMapping("/reward-orders/{orderId}/review")
     ApiResponse<RewardOrder> review(@RequestAttribute(Stage3Models.ACTOR_REQUEST_ATTRIBUTE)Actor actor,@PathVariable UUID familyId,@PathVariable UUID orderId,@RequestHeader("Idempotency-Key")String key,@Valid @RequestBody ReviewRequest request){return ApiResponse.ok(service.reviewOrder(actor,familyId,orderId,request.approved(),key));}
     @PostMapping("/reward-orders/{orderId}/cancel")
