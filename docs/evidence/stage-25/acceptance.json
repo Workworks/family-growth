@@ -56,7 +56,6 @@
     }
   ],
   "remaining": [
-    "Target-tablet V25-07 runtime acceptance",
-    "Include Stage 25 changes in the next signed public APK release"
+    "Target-tablet V25-07 runtime acceptance; Stage 25 is already included in signed public v0.3.7"
   ]
 }

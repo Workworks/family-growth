@@ -13,11 +13,11 @@
 
 ### Stage 26：连续性、隐私、防沉迷与发布总验收
 
-状态：`IN_PROGRESS`（发布后转 `BLOCKED`）　文档：[Stage 26](stages/stage-26-report.md)
+状态：`BLOCKED`　文档：[Stage 26](stages/stage-26-report.md)
 
 已完成：跨学段迁移预览/归档/恢复与审计、儿童 JSON 导出、一次性 token + 服务端 PIN 的受约束去标识化、睡眠时段/临时放行/统一使用判定、Android 隐私中心和温和锁定页；H2、PostgreSQL 16.15、Android 双变体门禁通过。
 
-当前 Agent 可执行：递增版本并发布稳定签名 GitHub Release，完成远端摘要、包名、版本和证书复验。
+已完成发布：稳定签名 v0.3.7/13 已公开发布，远端 GitHub digest、下载 SHA-256、大小、包名、版本与历史证书复验一致。
 
 外部缺少：目标 Android 平板，以及设备可访问并信任证书的 HTTPS 家庭服务。没有这些条件，首装/覆盖升级、TalkBack、横竖屏、大字体、Reduced Motion、物理触觉、断网恢复、四学段切换和删除后数据保留不能作运行态验收。
 

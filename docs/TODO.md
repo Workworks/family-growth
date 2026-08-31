@@ -11,12 +11,11 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P0 | 23–26 | `IN_PROGRESS` | 按 REQ-050 连续完成全排期；普通可逆默认值由 Agent 决策并写入 Spec/AQ，不等待偏好确认 | Agent | 各 Stage 报告、测试与 `evidence/stage-N/` |
 | P0 | 22 | `BLOCKED` | WP22-1–5 已完成；连接目标平板回放年龄带/五领域折页、布置、孩子离屏完成、家长一句观察、TalkBack、旋转、Reduced Motion 和触觉关闭 | 用户提供平板；Agent 回放 | Stage 22 报告、`evidence/stage-22/` |
 | P1 | 23 | `BLOCKED` | 可离线工作包已完成；连接目标平板回放小学报告、横竖屏、TalkBack、大字体、Reduced Motion 与数据保留 | 用户提供平板；Agent 回放 | Stage 23 报告、`evidence/stage-23/` |
 | P1 | 24 | `BLOCKED` | 可离线工作包已完成；连接目标平板回放横竖屏、大字体、TalkBack、Reduced Motion、触控排序和断网恢复 | 用户提供平板；Agent 回放 | Stage 24 报告、`evidence/stage-24/` |
 | P1 | 25 | `BLOCKED` | 可离线工作包已完成；连接目标平板回放研究板、TalkBack、Reduced Motion、断网冲突和数据保留 | 用户提供平板；Agent 回放 | Stage 25 报告、`evidence/stage-25/` |
-| P0 | 26 | `IN_PROGRESS` | WP26-2–7 已完成；递增 Android 版本，复用稳定签名发布公开 GitHub Release，并复验远端摘要、包名、版本和证书 | Agent；设备/服务验收由外部条件解除 | Stage 26 Spec、代码、门禁、Release 与 evidence |
+| P0 | 26 | `BLOCKED` | WP26-1–8 和 v0.3.7/13 已完成；连接目标平板与可信 HTTPS 服务回放安装/覆盖升级、四学段、TalkBack/旋转/大字体/Reduced Motion、触觉、断网和数据保留 | 用户提供设备/服务；Agent 回放 | Stage 26 报告、v0.3.7 Release、`evidence/stage-26/` |
 | P0 | 21 | `BLOCKED` | v0.3.6/12 已发布；在目标平板从 v0.3.5 应用内覆盖升级并回放 AndroidKeyStore 写前队列、杀进程/断网、重新登录、401/409、真实来源/官方播放和 TalkBack/旋转 | 用户提供平板/可访问服务；Agent 回放 | `stages/stage-23-report.md`、`evidence/stage-23/acceptance.json`、v0.3.6 Release |
 | P0 | 20 | `BLOCKED` | 用目标平板回放四学段、触觉开关、Reduced Motion、TalkBack、旋转、重启和真实服务同步 | 用户提供设备；Agent 回放 | `stages/stage-20-report.md`、`evidence/stage-20/acceptance.json` |
 | P0 | 18 | `BLOCKED` | 在平板用 v0.3.3→v0.3.4 更新链同时测试双视角、视频计时、奖励兴趣和重启保留 | 用户测试；Agent 根据反馈修复 | Stage 18/19 真机证据 |
@@ -31,7 +30,7 @@
 
 ## 2. 可由 Agent 继续推进
 
-Stage 20–25 的可离线工程与门禁已经收口，只剩目标平板/服务验收。按 REQ-050 不再因普通产品偏好暂停：当前进入 Stage 26；LIM-013 数据权利、完整 App 内防沉迷和 Android 生产接入在 Stage 26 作为 P0 收口。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
+Stage 20–26 的可离线工程、LIM-013、稳定签名 v0.3.7 与远端身份复验均已收口。当前没有 Agent 可在缺少外部条件时继续完成的产品工作；剩余事项全部需要目标平板或设备可访问的可信 HTTPS 服务。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
 
 ## 3. 只能由外部条件解除
 

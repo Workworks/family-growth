@@ -1,6 +1,6 @@
 # Stage 26：连续性、隐私、防沉迷与发布总验收
 
-状态：`IN_PROGRESS`
+状态：`BLOCKED`
 
 产品 Phase：全面教学收口 / P0
 
@@ -58,7 +58,7 @@
 | WP26-5 | 已完成 | Android 家长隐私中心、防沉迷设置/状态和孩子温和锁定页 |
 | WP26-6 | 已完成（离线） | 生产同步沿用既有 401/409/outbox 恢复；学段切换先预览并即时重新同步对应课程 |
 | WP26-7 | 已完成 | H2/PostgreSQL、Android 双变体、OpenAPI/文档与安全门禁 |
-| WP26-8 | 待开始 | 稳定签名 APK、更新清单、GitHub Release、远端摘要/证书/版本复验 |
+| WP26-8 | 已完成 | 稳定签名 v0.3.7/13、GitHub Release、远端摘要/证书/版本复验 |
 | WP26-9 | 外部阻塞 | 目标平板、真实 HTTPS 家庭服务、TalkBack/旋转/覆盖升级/数据保留总验收 |
 
 ## 验证方式
@@ -81,11 +81,11 @@
 - [x] AC26-03：`PASS` — 家长导出与两阶段删除在 H2/PostgreSQL 通过；确认要求一次性短期 token 和服务端 PIN，儿童/跨家庭拒绝，直接标识/自由文本/非财务使用明细删除或去标识化，Ledger 数量不变。
 - [x] AC26-04：`PASS` — 服务端统一判定睡眠窗、日上限和最多 60 分钟临时放行；放行需家长、原因、幂等键并自动到期，Android 使用温和离屏提示。
 - [x] AC26-05：`PASS_OFFLINE` — Android 家长隐私中心、导出文件、删除预览/PIN 确认、学段迁移预览、防沉迷状态以及既有 401/409/outbox 恢复通过双变体 JVM、Lint 和 APK 构建；运行态仍归 AC26-07。
-- [ ] AC26-06：稳定签名 Release 通过远端摘要、包名、版本和证书复验。
+- [x] AC26-06：`PASS` — v0.3.7/13 由 workflow `33352844845` 使用稳定证书发布；公开资产 11,748,771 字节，GitHub digest、下载 SHA-256 `22c7e376...e1cb908`、包名、版本和证书完全一致。
 - [ ] AC26-07：目标平板/HTTPS 未具备时保持 `BLOCKED`，不以构建或模拟结果冒充。
 
 ## 当前限制
 
-WP26-2–7 已完成并通过 22 条迁移、76 张生产表、H2 全回归、PostgreSQL 16.15 关键链和 Android 双变体门禁。WP26-8 正在执行版本递增与公开 Release；目标平板和设备可访问的真实 HTTPS 家庭服务仍不可用，WP26-9/AC26-07 必须保持外部阻塞。
+WP26-1–8 已完成并通过 22 条迁移、76 张生产表、H2 全回归、PostgreSQL 16.15 关键链、Android 双变体和 v0.3.7 公开 Release 复验。目标平板和设备可访问的真实 HTTPS 家庭服务仍不可用，因此 Stage 状态为 `BLOCKED`，WP26-9/AC26-07 不得用构建或 Release 冒充。
 
 结构化证据见 [Stage 26 acceptance](../evidence/stage-26/acceptance.json)。

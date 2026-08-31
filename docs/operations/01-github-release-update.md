@@ -54,9 +54,10 @@ cd family-growth-android
 - 热更新验证目标：[v0.3.4](https://github.com/Workworks/family-growth/releases/tag/v0.3.4)，versionCode 10。
 - Stage 20/21 教学基座与可靠同步：[v0.3.5](https://github.com/Workworks/family-growth/releases/tag/v0.3.5)，versionCode 11，asset `family-growth-0.3.5.apk`。
 - 小学分段与自主学习首切：[v0.3.6](https://github.com/Workworks/family-growth/releases/tag/v0.3.6)，versionCode 12，asset `family-growth-0.3.6.apk`。
-- 所有正式版本证书相同；GitHub latest 当前为 v0.3.6，公开 digest 为 `sha256:3b28e241ef0f68aa5a3e840a66407e1a6c78fa14d762402827bc85cd71ed29d5`，大小 11,634,079 字节。
+- 初中/高中深度与连续性、隐私、防沉迷收口：[v0.3.7](https://github.com/Workworks/family-growth/releases/tag/v0.3.7)，versionCode 13，asset `family-growth-0.3.7.apk`。
+- 所有正式版本证书相同；GitHub latest 当前为 v0.3.7，公开 digest 为 `sha256:22c7e376ef4584b7c9e4db3c845e16ee0b7b2781aa0fa52d0434c6b51e1cb908`，大小 11,748,771 字节。
 - v0.3.0–v0.3.2 的客户端都不含 Stage 19 系统下载器；遇到失败或长期 0% 时必须手动覆盖安装 v0.3.3 一次，不能期待旧客户端远程获得修复代码。
-- 真机验收顺序：已在 v0.3.5 的设备不卸载、不清数据，在家长区检查到 v0.3.6 → 记录排队/连接/下载/暂停/校验阶段 → 系统确认 → 检查版本、数据和加密待办保留。仍低于 v0.3.3 时先手动覆盖 v0.3.3 修复基线。
+- 真机验收顺序：已有正式签名版本的设备不卸载、不清数据，在家长区检查到 v0.3.7 → 记录排队/连接/下载/暂停/校验阶段 → 系统确认 → 检查版本、课程、账本、隐私配置和加密待办保留。仍低于 v0.3.3 时先手动覆盖 v0.3.3 修复基线。
 
 ## 6. 验收步骤
 
