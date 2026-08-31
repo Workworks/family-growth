@@ -13,17 +13,17 @@
 
 ### Stage 26：连续性、隐私、防沉迷与发布总验收
 
-状态：`IN_PROGRESS`　文档：[Stage 26](stages/stage-26-report.md)
+状态：`BLOCKED`　文档：[Stage 26](stages/stage-26-report.md)
 
 已完成：跨学段迁移预览/归档/恢复与审计、儿童 JSON 导出、一次性 token + 服务端 PIN 的受约束去标识化、睡眠时段/临时放行/统一使用判定、Android 隐私中心和温和锁定页；H2、PostgreSQL 16.15、Android 双变体门禁通过。
 
-已完成发布：稳定签名 v0.3.7/13 已公开发布，远端 GitHub digest、下载 SHA-256、大小、包名、版本与历史证书复验一致。
+已完成发布：稳定签名 v0.3.8/14 已公开发布；workflow `33365966672` 成功，公开资产 11,781,539 字节，GitHub digest 与下载 SHA-256 `17593387...c7615fab` 一致，包名、版本与历史证书复验一致。
 
-工程进度：完成性审计发现的服务端单次会话/强制休息、自动数据保留和 Android 全生产财商/报告 API 已在 WP26-10–12 实现并通过 H2/PostgreSQL/Android 双变体门禁；WP26-13 正在发布并复验 v0.3.8/14。发布完成后只保留下述外部运行态阻塞。
+工程进度：完成性审计发现的服务端单次会话/强制休息、自动数据保留和 Android 全生产财商/报告 API 已在 WP26-10–13 实现、通过全门禁并进入 v0.3.8/14；现在只保留下述外部运行态阻塞。
 
 外部缺少：目标 Android 平板，以及设备可访问并信任证书的 HTTPS 家庭服务。没有这些条件，首装/覆盖升级、TalkBack、横竖屏、大字体、Reduced Motion、物理触觉、断网恢复、四学段切换和删除后数据保留不能作运行态验收。
 
-推进方：Agent 先完成 WP26-10–13；用户提供设备/服务后由 Agent 回放 WP26-9/V26-08。
+推进方：用户提供设备/服务后由 Agent 回放 WP26-9/V26-08。
 
 ### Stage 2：工程骨架与 Family / Growth 基础
 
@@ -234,7 +234,7 @@
 
 ## 3. 当前已知限制
 
-- 现有 v0.2.0–v0.3.7 APK 使用同一稳定 release 身份；历史 debug APK 仅供内部证据，不能与 release 包互相覆盖。
+- 现有 v0.2.0–v0.3.8 APK 使用同一稳定 release 身份；历史 debug APK 仅供内部证据，不能与 release 包互相覆盖。
 - Stage 3 已实现生产认证/PIN/RBAC；家庭局域网正式部署仍需可信 TLS、备份和 Stage 4–10 业务闭环。
 - AGP 8.7.3 对 compileSdk 36 有兼容警告；构建通过，但应在后续 Android 依赖 Stage 对齐。
 - H2 只用于隔离测试；正式验收数据库基线是 PostgreSQL。

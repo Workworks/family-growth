@@ -18,7 +18,7 @@ Stage 3–7/9 已交付 PostgreSQL 生产闭环，Stage 8 API/Android 可离线�
 | Android 安装、启动、旋转 | `BLOCKED` | [BLOCKERS](../BLOCKERS.md) |
 | 任务、奖励、钱包、基金、防沉迷 | `PASS_OFFLINE（生产 API/服务端裁决/Android 双变体）` | [Stage 26](../stages/stage-26-report.md) |
 | Stage 3–10 生产服务端闭环 | `PASS（Stage 3–7/9 自动化）；Stage 8/10 真机阻塞` | [Stage 路线图](../stages/stage-roadmap.md) |
-| GitHub 三版 Release/digest/同签名 | `PASS（远端）` | [Stage 15](../stages/stage-15-report.md) |
+| GitHub Release/digest/同签名（最新 v0.3.8/14） | `PASS（远端）` | [Stage 26](../stages/stage-26-report.md) |
 | 3 岁起儿童端三入口/单任务/简化财商 | `PASS（实现/自动化）` | [Stage 15](../stages/stage-15-report.md) |
 | 四学段教学任务体系 | `PASS_OFFLINE（Stage 20–25）；内容持续扩充不作为本轮阻断` | [教学与项目剩余清单](../requirements/teaching-and-project-backlog.md) |
 | 儿童端平板触控/TalkBack/字体放大 | `BLOCKED` | [Stage 15](../stages/stage-15-report.md) |

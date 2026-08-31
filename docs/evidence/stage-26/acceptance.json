@@ -1,7 +1,7 @@
 {
   "stage": 26,
   "capturedAt": "2026-08-31",
-  "status": "IN_PROGRESS",
+  "status": "BLOCKED",
   "scope": "Stage transition continuity, constrained child data rights and retention, server-authoritative quiet hours/session rest/temporary allowance, Android production business loops, offline production gates and release preparation",
   "results": [
     {
@@ -42,17 +42,17 @@
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "OpenAPI 3.1 parsed with 88 paths, 92 Markdown files had no broken local links, all 26 Stage evidence JSON files parsed, git diff whitespace checks passed, and the tracked token/private-key scan returned no findings. These gates will run again after publication metadata is recorded."
+      "result": "After publication metadata was recorded, OpenAPI 3.1 parsed with 88 paths, 92 Markdown files had no broken local links, all 26 Stage evidence JSON files parsed, git diff whitespace checks passed, and the tracked token/private-key scan returned no findings. GitHub listed v0.3.8 as Latest and local main matched origin/main before the evidence commit."
     },
     {
       "id": "V26-07",
       "status": "PASS",
-      "command": "git push origin v0.3.7; gh run watch 33352844845 --exit-status; gh release download v0.3.7; aapt2 dump badging; apksigner verify --print-certs; Get-FileHash SHA256",
+      "command": "git push origin v0.3.8; gh run view 33365966672; gh release download v0.3.8; aapt2 dump badging; apksigner verify --print-certs; Get-FileHash SHA256",
       "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "Workflow 33352844845 completed successfully in 4m39s. Public asset family-growth-0.3.7.apk is 11,748,771 bytes; GitHub digest and downloaded SHA-256 are 22c7e376ef4584b7c9e4db3c845e16ee0b7b2781aa0fa52d0434c6b51e1cb908. Package com.familygrowth.android, versionName 0.3.7, versionCode 13 and the established release certificate all matched."
+      "result": "Workflow 33365966672 completed successfully. Public asset family-growth-0.3.8.apk is 11,781,539 bytes; GitHub digest and downloaded SHA-256 are 175933870797656961a44c512e5ce92a28294182c35c714ced5f4c09c7615fab. Package com.familygrowth.android, versionName 0.3.8, versionCode 14 and the established release certificate SHA-256 9179a5da2973e8ff9115edd1fb74e21ad70d9540c1d33203c9af442106d2eacb matched v0.3.7."
     },
     {
       "id": "V26-08",
@@ -66,7 +66,6 @@
     }
   ],
   "remaining": [
-    "Full regression and next stable signed release",
     "Target-tablet and trusted HTTPS V26-08 runtime acceptance"
   ]
 }

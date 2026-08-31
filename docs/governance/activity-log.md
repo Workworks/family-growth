@@ -252,3 +252,9 @@
 - Flyway V23 增加服务端连续会话/强制休息状态、30–365 天儿童非财务数据保留策略、运行记录和不可变策略动作；跨午夜、延迟/重放和完整休息后的纯状态转换有领域测试，清理边界证明 Ledger 不变。
 - Android 连接态已把礼金、兑换、奖励商店/订单审核、储蓄、愿望、模拟基金、零钱回收和今日/月报接到生产 API；费用/净额二次确认和 REQUESTED→APPROVED→PAID 状态保留，本机引擎只作明确未连接演示，远端失败不回退。
 - 最终离线门禁：H2 `clean verify` 通过 29 个领域、2 个基础设施和 33 个 Boot 测试（6 个 PostgreSQL 条件用例按预期跳过）；PostgreSQL 16.15 全量 64 个测试零失败零跳过、23 条迁移/80 表；Android `test lint assembleDebug assembleRelease` 通过 105 个可执行任务。准备发布 v0.3.8/14，目标平板/可信 HTTPS 仍独立阻塞。
+
+## 2026-08-31 · Activity 79 · 发布并复验 v0.3.8
+
+- 发布准备提交 `10e6c5b` 和 tag `v0.3.8` 已推送；GitHub Actions `33365966672` 使用历史稳定 release 身份完成校验、测试、Lint、签名构建和公开 Release。
+- 公开资产 `family-growth-0.3.8.apk` 已下载到 `dist/`：11,781,539 字节，GitHub digest 与下载 SHA-256 `175933870797656961a44c512e5ce92a28294182c35c714ced5f4c09c7615fab` 一致；`aapt2` 复验包名 `com.familygrowth.android`、0.3.8/14，`apksigner` 复验证书 SHA-256 与 v0.3.7 一致。
+- Stage 23–26、数据权利、完整 App 内防沉迷和 Android 生产接入的 Agent 可执行范围完成二次审计与发布收口；Stage 26 转回 `BLOCKED`，只保留目标平板/可信 HTTPS V26-08 运行态验收，不以 Release 替代设备证据。
