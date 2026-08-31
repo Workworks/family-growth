@@ -45,6 +45,10 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     var learningAssignments by mutableStateOf<List<RemoteLearningAssignment>>(emptyList())
         private set
+    var juniorLearningPlan by mutableStateOf<RemoteJuniorPlan?>(null)
+        private set
+    var juniorLearningReport by mutableStateOf<RemoteJuniorLearningReport?>(null)
+        private set
     var learningSupportByAssignment by mutableStateOf<Map<String,List<RemoteSupportEvent>>>(emptyMap())
         private set
     var primaryLearningReport by mutableStateOf<RemotePrimaryLearningReport?>(null)
@@ -206,6 +210,19 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             }
         }
     }
+    fun moveJuniorLearning(assignmentId:String,direction:String) {
+        val plan=juniorLearningPlan ?: return failUnit("学习计划还没有同步完成")
+        viewModelScope.launch {
+            when(val result=remote.moveJuniorLearning(assignmentId,direction,plan.revision)) {
+                is RemoteResult.Ok -> { applyJuniorPlan(result.value); message="计划顺序已保存" }
+                RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized,"")
+                is RemoteResult.Failure -> {
+                    message=result.message
+                    if(result.kind==RemoteFailureKind.CONFLICT) syncJuniorPlan()
+                }
+            }
+        }
+    }
     fun retryLearningSync() { viewModelScope.launch { reconcileAndFlushLearning() } }
     fun discardLearningAction(key: String) {
         learningOutbox.remove(key).onSuccess { updateLearningOutbox(); message = "这条本地操作已由家长移除" }
@@ -225,7 +242,11 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
                     lessonTitle=lessonTitle.trim(), lessonSummary=lessonSummary.trim(), activityType=activityType,
                     activityTitle=activityTitle.trim(), instruction=instruction.trim(), contentRef=contentRef,
                     expectedMinutes=if(activityType=="SHORT_VIDEO") 3 else 8,
-                    rightsBasis=if(activityType=="SHORT_VIDEO") "应用内原创审核视频" else "家庭原创学习活动")
+                    rightsBasis=if(activityType=="SHORT_VIDEO") "应用内原创审核视频" else "家庭原创学习活动",
+                    chapterTitle=if(stage==SchoolStage.JUNIOR_MIDDLE) lessonTitle.trim() else null,
+                    knowledgePoints=if(stage==SchoolStage.JUNIOR_MIDDLE) listOf(activityTitle.trim()) else emptyList(),
+                    learningGoal=if(stage==SchoolStage.JUNIOR_MIDDLE) lessonSummary.trim() else null,
+                    safetyNote=if(stage==SchoolStage.JUNIOR_MIDDLE) "只使用家庭常见安全材料；不确定时先请家长确认。" else null)
                 when (val result = remote.createTeachingCourse(draft)) {
                     is RemoteResult.Ok -> { message = "课程草稿已保存"; syncTeachingCourses() }
                     RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized, "")
@@ -279,6 +300,26 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             } finally { updateTeachingActionState(false) }
         }
     }
+    fun createJuniorTeachingCourse(template:JuniorCourseTemplate) {
+        if(state.experience.effectiveStage!=SchoolStage.JUNIOR_MIDDLE) return failUnit("当前学段不是初中，请刷新家长配置")
+        if(teachingActionRunningInternal)return
+        updateTeachingActionState(true)
+        viewModelScope.launch {
+            try {
+                val draft=RemoteTeachingCourseDraft(stage=SchoolStage.JUNIOR_MIDDLE.name,subject=template.subject.apiValue,
+                    courseTitle=template.courseTitle,lessonTitle=template.lessonTitle,lessonSummary=template.learningGoal,
+                    activityType="OFFLINE_PRACTICE",activityTitle=template.activityTitle,instruction=template.instruction,
+                    expectedMinutes=template.expectedMinutes,rightsBasis=template.rightsBasis,
+                    chapterTitle=template.chapterTitle,knowledgePoints=template.knowledgePoints,
+                    learningGoal=template.learningGoal,safetyNote=template.safetyNote)
+                when(val result=remote.createTeachingCourse(draft)) {
+                    is RemoteResult.Ok->{message="初中原创活动草稿已保存";syncTeachingCourses()}
+                    RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"")
+                    is RemoteResult.Failure->message=result.message
+                }
+            } finally { updateTeachingActionState(false) }
+        }
+    }
     fun publishTeachingCourse(versionId:String) = runTeachingAction {
         when (val result=remote.publishTeachingVersion(versionId)) {
             is RemoteResult.Ok -> { message="课程已发布，可以布置给孩子"; syncTeachingCourses() }
@@ -319,7 +360,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             if (result is RemoteResult.Ok) { syncEducationResources(); reconcileAndFlushLearning(refreshFirst=false); flushUsageNow() }
         }
     }
-    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); learningSupportByAssignment=emptyMap(); primaryLearningReport=null; teachingCourses = emptyList(); connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
+    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); juniorLearningPlan=null; juniorLearningReport=null; learningSupportByAssignment=emptyMap(); primaryLearningReport=null; teachingCourses = emptyList(); connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
 
     private fun changeEducationSource(id: String, action: String, success: String) {
         viewModelScope.launch {
@@ -445,11 +486,19 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             is RemoteResult.Failure -> message = catalog.message
         }
         syncLearningAssignments()
-        when(val report=remote.primaryLearningReport()) {
+        if(state.experience.effectiveStage==SchoolStage.JUNIOR_MIDDLE) {
+            syncJuniorPlan()
+            when(val report=remote.juniorLearningReport()) {
+                is RemoteResult.Ok->juniorLearningReport=report.value
+                RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"")
+                is RemoteResult.Failure->Unit
+            }
+        } else { juniorLearningPlan=null; juniorLearningReport=null }
+        if(state.experience.effectiveStage==SchoolStage.PRIMARY) when(val report=remote.primaryLearningReport()) {
             is RemoteResult.Ok -> primaryLearningReport=report.value
             RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized,"")
             is RemoteResult.Failure -> Unit
-        }
+        } else primaryLearningReport=null
         syncTeachingCourses()
     }
 
@@ -459,6 +508,22 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             RemoteResult.Unauthorized -> { handleRemote(RemoteResult.Unauthorized, ""); false }
             is RemoteResult.Failure -> { message = result.message; false }
         }
+    }
+
+    private suspend fun syncJuniorPlan() {
+        when(val result=remote.juniorLearningPlan()) {
+            is RemoteResult.Ok -> applyJuniorPlan(result.value)
+            RemoteResult.Unauthorized -> handleRemote(RemoteResult.Unauthorized,"")
+            is RemoteResult.Failure -> message=result.message
+        }
+    }
+
+    private fun applyJuniorPlan(plan:RemoteJuniorPlan) {
+        juniorLearningPlan=plan
+        val order=plan.items.mapIndexed { index,item -> item.assignmentId to index }.toMap()
+        learningAssignments=learningAssignments.sortedWith(compareBy<RemoteLearningAssignment> {
+            order[it.id] ?: Int.MAX_VALUE
+        }.thenBy { if(it.status=="COMPLETED") 1 else 0 }.thenBy { it.id })
     }
 
     private suspend fun syncLearningSupport(assignments:List<RemoteLearningAssignment>) {

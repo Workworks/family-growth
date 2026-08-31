@@ -16,6 +16,7 @@ import com.familygrowth.domain.Stage21TeachingModels.EvidenceType;
 import com.familygrowth.domain.Stage21TeachingModels.LearningAssignment;
 import com.familygrowth.domain.Stage21TeachingModels.KindergartenAgeBand;
 import com.familygrowth.domain.Stage21TeachingModels.KindergartenDomain;
+import com.familygrowth.domain.Stage21TeachingModels.JuniorLessonMetadata;
 import com.familygrowth.domain.Stage21TeachingModels.LessonContent;
 import com.familygrowth.domain.Stage21TeachingModels.ParentCourseSummary;
 import com.familygrowth.domain.Stage21TeachingModels.ContentWithdrawal;
@@ -95,6 +96,11 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
                 UUID lessonId = UUID.randomUUID();
                 jdbc.update("INSERT INTO teaching_lesson(id,unit_id,title,summary,display_order) VALUES (?,?,?,?,?)",
                     lessonId, unitId, lesson.title(), lesson.summary(), lessonOrder);
+                if (lesson.juniorMetadata() != null) jdbc.update("""
+                    INSERT INTO junior_lesson_metadata(lesson_id,chapter_title,knowledge_points,learning_goal,safety_note)
+                    VALUES (?,?,?,?,?)
+                    """,lessonId,lesson.juniorMetadata().chapterTitle(),String.join("\n",lesson.juniorMetadata().knowledgePoints()),
+                    lesson.juniorMetadata().learningGoal(),lesson.juniorMetadata().safetyNote());
                 for (int activityOrder = 0; activityOrder < lesson.activities().size(); activityOrder++) {
                     insertActivity(lessonId, lesson.activities().get(activityOrder), activityOrder);
                 }
@@ -162,10 +168,14 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
     }
 
     private List<LessonContent> lessons(UUID unitId) {
-        return jdbc.query("SELECT id,title,summary FROM teaching_lesson WHERE unit_id=? ORDER BY display_order,id",
+        return jdbc.query("""
+            SELECT l.id,l.title,l.summary,m.chapter_title,m.knowledge_points,m.learning_goal,m.safety_note
+            FROM teaching_lesson l LEFT JOIN junior_lesson_metadata m ON m.lesson_id=l.id
+            WHERE l.unit_id=? ORDER BY l.display_order,l.id
+            """,
             (rs, row) -> new LessonContent(rs.getObject("id", UUID.class), rs.getString("title"),
-                rs.getString("summary"), List.of()), unitId).stream()
-            .map(lesson -> new LessonContent(lesson.id(), lesson.title(), lesson.summary(), activities(lesson.id()))).toList();
+                rs.getString("summary"), List.of(), juniorMetadata(rs)), unitId).stream()
+            .map(lesson -> new LessonContent(lesson.id(), lesson.title(), lesson.summary(), activities(lesson.id()),lesson.juniorMetadata())).toList();
     }
 
     private List<ActivityContent> activities(UUID lessonId) {
@@ -253,10 +263,12 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
             SELECT a.id,a.child_id,a.course_version_id,a.lesson_id,a.status,a.version,a.updated_at,a.assignment_source,
                    a.money_reward_snapshot,a.coin_reward_snapshot,a.xp_reward_snapshot,a.reward_settled_at,
                    c.title course_title,c.school_stage,c.subject_code,u.title unit_title,
-                   l.title lesson_title,l.summary lesson_summary,lc.review_note
+                   l.title lesson_title,l.summary lesson_summary,lc.review_note,
+                   jm.chapter_title,jm.knowledge_points,jm.learning_goal,jm.safety_note
             FROM lesson_assignment a JOIN teaching_course_version v ON v.id=a.course_version_id
             JOIN teaching_course c ON c.id=v.course_id JOIN teaching_lesson l ON l.id=a.lesson_id
             JOIN teaching_unit u ON u.id=l.unit_id JOIN learning_completion lc ON lc.assignment_id=a.id
+            LEFT JOIN junior_lesson_metadata jm ON jm.lesson_id=l.id
             WHERE a.family_id=? AND a.child_id=? AND a.id=? AND v.status='PUBLISHED'
             """, (rs, row) -> assignment(rs), familyId, childId, assignmentId).stream().findFirst().map(this::facts);
     }
@@ -267,10 +279,12 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
             SELECT a.id,a.child_id,a.course_version_id,a.lesson_id,a.status,a.version,a.updated_at,a.assignment_source,
                    a.money_reward_snapshot,a.coin_reward_snapshot,a.xp_reward_snapshot,a.reward_settled_at,
                    c.title course_title,c.school_stage,c.subject_code,u.title unit_title,
-                   l.title lesson_title,l.summary lesson_summary,lc.review_note
+                   l.title lesson_title,l.summary lesson_summary,lc.review_note,
+                   jm.chapter_title,jm.knowledge_points,jm.learning_goal,jm.safety_note
             FROM lesson_assignment a JOIN teaching_course_version v ON v.id=a.course_version_id
             JOIN teaching_course c ON c.id=v.course_id JOIN teaching_lesson l ON l.id=a.lesson_id
             JOIN teaching_unit u ON u.id=l.unit_id JOIN learning_completion lc ON lc.assignment_id=a.id
+            LEFT JOIN junior_lesson_metadata jm ON jm.lesson_id=l.id
             WHERE a.family_id=? AND a.child_id=? AND c.school_stage=? AND v.status='PUBLISHED'
               AND (a.assignment_source='PARENT' OR v.version_number=(SELECT MAX(v2.version_number)
                    FROM teaching_course_version v2 WHERE v2.course_id=c.id AND v2.status='PUBLISHED'))
@@ -403,7 +417,7 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
             List.of(), rs.getString("review_note"), rs.getTimestamp("updated_at").toInstant(),
             AssignmentSource.valueOf(rs.getString("assignment_source")), new RewardSnapshot(
                 rs.getBigDecimal("money_reward_snapshot"), rs.getLong("coin_reward_snapshot"),
-                rs.getLong("xp_reward_snapshot"), instant(rs, "reward_settled_at")));
+                rs.getLong("xp_reward_snapshot"), instant(rs, "reward_settled_at")),juniorMetadata(rs));
     }
 
     private AssignmentFacts facts(LearningAssignment bare) {
@@ -423,7 +437,7 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
         LearningAssignment projection = new LearningAssignment(bare.id(), bare.childId(), bare.courseVersionId(),
             bare.lessonId(), bare.courseTitle(), bare.unitTitle(), bare.lessonTitle(), bare.lessonSummary(),
             bare.schoolStage(), bare.subjectCode(), bare.status(), bare.version(), progress, bare.reviewNote(), bare.updatedAt(),
-            bare.assignmentSource(), bare.reward());
+            bare.assignmentSource(), bare.reward(),bare.juniorMetadata());
         Map<UUID, ActivityContent> contentMap = new LinkedHashMap<>();
         contents.forEach(content -> contentMap.put(content.id(), content));
         return new AssignmentFacts(projection, Map.copyOf(contentMap));
@@ -457,6 +471,12 @@ class JdbcStage21TeachingStore implements Stage21TeachingStore {
 
     private static KindergartenAgeBand ageBand(String value) {
         return value == null || value.isBlank() ? null : KindergartenAgeBand.valueOf(value);
+    }
+
+    private static JuniorLessonMetadata juniorMetadata(ResultSet rs) throws SQLException {
+        String chapter=rs.getString("chapter_title");
+        return chapter==null?null:new JuniorLessonMetadata(chapter,List.of(rs.getString("knowledge_points").split("\\n")),
+            rs.getString("learning_goal"),rs.getString("safety_note"));
     }
 
     private static Instant instant(ResultSet rs, String column) throws SQLException {

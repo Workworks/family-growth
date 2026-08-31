@@ -9,6 +9,7 @@ import com.familygrowth.domain.Stage21TeachingModels.ContentWithdrawal;
 import com.familygrowth.domain.Stage21TeachingModels.LearningAssignment;
 import com.familygrowth.domain.Stage21TeachingModels.KindergartenAgeBand;
 import com.familygrowth.domain.Stage21TeachingModels.KindergartenDomain;
+import com.familygrowth.domain.Stage21TeachingModels.JuniorLessonMetadata;
 import com.familygrowth.domain.Stage21TeachingModels.LessonDraft;
 import com.familygrowth.domain.Stage21TeachingModels.ParentCourseSummary;
 import com.familygrowth.domain.Stage21TeachingModels.QuestionOption;
@@ -146,8 +147,16 @@ class Stage21TeachingController {
         UnitDraft toDomain() { return new UnitDraft(title, lessons.stream().map(LessonRequest::toDomain).toList()); }
     }
     record LessonRequest(@NotBlank @Size(max=160) String title, @NotBlank @Size(max=500) String summary,
+                         @Size(max=160) String chapterTitle,
+                         @Size(max=8) List<@NotBlank @Size(max=80) String> knowledgePoints,
+                         @Size(max=500) String learningGoal, @Size(max=500) String safetyNote,
                          @NotEmpty @Size(max=20) List<@Valid ActivityRequest> activities) {
-        LessonDraft toDomain() { return new LessonDraft(title, summary, activities.stream().map(ActivityRequest::toDomain).toList()); }
+        LessonDraft toDomain() {
+            boolean metadataPresent = chapterTitle != null || knowledgePoints != null || learningGoal != null || safetyNote != null;
+            JuniorLessonMetadata metadata = metadataPresent
+                ? new JuniorLessonMetadata(chapterTitle, knowledgePoints, learningGoal, safetyNote) : null;
+            return new LessonDraft(title, summary, activities.stream().map(ActivityRequest::toDomain).toList(), metadata);
+        }
     }
     record ActivityRequest(@NotNull ActivityType type, @NotBlank @Size(max=160) String title,
                            @NotBlank @Size(max=500) String instruction, @Min(1) @Max(60) int expectedMinutes,

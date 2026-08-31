@@ -76,6 +76,9 @@
 | GET/PUT | `/families/{familyId}/children/{childId}/autonomous-learning/reward-policy` | PARENT | 查询或按期望版本更新固定 Money/Coin/XP 奖励；默认全零，修改只影响之后新加入的 Assignment，并追加审计 |
 | POST | `/families/{familyId}/children/{childId}/autonomous-learning/sync` | PARENT/CHILD 本人 | 显式幂等加入当前有效学段、每门课程最新已发布版本的缺失课节；GET 目录保持只读，创建时固化奖励快照 |
 | GET | `/families/{familyId}/children/{childId}/autonomous-learning/primary-report` | PARENT | 最近 7 天明确学习分钟与历史小学 Assignment/求助/再练事实；无评分、能力推断、答案键或家长私密说明，切换学段后仍保留历史 |
+| GET | `/families/{familyId}/children/{childId}/junior-learning/plan` | PARENT/CHILD 本人 | 读取当前初中未开始自主课程顺序；进行中、待回应、已完成和返工项不进入可排序投影 |
+| POST | `/families/{familyId}/children/{childId}/junior-learning/plan/move` | PARENT/CHILD 本人 | 按计划 revision 幂等上移/下移未开始项；跨家庭隔离、冲突返回 409，每次有效移动追加不可变审计 |
+| GET | `/families/{familyId}/children/{childId}/junior-learning/report` | PARENT | 最近 7 天明确学习分钟、各学科 Assignment/求助/再练事实与计划版本；不含评分、能力推断、答案键或私密说明 |
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/activities/{activityId}/attempts` | CHILD 本人 | 幂等记录活动尝试；视频须报告至少 90% 实际播放计数，客观题由服务端判定，现实活动只记 ATTEMPTED |
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/submit` | CHILD 本人 | required evidence 齐备且 `expectedVersion` 一致时提交课节；返工后还必须先产生新的 Attempt |
 | POST | `/families/{familyId}/children/{childId}/learning/assignments/{assignmentId}/review` | PARENT | `APPROVE` 追加家长确认与 MASTERED，并在同一事务按 Assignment 快照结算一次 XP/Money/Coin；`REWORK` 不发奖 |

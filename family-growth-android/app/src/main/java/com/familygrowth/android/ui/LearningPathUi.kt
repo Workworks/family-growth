@@ -164,6 +164,18 @@ private fun JuniorLearningPath(viewModel:FamilyAppViewModel,assignment:RemoteLea
                 LearningStatus(assignment.status)
             }
             Text(assignment.lessonSummary,color=MaterialTheme.colorScheme.onSurfaceVariant)
+            assignment.juniorMetadata?.let { metadata ->
+                Surface(shape=MaterialTheme.shapes.medium,color=JuniorLabColors.Measure.copy(alpha=.09f)) {
+                    Column(Modifier.fillMaxWidth().padding(14.dp),verticalArrangement=Arrangement.spacedBy(7.dp)) {
+                        Text(metadata.chapterTitle,style=MaterialTheme.typography.labelLarge,color=JuniorLabColors.Measure)
+                        Text("本段目标：${metadata.learningGoal}",color=JuniorLabColors.Graphite)
+                        Text(metadata.knowledgePoints.joinToString(" · "),style=MaterialTheme.typography.bodySmall,
+                            color=MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("安全边界：${metadata.safetyNote}",style=MaterialTheme.typography.bodySmall,
+                            color=JuniorLabColors.Correct)
+                    }
+                }
+            }
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(7.dp)) {
                 assignment.activities.forEachIndexed { index,item ->
                     val current=item.id==active?.id
@@ -201,7 +213,27 @@ private fun JuniorLearningPath(viewModel:FamilyAppViewModel,assignment:RemoteLea
             }
             if(assignment.canSubmit()) Button(onClick={viewModel.submitLearningAssignment(assignment.id,assignment.version)},
                 Modifier.fillMaxWidth().heightIn(min=56.dp),colors=ButtonDefaults.buttonColors(containerColor=JuniorLabColors.Navy)){Text("提交这段解释")}
-            Text("一次只完成一段，建议不超过 25 分钟；需要时直接休息。计划顺序将在服务端保存后开放调整。",
+            viewModel.juniorLearningPlan?.items?.takeIf { it.isNotEmpty() }?.let { planned ->
+                HorizontalDivider(color=JuniorLabColors.Measure.copy(alpha=.28f))
+                Text("待学顺序（第 1 项是当前）",style=MaterialTheme.typography.titleMedium,color=JuniorLabColors.Navy,fontWeight=FontWeight.Bold)
+                planned.forEachIndexed { index,item ->
+                    Surface(shape=MaterialTheme.shapes.medium,color=Color.White,
+                        border=BorderStroke(1.dp,JuniorLabColors.Measure.copy(alpha=.32f))) {
+                        Row(Modifier.fillMaxWidth().padding(12.dp),verticalAlignment=Alignment.CenterVertically,
+                            horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                            Text("${index+1}",fontFamily=FontFamily.Monospace,fontWeight=FontWeight.Bold,color=JuniorLabColors.Measure)
+                            Column(Modifier.weight(1f)) {
+                                Text(item.lessonTitle,fontWeight=FontWeight.SemiBold,color=JuniorLabColors.Graphite)
+                                Text("${PrimaryLearningPolicy.subjectLabel(item.subjectCode)} · ${item.courseTitle}",
+                                    style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            TextButton(onClick={viewModel.moveJuniorLearning(item.assignmentId,"UP")},enabled=index>0) { Text("上移") }
+                            TextButton(onClick={viewModel.moveJuniorLearning(item.assignmentId,"DOWN")},enabled=index<planned.lastIndex) { Text("下移") }
+                        }
+                    }
+                }
+            }
+            Text("一次只完成一段，建议不超过 25 分钟；需要时直接休息。上移或下移会保存到家庭服务，进行中课程不参与排序。",
                 style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
@@ -459,6 +491,17 @@ fun ParentLearningReviews(viewModel: FamilyAppViewModel) {
                     color=MaterialTheme.colorScheme.onSurfaceVariant)
             }
             if(report.effectiveStage!="PRIMARY") Text("当前已切换学段；这里仍保留以前的小学学习事实。",style=MaterialTheme.typography.bodySmall)
+        }
+    }
+    viewModel.juniorLearningReport?.let { report ->
+        GrowthCard {
+            SectionTitle("最近 7 天初中学习事实","计划、行动、求助和再练；不生成分数或能力判断")
+            Text("已记录学习 ${report.recordedLearningMinutes} 分钟 · 计划版本 ${report.planRevision}",style=MaterialTheme.typography.titleMedium)
+            if(report.subjects.isEmpty()) Text("还没有初中课程记录。",color=MaterialTheme.colorScheme.onSurfaceVariant)
+            report.subjects.forEach { fact ->
+                Text("${PrimaryLearningPolicy.subjectLabel(fact.subjectCode)} · 计划 ${fact.assigned} · 进行中 ${fact.inProgress} · 待回应 ${fact.submitted} · 完成 ${fact.completed} · 求助 ${fact.openSupport} · 到期再练 ${fact.dueRevisits}",
+                    color=MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
     }
     support.forEach { (assignmentId,events) ->

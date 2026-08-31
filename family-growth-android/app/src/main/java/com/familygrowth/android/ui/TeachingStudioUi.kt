@@ -24,6 +24,8 @@ import com.familygrowth.android.core.KindergartenDomain
 import com.familygrowth.android.core.PrimaryCourseTemplates
 import com.familygrowth.android.core.PrimarySubject
 import com.familygrowth.android.core.PrimaryGradeBand
+import com.familygrowth.android.core.JuniorCourseTemplates
+import com.familygrowth.android.core.JuniorSubject
 import com.familygrowth.android.core.SchoolStage
 import com.familygrowth.android.remote.ConnectionState
 import com.familygrowth.android.remote.LearningActionState
@@ -130,7 +132,37 @@ private fun CreateTeachingCourseDialog(viewModel: FamilyAppViewModel, dismiss: (
         CreatePrimaryTemplateDialog(viewModel, dismiss)
         return
     }
+    if(viewModel.state.experience.effectiveStage==SchoolStage.JUNIOR_MIDDLE) {
+        CreateJuniorTemplateDialog(viewModel,dismiss)
+        return
+    }
     CreateGeneralTeachingCourseDialog(viewModel, dismiss)
+}
+
+@Composable
+private fun CreateJuniorTemplateDialog(viewModel:FamilyAppViewModel,dismiss:()->Unit) {
+    var subject by remember { mutableStateOf(JuniorSubject.CHINESE) }
+    val template=JuniorCourseTemplates.find(subject)
+    AlertDialog(onDismissRequest=dismiss,
+        title={Column { Text("选一个初中证据活动");Text("原创内容包 JUNIOR-PACK-1.0.0",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}},
+        text={Column(Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(12.dp)) {
+            Text("学科",style=MaterialTheme.typography.labelLarge)
+            FlowRow(horizontalArrangement=Arrangement.spacedBy(7.dp),verticalArrangement=Arrangement.spacedBy(7.dp)) {
+                JuniorSubject.entries.forEach { value->FilterChip(selected=subject==value,onClick={subject=value},label={Text(value.label)}) }
+            }
+            Surface(shape=MaterialTheme.shapes.large,border=BorderStroke(1.dp,MaterialTheme.colorScheme.outlineVariant)) {
+                Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)) {
+                    Text(template.courseTitle,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold)
+                    Text("${template.chapterTitle} · ${template.expectedMinutes} 分钟",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("目标：${template.learningGoal}")
+                    Text(template.knowledgePoints.joinToString(" · "),fontFamily=FontFamily.Monospace,style=MaterialTheme.typography.bodySmall)
+                    HorizontalDivider();Text(template.instruction);Text("安全边界：${template.safetyNote}",color=MaterialTheme.colorScheme.primary)
+                }
+            }
+            Text("模板只保存为草稿；家长发布后才能加入孩子的自主学习目录。",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+        }},
+        confirmButton={Button(onClick={viewModel.createJuniorTeachingCourse(template);dismiss()}){Text("保存为草稿")}},
+        dismissButton={TextButton(onClick=dismiss){Text("取消")}})
 }
 
 @Composable

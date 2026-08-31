@@ -34,9 +34,10 @@ class PostgresSchemaValidationTest {
                 "'education_resource_action','teaching_course','teaching_course_version','teaching_unit','teaching_lesson'," +
                 "'learning_activity','learning_question','learning_question_option','lesson_assignment','activity_attempt'," +
                 "'learning_completion','mastery_evidence','teaching_action','autonomous_learning_reward_policy'," +
-                "'autonomous_learning_reward_audit','autonomous_enrollment_action','learning_support_event','teaching_course_withdrawal')",
+                "'autonomous_learning_reward_audit','autonomous_enrollment_action','learning_support_event','teaching_course_withdrawal'," +
+                "'junior_learning_plan','junior_learning_plan_item','junior_learning_plan_action','junior_lesson_metadata')",
             Integer.class);
-        assertThat(successfulMigrations).isEqualTo(15);
-        assertThat(productionTables).isEqualTo(60);
+        assertThat(successfulMigrations).isEqualTo(17);
+        assertThat(productionTables).isEqualTo(64);
     }
 }

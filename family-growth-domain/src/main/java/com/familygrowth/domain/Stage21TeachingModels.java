@@ -84,13 +84,34 @@ public final class Stage21TeachingModels {
         }
     }
 
-    public record LessonDraft(String title, String summary, List<ActivityDraft> activities) {
+    public record JuniorLessonMetadata(String chapterTitle, List<String> knowledgePoints,
+                                       String learningGoal, String safetyNote) {
+        public JuniorLessonMetadata {
+            chapterTitle = text(chapterTitle, "chapterTitle", 160);
+            knowledgePoints = knowledgePoints == null ? List.of() : knowledgePoints.stream()
+                .map(value -> text(value, "knowledgePoint", 80)).distinct().toList();
+            if (knowledgePoints.isEmpty() || knowledgePoints.size() > 8) throw new IllegalArgumentException("Junior lesson requires 1 to 8 knowledge points");
+            if (knowledgePoints.stream().anyMatch(value -> value.contains("\n") || value.contains("\r"))) {
+                throw new IllegalArgumentException("Junior knowledge points must be single-line values");
+            }
+            learningGoal = text(learningGoal, "learningGoal", 500);
+            safetyNote = text(safetyNote, "safetyNote", 500);
+            String unsafe = safetyNote + " " + learningGoal;
+            if (List.of("明火", "高压", "强酸", "强碱", "药品配制", "锋利刀具").stream().anyMatch(unsafe::contains)) {
+                throw new IllegalArgumentException("Junior home learning cannot include high-risk experiment guidance");
+            }
+        }
+    }
+
+    public record LessonDraft(String title, String summary, List<ActivityDraft> activities,
+                              JuniorLessonMetadata juniorMetadata) {
         public LessonDraft {
             title = text(title, "lesson title", 160);
             summary = text(summary, "lesson summary", 500);
             activities = activities == null ? List.of() : List.copyOf(activities);
             if (activities.isEmpty() || activities.size() > 20) throw new IllegalArgumentException("Lesson requires 1 to 20 activities");
         }
+        public LessonDraft(String title, String summary, List<ActivityDraft> activities) { this(title, summary, activities, null); }
     }
 
     public record UnitDraft(String title, List<LessonDraft> lessons) {
@@ -117,7 +138,10 @@ public final class Stage21TeachingModels {
 
     public record ActivityContent(UUID id, ActivityType type, String title, String instruction, String contentRef, int expectedMinutes,
                                   String prompt, String hint, List<QuestionOption> options, String answerKey) { }
-    public record LessonContent(UUID id, String title, String summary, List<ActivityContent> activities) { }
+    public record LessonContent(UUID id, String title, String summary, List<ActivityContent> activities,
+                                JuniorLessonMetadata juniorMetadata) {
+        public LessonContent(UUID id, String title, String summary, List<ActivityContent> activities) { this(id,title,summary,activities,null); }
+    }
     public record UnitContent(UUID id, String title, List<LessonContent> lessons) { }
     public record CourseVersion(UUID courseId, UUID versionId, UUID familyId, SchoolStage schoolStage,
                                 String subjectCode, String title, int versionNumber, String summary,
@@ -142,7 +166,16 @@ public final class Stage21TeachingModels {
                                      SchoolStage schoolStage, String subjectCode, AssignmentStatus status,
                                      long version, List<ActivityProgress> activities, String reviewNote,
                                      Instant updatedAt, AssignmentSource assignmentSource,
-                                     RewardSnapshot reward) { }
+                                     RewardSnapshot reward, JuniorLessonMetadata juniorMetadata) {
+        public LearningAssignment(UUID id, UUID childId, UUID courseVersionId, UUID lessonId,
+                                  String courseTitle, String unitTitle, String lessonTitle, String lessonSummary,
+                                  SchoolStage schoolStage, String subjectCode, AssignmentStatus status,
+                                  long version, List<ActivityProgress> activities, String reviewNote,
+                                  Instant updatedAt, AssignmentSource assignmentSource, RewardSnapshot reward) {
+            this(id,childId,courseVersionId,lessonId,courseTitle,unitTitle,lessonTitle,lessonSummary,schoolStage,
+                subjectCode,status,version,activities,reviewNote,updatedAt,assignmentSource,reward,null);
+        }
+    }
     public record AssignmentFacts(LearningAssignment projection, Map<UUID, ActivityContent> contentByActivity) { }
 
     public static boolean childEvidenceSatisfied(ActivityProgress activity) {
@@ -154,6 +187,22 @@ public final class Stage21TeachingModels {
     }
 
     public static void validateForPublish(CourseVersion version) {
+        if (version.schoolStage() == SchoolStage.JUNIOR_MIDDLE) {
+            for (UnitContent unit : version.units()) for (LessonContent lesson : unit.lessons()) {
+                if (lesson.juniorMetadata() == null) throw new IllegalArgumentException("Junior lesson metadata is required");
+                int minutes = lesson.activities().stream().mapToInt(ActivityContent::expectedMinutes).sum();
+                if (minutes > 25) throw new IllegalArgumentException("Junior learning block must not exceed 25 minutes");
+                String safetyText = lesson.title() + " " + lesson.summary() + " "
+                    + lesson.juniorMetadata().learningGoal() + " " + lesson.juniorMetadata().safetyNote() + " "
+                    + lesson.activities().stream().map(activity -> activity.title() + " " + activity.instruction() + " "
+                        + activity.prompt() + " " + activity.hint()).collect(java.util.stream.Collectors.joining(" "));
+                if (List.of("明火", "高压", "强酸", "强碱", "药品配制", "锋利刀具").stream().anyMatch(safetyText::contains)) {
+                    throw new IllegalArgumentException("Junior home learning cannot include high-risk experiment guidance");
+                }
+            }
+        } else if (version.units().stream().flatMap(unit -> unit.lessons().stream()).anyMatch(lesson -> lesson.juniorMetadata() != null)) {
+            throw new IllegalArgumentException("Junior metadata is only valid for junior-middle courses");
+        }
         if (version.schoolStage() != SchoolStage.KINDERGARTEN) {
             if (version.kindergartenAgeBand() != null || !version.kindergartenDomains().isEmpty()) {
                 throw new IllegalArgumentException("Kindergarten metadata is only valid for kindergarten courses");

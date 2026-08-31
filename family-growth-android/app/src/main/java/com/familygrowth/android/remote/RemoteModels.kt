@@ -30,11 +30,15 @@ data class RemoteSupportEvent(val id:String,val assignmentId:String,val activity
                               val category:String?,val childMessage:String,val privateNote:String,
                               val revisitAt:String?,val parentEventId:String?,val createdAt:String)
 data class RemoteRewardPolicy(val money:String,val coin:Long,val xp:Long,val version:Long)
+data class RemoteJuniorMetadata(val chapterTitle:String,val knowledgePoints:List<String>,val learningGoal:String,val safetyNote:String)
+data class RemoteJuniorPlanItem(val assignmentId:String,val subjectCode:String,val courseTitle:String,val lessonTitle:String,val status:String,val position:Int)
+data class RemoteJuniorPlan(val revision:Long,val items:List<RemoteJuniorPlanItem>)
+data class RemoteJuniorLearningReport(val recordedLearningMinutes:Long,val subjects:List<RemoteSubjectLearningFacts>,val planRevision:Long)
 data class RemoteSubjectLearningFacts(val subjectCode:String,val assigned:Long,val inProgress:Long,val submitted:Long,
  val completed:Long,val reworkRequired:Long,val openSupport:Long,val scheduledRevisits:Long,val dueRevisits:Long)
 data class RemotePrimaryLearningReport(val effectiveStage:String,val effectivePrimaryBand:String?,
  val recordedLearningMinutes:Long,val subjects:List<RemoteSubjectLearningFacts>)
-data class RemoteLearningAssignment(val id:String,val courseTitle:String,val unitTitle:String,val lessonTitle:String,val lessonSummary:String,val schoolStage:String,val subjectCode:String,val status:String,val version:Long,val activities:List<RemoteLearningActivity>,val reviewNote:String,val assignmentSource:String="PARENT",val reward:RemoteRewardSnapshot=RemoteRewardSnapshot()) {
+data class RemoteLearningAssignment(val id:String,val courseTitle:String,val unitTitle:String,val lessonTitle:String,val lessonSummary:String,val schoolStage:String,val subjectCode:String,val status:String,val version:Long,val activities:List<RemoteLearningActivity>,val reviewNote:String,val assignmentSource:String="PARENT",val reward:RemoteRewardSnapshot=RemoteRewardSnapshot(),val juniorMetadata:RemoteJuniorMetadata?=null) {
  fun canSubmit():Boolean = status=="IN_PROGRESS" && activities.isNotEmpty() && activities.all(RemoteLearningActivity::childReady)
 }
 data class RemoteCourseSummary(val courseId:String,val title:String,val schoolStage:String,val subjectCode:String,val versionId:String,val versionNumber:Int,val status:String,val lessonCount:Int)

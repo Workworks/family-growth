@@ -239,8 +239,11 @@ class Stage23AutonomousLearningApiTest {
     }
 
     private JsonNode createAndPublish(Session parent, String stage, String title, String key) throws Exception {
+        String junior = "JUNIOR_MIDDLE".equals(stage)
+            ? "\"chapterTitle\":\"观察章节\",\"knowledgePoints\":[\"观察\",\"解释\"],\"learningGoal\":\"用观察支持解释\",\"safetyNote\":\"只使用纸笔和日常安全物品\"," : "";
         String body = "{\"schoolStage\":\"" + stage + "\",\"subjectCode\":\"SCIENCE\",\"title\":\"" + title +
             "\",\"version\":{\"summary\":\"一段短课程\",\"rightsBasis\":\"家庭原创\",\"units\":[{\"title\":\"单元\",\"lessons\":[{\"title\":\"观察颜色\",\"summary\":\"认真看完再休息\",\"activities\":[{\"type\":\"SHORT_VIDEO\",\"title\":\"看颜色\",\"instruction\":\"看完就停下来\",\"contentRef\":\"lesson_color_garden\",\"expectedMinutes\":3}]}]}]}}";
+        body = body.replace("\"activities\":[", junior + "\"activities\":[");
         MvcResult created = mvc.perform(post("/api/v1/families/" + parent.family + "/teaching/courses")
             .header("Authorization", bearer(parent.token)).header("Idempotency-Key", key)
             .contentType(MediaType.APPLICATION_JSON).content(body)).andExpect(status().isCreated()).andReturn();

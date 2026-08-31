@@ -25,4 +25,4 @@
 - [Stage 21：共用课程、活动与学习证据引擎](stage-21-report.md) — `BLOCKED`
 - [Stage 22：幼儿园故事舞台与亲子现实活动](stage-22-report.md) — `BLOCKED`
 - [Stage 23：小学探索手册](stage-23-report.md) — `BLOCKED`
-- [Stage 24：初中学科实验台](stage-24-report.md) — `IN_PROGRESS`
+- [Stage 24：初中学科实验台](stage-24-report.md) — `BLOCKED`

@@ -11,6 +11,7 @@ import com.familygrowth.domain.Stage21TeachingModels.CourseVersion;
 import com.familygrowth.domain.Stage21TeachingModels.CourseVersionStatus;
 import com.familygrowth.domain.Stage21TeachingModels.KindergartenAgeBand;
 import com.familygrowth.domain.Stage21TeachingModels.KindergartenDomain;
+import com.familygrowth.domain.Stage21TeachingModels.JuniorLessonMetadata;
 import com.familygrowth.domain.Stage21TeachingModels.LessonContent;
 import com.familygrowth.domain.Stage21TeachingModels.QuestionOption;
 import com.familygrowth.domain.Stage21TeachingModels.UnitContent;
@@ -67,6 +68,32 @@ class Stage21TeachingModelsTest {
         assertThatThrownBy(() -> Stage21TeachingModels.validateForPublish(kindergarten(List.of(
             content(ActivityType.SHORT_VIDEO, 3, List.of()), content(ActivityType.LISTEN_CHOOSE, 2, twoOptions())))))
             .hasMessageContaining("parent-child or offline");
+    }
+
+    @Test
+    void juniorPublicationRequiresKnowledgeMetadataAndSafeShortBlocks() {
+        JuniorLessonMetadata metadata = new JuniorLessonMetadata("一次函数", List.of("变量关系", "图像证据"),
+            "用图像证据解释变量变化", "只使用纸笔和直尺");
+        CourseVersion valid = junior(List.of(content(ActivityType.OFFLINE_PRACTICE, 20, List.of())), metadata);
+        Stage21TeachingModels.validateForPublish(valid);
+        assertThatThrownBy(() -> Stage21TeachingModels.validateForPublish(junior(
+            List.of(content(ActivityType.OFFLINE_PRACTICE, 26, List.of())), metadata))).hasMessageContaining("25 minutes");
+        assertThatThrownBy(() -> Stage21TeachingModels.validateForPublish(junior(
+            List.of(content(ActivityType.OFFLINE_PRACTICE, 10, List.of())), null))).hasMessageContaining("metadata");
+        assertThatThrownBy(() -> new JuniorLessonMetadata("实验", List.of("观察"), "观察变化", "使用明火加热"))
+            .hasMessageContaining("high-risk");
+        assertThatThrownBy(() -> new JuniorLessonMetadata("实验", List.of("观察\n解释"), "观察变化", "只用纸笔"))
+            .hasMessageContaining("single-line");
+        ActivityContent unsafeActivity = new ActivityContent(UUID.randomUUID(), ActivityType.OFFLINE_PRACTICE,
+            "加热观察", "点燃明火后记录变化", "", 10, "", "", List.of(), "");
+        assertThatThrownBy(() -> Stage21TeachingModels.validateForPublish(junior(List.of(unsafeActivity), metadata)))
+            .hasMessageContaining("high-risk");
+    }
+
+    private static CourseVersion junior(List<ActivityContent> activities, JuniorLessonMetadata metadata) {
+        return new CourseVersion(UUID.randomUUID(),UUID.randomUUID(),UUID.randomUUID(),SchoolStage.JUNIOR_MIDDLE,
+            "MATH","变量实验台",1,"用证据解释","家庭原创",null,List.of(),CourseVersionStatus.DRAFT,
+            List.of(new UnitContent(UUID.randomUUID(),"函数",List.of(new LessonContent(UUID.randomUUID(),"一次函数","观察关系",activities,metadata)))),null);
     }
 
     private static CourseVersion kindergarten(List<ActivityContent> activities) {

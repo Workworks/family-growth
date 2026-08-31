@@ -785,6 +785,25 @@ paths:
       description: Parent-only factual summary of preserved primary-school assignments, open support and revisit facts, plus recorded LEARNING minutes in the trailing seven-day window. It contains no score, ability inference, answer key or private note and remains readable after a stage change.
       parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
       responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/children/{childId}/junior-learning/plan:
+    get:
+      operationId: getJuniorLearningPlan
+      description: Parent or owning child reads the ordered projection of unstarted autonomous junior-middle assignments. In-progress, submitted, completed and rework items are not sortable.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/junior-learning/plan/move:
+    post:
+      operationId: moveJuniorLearningPlanItem
+      description: Parent or owning child idempotently moves one unstarted autonomous junior-middle assignment across the nearest other sortable item. The expected plan revision provides optimistic concurrency and every accepted move is audited immutably.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' } ]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/JuniorPlanMoveRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children/{childId}/junior-learning/report:
+    get:
+      operationId: getJuniorLearningReport
+      description: Parent-only trailing-seven-day factual report of learning minutes, assignment states, open support, revisit facts and the current plan revision. It contains no score, ability inference, answer key or parent private note.
+      parameters: [ { $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' } ]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
   /families/{familyId}/children/{childId}/autonomous-learning/assignments/{assignmentId}/activities/{activityId}/help:
     post:
       operationId: requestLearningHelp
@@ -1002,6 +1021,10 @@ components:
       properties:
         title: { type: string, minLength: 1, maxLength: 160 }
         summary: { type: string, minLength: 1, maxLength: 500 }
+        chapterTitle: { type: [string, 'null'], minLength: 1, maxLength: 160, description: Required at publication for JUNIOR_MIDDLE and forbidden for other stages. }
+        knowledgePoints: { type: array, minItems: 1, maxItems: 8, uniqueItems: true, items: { type: string, minLength: 1, maxLength: 80 }, description: Required at publication for JUNIOR_MIDDLE and forbidden for other stages. }
+        learningGoal: { type: [string, 'null'], minLength: 1, maxLength: 500, description: Required at publication for JUNIOR_MIDDLE and forbidden for other stages. }
+        safetyNote: { type: [string, 'null'], minLength: 1, maxLength: 500, description: Required at publication for JUNIOR_MIDDLE. High-risk home experiment guidance is rejected. }
         activities: { type: array, minItems: 1, maxItems: 20, items: { $ref: '#/components/schemas/TeachingActivityRequest' } }
     TeachingUnitRequest:
       type: object
@@ -1040,6 +1063,13 @@ components:
       properties:
         courseVersionId: { type: string, format: uuid }
         lessonId: { type: string, format: uuid }
+    JuniorPlanMoveRequest:
+      type: object
+      required: [assignmentId, direction, expectedRevision]
+      properties:
+        assignmentId: { type: string, format: uuid }
+        direction: { type: string, enum: [UP, DOWN] }
+        expectedRevision: { type: integer, format: int64, minimum: 0 }
     LearningAttemptRequest:
       type: object
       properties:

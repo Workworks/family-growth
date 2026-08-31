@@ -1,32 +1,72 @@
 {
   "stage": 24,
-  "capturedAt": "2026-08-30",
-  "status": "IN_PROGRESS",
-  "scope": "Stage 24 junior-middle subject laboratory specification and planned work packages",
+  "capturedAt": "2026-08-31",
+  "status": "BLOCKED",
+  "scope": "Stage 24 junior-middle metadata, persistent plan ordering, original templates, parent factual report and offline production gates",
   "results": [
     {
-      "id": "V24-01-SPEC",
-      "status": "PASS",
-      "command": "Documentation-only specification initialization",
-      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
-      "shellType": "PowerShell",
-      "exitCode": 0,
-      "passed": true,
-      "result": "Goals, scope, two-pass visual direction, safety invariants, work packages, verification methods and acceptance criteria were fixed before Stage 24 implementation."
-    },
-    {
-      "id": "V24-01-ANDROID-DEBUG",
-      "status": "PASS_PARTIAL",
-      "command": ".\\gradlew.bat :app:testDebugUnitTest :app:lintDebug :app:assembleDebug",
+      "id": "V24-01",
+      "status": "PASS_OFFLINE",
+      "command": ".\\gradlew.bat :app:testDebugUnitTest :app:testReleaseUnitTest :app:lintDebug :app:lintRelease :app:assembleDebug :app:assembleRelease --no-daemon",
       "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
       "shellType": "PowerShell",
       "exitCode": 0,
       "passed": true,
-      "result": "Junior-middle now uses a distinct quiet subject laboratory with subject rail, current evidence nodes, one active action, help and a neutral 25-minute break cue. It does not add child navigation or fabricate ordering. Persistent accessible ordering remains WP24-4, so WP24-2 is not yet complete."
+      "result": "The distinct junior subject laboratory, evidence track, metadata, accessible move controls, neutral break exit, six-subject original pack and parent factual report passed both JVM variants, both lint variants and both APK assemblies."
+    },
+    {
+      "id": "V24-02/V24-03/V24-05-H2",
+      "status": "PASS",
+      "command": ".\\mvnw.cmd test",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "All H2 tests passed: 25 domain, 2 infrastructure and 28 Boot tests with 6 PostgreSQL-only skips. Metadata projection, high-risk publication rejection, ordering revision/idempotency/audit, real concurrent conflict, started-item exclusion, cross-family isolation and parent-only factual reporting passed."
+    },
+    {
+      "id": "V24-02/V24-03/V24-05-POSTGRES",
+      "status": "PASS",
+      "command": ".\\mvnw.cmd -pl family-growth-boot -am -Dtest=PostgresSchemaValidationTest,Stage23AutonomousLearningApiTest,Stage24JuniorPlanApiTest -Dsurefire.failIfNoSpecifiedTests=false test",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Disposable PostgreSQL 16.15 validated 17 migrations and 64 production tables. Five selected tests passed with zero skips, including junior metadata, safe move across an in-progress item, a two-request concurrency race with exactly one commit, immutable audit, replay, stale revision, report authorization and Stage 23 regression coverage. The exact disposable container was stopped and auto-removed."
+    },
+    {
+      "id": "V24-04",
+      "status": "PASS_OFFLINE",
+      "command": "Android JuniorCourseTemplatesTest plus debug/release JVM and lint gates",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "JUNIOR-PACK-1.0.0 contains six unique original templates covering Chinese, Math, English, Physics, Biology and History. Every activity is 1–25 minutes, declares knowledge points and rights basis, avoids the prohibited high-risk terms and creates a draft rather than auto-publishing."
+    },
+    {
+      "id": "V24-06",
+      "status": "PASS_OFFLINE",
+      "command": "Full Maven, PostgreSQL, Android two-variant, OpenAPI and documentation gates recorded for Stage 24",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": 0,
+      "passed": true,
+      "result": "Offline code, schema, contract and documentation gates passed. No device result is inferred from build or static checks."
+    },
+    {
+      "id": "V24-07",
+      "status": "BLOCKED",
+      "command": "NOT_RUN: target-tablet junior learning runtime acceptance",
+      "workingDirectory": "C:\\Users\\70649\\Desktop\\aiWork\\studyApp",
+      "shellType": "PowerShell",
+      "exitCode": null,
+      "passed": false,
+      "result": "No target Android tablet is connected. Rotation, large text, TalkBack, Reduced Motion, touch ordering, offline recovery and data-preserving upgrade remain unverified."
     }
   ],
   "remaining": [
-    "WP24-2 release variant and persistent ordering, then WP24-3 through WP24-7 implementation and verification",
-    "Target-tablet runtime acceptance"
+    "Target-tablet V24-07 runtime acceptance",
+    "Include Stage 24 changes in the next signed public APK release"
   ]
 }
