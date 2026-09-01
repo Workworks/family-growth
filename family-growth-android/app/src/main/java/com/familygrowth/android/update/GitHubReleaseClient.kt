@@ -2,7 +2,7 @@ package com.familygrowth.android.update
 
 import android.app.DownloadManager
 import android.content.Context
-import android.net.Uri
+import androidx.core.net.toUri
 import android.os.Environment
 import android.os.SystemClock
 import com.familygrowth.android.BuildConfig
@@ -99,7 +99,7 @@ class GitHubReleaseClient(private val repository: String) {
         destination.parentFile?.mkdirs()
         destination.delete()
 
-        val request = DownloadManager.Request(Uri.parse(source)).apply {
+        val request = DownloadManager.Request(source.toUri()).apply {
             setTitle("家庭成长 ${update.version} 更新")
             setDescription("正在从 GitHub Release 下载并等待安全校验")
             setAllowedOverMetered(true)

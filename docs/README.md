@@ -112,6 +112,7 @@
 - [Stage 29：家庭成员与设备配对](stages/stage-29-report.md)
 - [Stage 30：加密 Room 与可靠同步](stages/stage-30-report.md)
 - [Stage 31：家庭经济实验室](stages/stage-31-report.md)
+- [Stage 32：Android 工具链与最终全量治理验收](stages/stage-32-report.md)
 
 ## 项目计划与 Phase · `program/` `phases/`
 
@@ -162,6 +163,7 @@
 - [Stage 29](evidence/stage-29/acceptance.json)
 - [Stage 30](evidence/stage-30/acceptance.json)
 - [Stage 31](evidence/stage-31/acceptance.json)
+- [Stage 32](evidence/stage-32/acceptance.json)
 
 ## 目录约定
 

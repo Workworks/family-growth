@@ -2,7 +2,7 @@ package com.familygrowth.android.update
 
 import android.app.Application
 import android.content.Intent
-import android.net.Uri
+import androidx.core.net.toUri
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.runtime.getValue
@@ -86,7 +86,7 @@ class UpdateViewModel(application: Application) : AndroidViewModel(application) 
     fun openReleasePage(update: UpdateInfo) {
         runCatching {
             getApplication<Application>().startActivity(
-                Intent(Intent.ACTION_VIEW, Uri.parse(update.releasePageUrl)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                Intent(Intent.ACTION_VIEW, update.releasePageUrl.toUri()).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
             )
         }.onFailure { state = UpdateUiState.Error("无法打开 GitHub Release 页面", update) }
     }

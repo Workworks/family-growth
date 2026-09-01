@@ -1,5 +1,6 @@
 package com.familygrowth.android.remote
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
@@ -181,6 +182,7 @@ object LearningOutboxCodec {
     private fun DataInputStream.readNullableLong(): Long? = if (readBoolean()) readLong() else null
 }
 
+@SuppressLint("UseKtx") // commit() is intentional: the write-ahead queue must fail closed on persistence errors.
 class EncryptedLearningOutboxStore(context: Context) : LearningOutboxStore {
     private val preferences = context.getSharedPreferences("family_growth_learning_outbox_v1", Context.MODE_PRIVATE)
 

@@ -1,5 +1,6 @@
 package com.familygrowth.android.core
 
+import android.annotation.SuppressLint
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
@@ -10,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
+@SuppressLint("UseKtx") // commit() is intentional: migration and PIN writes must report durable failure.
 class LocalFamilyStore(context: Context) {
     private val preferences = context.getSharedPreferences("family_growth_local_v1", Context.MODE_PRIVATE)
     private val dao = LocalStateDatabase.get(context).stateDao()

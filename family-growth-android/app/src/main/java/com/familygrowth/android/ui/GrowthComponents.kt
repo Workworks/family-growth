@@ -59,7 +59,7 @@ fun EmptyInvitation(icon: String, title: String, body: String, actionLabel: Stri
 }
 
 @Composable
-fun DataPill(label: String, value: String, tint: Color = MaterialTheme.colorScheme.primary, modifier: Modifier = Modifier) {
+fun DataPill(label: String, value: String, tint: Color, modifier: Modifier = Modifier) {
     Column(
         modifier.background(tint.copy(alpha = 0.10f), MaterialTheme.shapes.medium).border(1.dp, tint.copy(alpha = 0.18f), MaterialTheme.shapes.medium).padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),

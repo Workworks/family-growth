@@ -33,4 +33,4 @@
 - [Stage 29：家庭成员、设备配对与最小待办](stage-29-report.md) — `BLOCKED`
 - [Stage 30：加密 Room、本机迁移与游标同步](stage-30-report.md) — `BLOCKED`
 - [Stage 31：家庭经济实验室](stage-31-report.md) — `BLOCKED`
-- Stage 32：Android 工具链与最终全量治理验收 — `IN_PROGRESS`
+- [Stage 32：Android 工具链与最终全量治理验收](stage-32-report.md) — `IN_PROGRESS`

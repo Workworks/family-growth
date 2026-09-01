@@ -1,6 +1,6 @@
 package com.familygrowth.android.ui
 
-import android.net.Uri
+import androidx.core.net.toUri
 import android.widget.VideoView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -443,7 +443,7 @@ private fun LearningVideoDialog(lesson: LearningLesson, progress: LocalLearningP
                     factory = { videoContext ->
                         VideoView(videoContext).also { view ->
                             videoView = view
-                            val uri = Uri.parse("android.resource://${context.packageName}/${learningVideoResource(lesson.resourceName)}")
+                            val uri = "android.resource://${context.packageName}/${learningVideoResource(lesson.resourceName)}".toUri()
                             view.setVideoURI(uri)
                             view.setOnCompletionListener { playing = false }
                             view.setOnErrorListener { _, _, _ -> playing = false; videoError = true; true }

@@ -326,3 +326,14 @@
 - V28 完成版本化储蓄奖励、同周期唯一结算与同组双 Money 流水；确定性市场以家庭固定种子、基金和日期生成受限基点变化；卖出预览和订单固化持有天数、提前费、总费与预计到账。
 - 家长端经济实验室统一规则与操作；固定价装扮复用既有奖励申请/批准/履约。幼儿园孩子钱包改为独立“小星星/存起来”投影，完全隐藏 Money、兑换、提现、NAV、涨跌、交易和费用。
 - H2 73 项通过（6 个 PostgreSQL 条件测试按预期跳过）；隔离 PostgreSQL 16.15 以 28 次迁移/106 表运行 73 项零跳过；Android 两变体 112 项、lint 0 error/7 warning、双 APK 通过。目标平板运行态保持 `BLOCKED`，主线进入 Stage 32。
+
+## 2026-09-01 · Activity 91 · Stage 32 工具链与最终治理立项
+
+- Android 官方资料确认 AGP 8.13 支持最高 API 36.1，要求 Gradle 8.13 与 JDK 17；本 Stage 固定使用补丁版 AGP 8.13.2、Gradle 8.13、现有 JDK 17，消除 AGP 8.7.3 对 compileSdk 36 的兼容告警。
+- 发布版本自主决策为 v0.3.9/15：只递增稳定更新身份，不改变 targetSdk、权限、儿童行为边界或真实金融红线。先完成全量门禁与治理审计，再创建 tag 和公开 Release。
+
+## 2026-09-01 · Activity 92 · Stage 32 本地与双数据库门禁
+
+- Wrapper 首次从 services.gradle.org 下载因旧 10 秒连接超时失败；提高到 60 秒后 Java 重定向仍超时。改从 Gradle 官方 CDN 下载到 Wrapper 精确缓存目录，SHA-256 与官方 `20f1...ed78` 完全一致后才解包，项目仍配置同一强校验。
+- AGP 8.13.2 / Gradle 8.13 / JDK 17 同步成功，旧 compileSdk 36 兼容告警消失。升级后的 lint 新识别 Android 16 旋转、数据提取、无效 SDK 分支和 KTX 建议；修复旋转/备份声明、资源层级、URI KTX，并保留必须同步提交的 fail-closed SharedPreferences `commit()`。
+- H2 与隔离 PostgreSQL 16.15 各 73 项通过，PostgreSQL 为 28 次迁移/106 表且零跳过；Android 两变体 112 项、lint 0 error/6 个有解释的版本/图标 warning、debug/release APK 通过。unsigned APK 元数据为 0.3.9/15；正式签名等待 tag workflow。

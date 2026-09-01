@@ -1,6 +1,6 @@
 package com.familygrowth.android.ui
 
-import android.net.Uri
+import androidx.core.net.toUri
 import android.widget.VideoView
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -619,7 +619,7 @@ private fun DynamicLearningVideoDialog(activity: RemoteLearningActivity, dismiss
             if (resource != null) AndroidView(factory = { videoContext ->
                 VideoView(videoContext).also { video ->
                     view = video
-                    video.setVideoURI(Uri.parse("android.resource://${context.packageName}/$resource"))
+                    video.setVideoURI("android.resource://${context.packageName}/$resource".toUri())
                     video.setOnPreparedListener { duration = ceil(it.duration / 1000.0).toInt().coerceAtLeast(1) }
                     video.setOnCompletionListener {
                         playing = false
