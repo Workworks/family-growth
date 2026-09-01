@@ -14,12 +14,12 @@
 | P1 | 30 | `BLOCKED` | 目标平板覆盖升级、重启/断网和两设备冲突回放 | 用户提供设备/可信服务；Agent 回放 | Stage 30 V30-06 |
 | P1 | 29 | `BLOCKED` | 两台目标设备与可信 HTTPS 回放配对、撤销、重启和无障碍 | 用户提供设备/服务；Agent 回放 | Stage 29 V29-08 |
 | P2 | 31 | `BLOCKED` | 目标平板回放适龄经济投影、费用确认、重启和覆盖升级 | 用户提供目标平板；Agent 回放 | Stage 31 设备证据 |
-| P1 | 32 | `IN_PROGRESS` | 升级 Android 工具链并完成跨 Stage 最终治理、稳定发布与审计 | Agent | Stage 32 Spec/测试/证据/Release |
+| P1 | 32 | `BLOCKED` | Agent 可执行工程、治理和 v0.3.9 发布已完成；连接目标平板/可信 HTTPS 回放同签名升级、加密数据保留、无障碍和两设备冲突 | 用户提供设备/服务；Agent 回放 | Stage 32 报告、v0.3.9 Release、目标设备证据 |
 | P0 | 22 | `BLOCKED` | WP22-1–5 已完成；连接目标平板回放年龄带/五领域折页、布置、孩子离屏完成、家长一句观察、TalkBack、旋转、Reduced Motion 和触觉关闭 | 用户提供平板；Agent 回放 | Stage 22 报告、`evidence/stage-22/` |
 | P1 | 23 | `BLOCKED` | 可离线工作包已完成；连接目标平板回放小学报告、横竖屏、TalkBack、大字体、Reduced Motion 与数据保留 | 用户提供平板；Agent 回放 | Stage 23 报告、`evidence/stage-23/` |
 | P1 | 24 | `BLOCKED` | 可离线工作包已完成；连接目标平板回放横竖屏、大字体、TalkBack、Reduced Motion、触控排序和断网恢复 | 用户提供平板；Agent 回放 | Stage 24 报告、`evidence/stage-24/` |
 | P1 | 25 | `BLOCKED` | 可离线工作包已完成；连接目标平板回放研究板、TalkBack、Reduced Motion、断网冲突和数据保留 | 用户提供平板；Agent 回放 | Stage 25 报告、`evidence/stage-25/` |
-| P0 | 26 | `BLOCKED` | WP26-1–13 和 v0.3.8/14 已完成；连接目标平板与可信 HTTPS 服务回放首装/覆盖升级、四学段、TalkBack/旋转/大字体/Reduced Motion、触觉、断网和数据保留 | 用户提供设备/服务；Agent 回放 | Stage 26 报告、v0.3.8 Release、`evidence/stage-26/` |
+| P0 | 26 | `BLOCKED` | WP26-1–13 已完成并进入 latest v0.3.9/15；连接目标平板与可信 HTTPS 服务回放首装/覆盖升级、四学段、TalkBack/旋转/大字体/Reduced Motion、触觉、断网和数据保留 | 用户提供设备/服务；Agent 回放 | Stage 26/32 报告、v0.3.9 Release |
 | P1 | 27 | `BLOCKED` | 可离线工程已完成；连接目标平板回放系统相册、JPEG/PNG/WebP 上传、TalkBack、大字体、旋转、Reduced Motion 与重启保留 | 用户提供设备/服务；Agent 回放 | Stage 27 报告、`evidence/stage-27/` |
 | P1 | 28 | `BLOCKED` | 可离线工程已完成；连接目标平板回放家庭奖励约定、孩子兑换待回应、家长审批和现实奖励兑现 | 用户提供设备/服务；Agent 回放 | Stage 28 报告、`evidence/stage-28/` |
 | P0 | 21 | `BLOCKED` | v0.3.6/12 已发布；在目标平板从 v0.3.5 应用内覆盖升级并回放 AndroidKeyStore 写前队列、杀进程/断网、重新登录、401/409、真实来源/官方播放和 TalkBack/旋转 | 用户提供平板/可访问服务；Agent 回放 | `stages/stage-23-report.md`、`evidence/stage-23/acceptance.json`、v0.3.6 Release |
@@ -32,11 +32,11 @@
 | P0 | 14 | `BLOCKED` | 用 Android 真机/平板安装 0.2.1 release，通过 App 更新至 0.2.2 并验证数据保留/失败路径 | 用户提供设备；Agent 回放 | Stage 14/15 真机证据 |
 | P0 | 2 | `BLOCKED` | 连接 Android 真机/平板，或明确授权重装共享 API 34 system image | 用户提供条件；Agent 回放 | 安装、启动、旋转、截图与结构化证据 |
 | P1 | 13 | `BLOCKED` | 连接 Android 真机/平板，安装 0.2.0 包并回放任务/钱包/PIN/限时/重启持久化 | 用户提供条件；Agent 回放 | Stage 13 真机截图与结构化证据 |
-| P0 | 11 | `BLOCKED` | 稳定 Release 链已完成且 latest 为 v0.3.8；连接 Android 设备回放 App 内检查、下载、校验、系统确认和数据保留 | 用户提供设备；Agent 回放 | 真机覆盖升级证据 |
+| P0 | 11 | `BLOCKED` | 稳定 Release 链已完成且 latest 为 v0.3.9；连接 Android 设备回放 App 内检查、下载、校验、系统确认和数据保留 | 用户提供设备；Agent 回放 | 真机覆盖升级证据 |
 
 ## 2. 可由 Agent 继续推进
 
-Stage 27–31 的可离线工程已完成并转为目标平板阻塞。当前只剩 Stage 32 的 Agent 可执行工具链、最终治理和发布工作；真实平板与可信 HTTPS 继续作为独立外部验收。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
+Stage 27–32 的 Agent 可执行工程、最终治理和 v0.3.9 稳定发布均已完成。当前没有可在缺少设备/服务的条件下继续闭环的工程项；真实平板与可信 HTTPS 是剩余独立外部验收。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
 
 ## 3. 只能由外部条件解除
 
@@ -44,7 +44,7 @@ Stage 27–31 的可离线工程已完成并转为目标平板阻塞。当前只
 | --- | ---: | --- |
 | P0 | 2 | 启用 USB 调试的 Android 真机/平板，或重装共享 API 34 system image 的明确授权 |
 | P1 | 13 | 启用 USB 调试的 Android 真机/平板；可与 Stage 2 同一次回放解除 |
-| P0 | 11/14 | 启用 USB 调试的 Android 真机/平板；仓库、稳定签名和 latest v0.3.8 Release 已具备 |
+| P0 | 11/14 | 启用 USB 调试的 Android 真机/平板；仓库、稳定签名和 latest v0.3.9 Release 已具备 |
 | P0 | 15 | 启用 USB 调试的 Android 平板/真机，用于儿童端触控和无障碍验收 |
 | P0 | 18 | Android 平板/真机，用于双视角、视频、奖励兴趣、重启和 v0.3.3→v0.3.4 更新验收 |
 | P0 | 20 | Android 平板/真机与可访问测试服务，用于四学段布局、触觉/Reduced Motion/TalkBack、旋转、重启和配置同步验收 |

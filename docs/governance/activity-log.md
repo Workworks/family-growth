@@ -337,3 +337,10 @@
 - Wrapper 首次从 services.gradle.org 下载因旧 10 秒连接超时失败；提高到 60 秒后 Java 重定向仍超时。改从 Gradle 官方 CDN 下载到 Wrapper 精确缓存目录，SHA-256 与官方 `20f1...ed78` 完全一致后才解包，项目仍配置同一强校验。
 - AGP 8.13.2 / Gradle 8.13 / JDK 17 同步成功，旧 compileSdk 36 兼容告警消失。升级后的 lint 新识别 Android 16 旋转、数据提取、无效 SDK 分支和 KTX 建议；修复旋转/备份声明、资源层级、URI KTX，并保留必须同步提交的 fail-closed SharedPreferences `commit()`。
 - H2 与隔离 PostgreSQL 16.15 各 73 项通过，PostgreSQL 为 28 次迁移/106 表且零跳过；Android 两变体 112 项、lint 0 error/6 个有解释的版本/图标 warning、debug/release APK 通过。unsigned APK 元数据为 0.3.9/15；正式签名等待 tag workflow。
+
+## 2026-09-01 · Activity 93 · v0.3.9 稳定发布与最终事实源审计
+
+- 提交 `383fa1c` 推送 main 后创建签名 tag `v0.3.9`；GitHub Actions workflow `33508682095` 的签名配置、密钥恢复、testReleaseUnitTest、lintRelease、assembleRelease、资产准备和 Release 创建全部成功。
+- 从公开 Release 回下载 `family-growth-0.3.9.apk`：GitHub digest 与本地 SHA-256 均为 `846fae8b32e8cd68e0b3e0a20bbe636f314e31b2e41b95a2be97c79e4f3232eb`，大小均为 12,065,826 字节；包名 `com.familygrowth.android`、0.3.9/15、minSdk 26、targetSdk 34、compileSdk 36 与计划一致。
+- `apksigner` 验证 APK Signature Scheme v2 有效且只有一个签名者；证书 SHA-256 `9179a5da2973e8ff9115edd1fb74e21ad70d9540c1d33203c9af442106d2eacb` 与既有稳定身份一致。v0.3.9 为公开 latest，非 draft/prerelease。
+- 最终审计将 REQ-051/052 的 Agent 可执行范围标记 `VALIDATED`，Stage 32 转为 `BLOCKED`：剩余项均需要目标平板或可信 HTTPS 运行态，未用远端 Release、构建或 Mock 冒充设备验收。
