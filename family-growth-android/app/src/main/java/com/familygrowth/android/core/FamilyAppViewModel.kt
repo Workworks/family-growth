@@ -19,7 +19,8 @@ import java.util.UUID
 class FamilyAppViewModel(application: Application) : AndroidViewModel(application) {
     private val store = LocalFamilyStore(application)
     private val sessionStore = MemorySessionStore()
-    private val remote = RemoteFamilyRepository(HttpFamilyApiTransport(), sessionStore, BuildConfig.DEBUG)
+    private val reliableSync = ReliableSyncStateStore(application)
+    private val remote = RemoteFamilyRepository(HttpFamilyApiTransport(), sessionStore, BuildConfig.DEBUG, reliableSync)
     private val production = ProductionFamilyApi(sessionStore)
     private val learningOutbox = LearningOutbox(EncryptedLearningOutboxStore(application))
     private var remoteCompletionByTask: Map<String, String> = emptyMap()

@@ -63,6 +63,8 @@ data class RemotePairedDevice(val id:String,val deviceName:String,val actorRole:
 data class RemoteFamilyNotification(val id:String,val childId:String?,val type:String,val title:String,val body:String,val status:String,val createdAt:String)
 data class RemoteOneTimeCode(val id:String,val code:String?,val expiresAt:String)
 data class RemoteSession(val baseUrl:String,val familyId:String,val parentId:String,val childId:String,val parentToken:String,val childToken:String)
+data class RemoteSyncFact(val key:String,val digest:String,val payload:String)
+data class RemoteDeltaSync(val cursor:Long,val changed:List<RemoteSyncFact>,val tombstones:List<String>,val projectionDigest:String)
 sealed interface ConnectionState{data object Disconnected:ConnectionState;data object Connecting:ConnectionState;data class Connected(val snapshot:RemoteSnapshot):ConnectionState;data class Error(val message:String):ConnectionState;data object Expired:ConnectionState}
 enum class RemoteFailureKind { RETRYABLE, CONFLICT, PERMANENT }
 sealed interface RemoteResult<out T>{data class Ok<T>(val value:T):RemoteResult<T>;data object Unauthorized:RemoteResult<Nothing>;data class Failure(val message:String,val kind:RemoteFailureKind=RemoteFailureKind.PERMANENT):RemoteResult<Nothing>}

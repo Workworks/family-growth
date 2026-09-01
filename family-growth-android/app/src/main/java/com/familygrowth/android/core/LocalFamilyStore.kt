@@ -4,22 +4,55 @@ import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
 import java.math.BigDecimal
+import java.security.MessageDigest
 import java.time.LocalDate
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 class LocalFamilyStore(context: Context) {
     private val preferences = context.getSharedPreferences("family_growth_local_v1", Context.MODE_PRIVATE)
+    private val dao = LocalStateDatabase.get(context).stateDao()
+    private val cipher:StateCipher = KeystoreStateCipher()
 
     fun load(): Result<FamilyLocalState> = runCatching {
-        preferences.getString(KEY_STATE, null)?.let(::decode) ?: FamilyLocalState()
+        runBlocking { withContext(Dispatchers.IO) {
+            dao.snapshot()?.let { stored ->
+                require(stored.schemaVersion==STATE_SCHEMA){"不支持的本机状态版本"}
+                val state=decode(cipher.decrypt(stored.encryptedPayload).toString(Charsets.UTF_8))
+                if(preferences.contains(KEY_STATE)&&dao.receipt(MIGRATION_ID)!=null)check(preferences.edit().remove(KEY_STATE).commit()){"旧本机明文状态清理失败"}
+                state
+            } ?: migrateLegacy()
+        } }
     }
 
     fun save(state: FamilyLocalState): Result<Unit> = runCatching {
-        check(preferences.edit().putString(KEY_STATE, encode(state).toString()).commit()) { "本地数据保存失败" }
+        runBlocking { withContext(Dispatchers.IO) {
+            val plain=encode(state).toString().toByteArray(Charsets.UTF_8)
+            dao.putSnapshot(LocalStateSnapshotEntity(schemaVersion=STATE_SCHEMA,encryptedPayload=cipher.encrypt(plain),updatedAt=System.currentTimeMillis()))
+            val verify=dao.snapshot()?:error("本机状态写后校验失败")
+            check(MessageDigest.isEqual(plain,cipher.decrypt(verify.encryptedPayload))){"本机状态写后校验失败"}
+        } }
     }
 
     fun hasPin(): Boolean = !preferences.getString(KEY_PIN, null).isNullOrBlank()
     fun pinHash(): String? = preferences.getString(KEY_PIN, null)
     fun savePin(hash: String): Boolean = preferences.edit().putString(KEY_PIN, hash).commit()
+
+    private suspend fun migrateLegacy():FamilyLocalState{
+        val legacy=preferences.getString(KEY_STATE,null)?:return FamilyLocalState()
+        val state=decode(legacy)
+        val plain=legacy.toByteArray(Charsets.UTF_8)
+        val digest=MessageDigest.getInstance("SHA-256").digest(plain).joinToString(""){"%02x".format(it)}
+        dao.putSnapshot(LocalStateSnapshotEntity(schemaVersion=STATE_SCHEMA,encryptedPayload=cipher.encrypt(plain),updatedAt=System.currentTimeMillis()))
+        val verify=dao.snapshot()?:error("本机迁移写后校验失败")
+        val verifiedPlain=cipher.decrypt(verify.encryptedPayload)
+        check(MessageDigest.isEqual(plain,verifiedPlain)){"本机迁移密文校验失败"}
+        decode(verifiedPlain.toString(Charsets.UTF_8))
+        if(dao.receipt(MIGRATION_ID)==null)dao.putReceipt(LocalMigrationReceiptEntity(MIGRATION_ID,digest,System.currentTimeMillis()))
+        check(preferences.edit().remove(KEY_STATE).commit()){"旧本机明文状态清理失败"}
+        return state
+    }
 
     private fun encode(state: FamilyLocalState) = JSONObject().apply {
         put("tasks", JSONArray().apply { state.tasks.forEach { task -> put(JSONObject().apply {
@@ -163,5 +196,7 @@ class LocalFamilyStore(context: Context) {
     companion object {
         private const val KEY_STATE = "state"
         private const val KEY_PIN = "parent_pin_bcrypt"
+        private const val MIGRATION_ID = "shared-preferences-state-to-room-v1"
+        private const val STATE_SCHEMA = 1
     }
 }

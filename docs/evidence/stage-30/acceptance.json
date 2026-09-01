@@ -1,0 +1,14 @@
+{
+  "stage": 30,
+  "capturedAt": "2026-09-01",
+  "status": "BLOCKED",
+  "scope": "Keystore-encrypted Room state, recoverable legacy migration, cursor/digest deltas, tombstones and explicit multi-device conflicts",
+  "results": [
+    {"id":"V30-01/V30-02-ANDROID","status":"PASS_OFFLINE","command":".\\gradlew.bat clean test lint assembleDebug assembleRelease --no-daemon --console=plain -q","workingDirectory":"C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android","shellType":"PowerShell","exitCode":0,"passed":true,"result":"112 JVM tests, zero failures/errors/skips; lint zero errors and seven existing warnings; debug and unsigned release APKs built. Recoverable migration policy proves delete occurs only after encrypted write, decrypt/decode verification and receipt."},
+    {"id":"V30-03-H2","status":"PASS","command":".\\mvnw.cmd test","workingDirectory":"C:\\Users\\70649\\Desktop\\aiWork\\studyApp","shellType":"PowerShell","exitCode":0,"passed":true,"result":"72 Maven tests, zero failures/errors; six PostgreSQL-only conditions skipped. V27 and cursor/digest/tombstone/family-scope API passed."},
+    {"id":"V30-03-POSTGRES","status":"PASS","command":"FAMILY_GROWTH_TEST_POSTGRES_*=[REDACTED_TEST_VALUES]; .\\mvnw.cmd -q clean verify -Dspring.datasource.hikari.maximum-pool-size=2 -Dspring.datasource.hikari.minimum-idle=0","workingDirectory":"C:\\Users\\70649\\Desktop\\aiWork\\studyApp","shellType":"PowerShell","exitCode":0,"passed":true,"result":"Disposable PostgreSQL 16.15 applied 27 migrations and validated 100 production tables; all 72 tests passed without failures, errors or skips. Exact temporary container removed."},
+    {"id":"V30-04/V30-05","status":"PASS_OFFLINE","command":"OpenAPI/Markdown/evidence JSON/diff gates","workingDirectory":"C:\\Users\\70649\\Desktop\\aiWork\\studyApp","shellType":"PowerShell","exitCode":0,"passed":true,"result":"Delta contract, Room migration operations, user guide, Stage facts and structured evidence synchronized."},
+    {"id":"V30-06","status":"BLOCKED","command":"NOT_RUN: v0.3.8 target-tablet upgrade, restart/offline and two-device conflict replay","workingDirectory":"C:\\Users\\70649\\Desktop\\aiWork\\studyApp","shellType":"PowerShell","exitCode":null,"passed":false,"result":"No target Android tablet/two-device trusted-HTTPS environment is available; runtime data retention and conflict UX cannot be replaced by JVM/build evidence."}
+  ],
+  "remaining": ["Target-device V30-06 upgrade, restart/offline and two-device conflict acceptance"]
+}

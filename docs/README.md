@@ -60,6 +60,7 @@
 - [22 本地部署](operations/22-local-deployment.md)
 - [23 儿童数据保留、导出与恢复边界](operations/23-data-retention-and-recovery.md)
 - [24 家庭成员配对与可信 TLS](operations/24-family-pairing-and-trusted-tls.md)
+- [25 Room 迁移与可靠同步](operations/25-room-migration-and-reliable-sync.md)
 
 ## 使用手册 · `manuals/`
 

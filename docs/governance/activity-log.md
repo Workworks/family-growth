@@ -306,3 +306,15 @@
 - Android 默认以服务地址、一次性配对码和设备名称连接，保留旧 UUID/PIN 高级兼容；家长可切换孩子、邀请/撤销成员、重置 PIN、生成孩子设备码、撤销设备和处理三条以内中性待办。
 - H2 与隔离 PostgreSQL 16.15 全量各 71 项通过，PostgreSQL 为 26 次迁移/99 表且零跳过。首次 PG 基础设施尝试因各测试上下文默认连接池累计超过连接上限失败；将测试池限制为 2 后同一套完整验证通过，精确命名临时容器已删除。
 - Android debug/release 共 108 个 JVM 测试、Lint 0 error/7 个既有 warning、debug/unsigned release APK 构建通过；OpenAPI 119 paths、96 份 Markdown 和全部 evidence JSON 通过。V29-08 因缺两台目标设备/可信 HTTPS 保持 `BLOCKED`，主线进入 Stage 30。
+
+## 2026-09-01 · Activity 87 · Stage 30 可靠同步立项
+
+- 按 REQ-052/P-19/P-20 建立 Stage 30 Spec。采用 Room 2.8.4/KSP 管理版本化本机表，业务快照仍以 Android Keystore AES-256-GCM 密文保存；不引入硬编码密钥或将 Token/PIN 写入数据库。
+
+## 2026-09-01 · Activity 88 · Stage 30 可离线闭环
+
+- Android 使用 Room 2.8.4、官方 schema 插件与 KSP2；本机快照、随机客户端身份、摘要游标、通用命令和冲突只在版本化表保存，自由文本经 Keystore AES-256-GCM 加密。旧 SharedPreferences 仅在密文回读/解码与迁移凭据成功后删除。
+- V27 新增服务端单调 checkpoint。受权 actor 提交最多 2000 个 known digest，获得孩子、Wallet、Task/Completion、Assignment、使用策略和家长待办的变化与 tombstone；幂等重放、投影变化和跨对象范围均 fail-closed。
+- H2/PostgreSQL 16.15 各 72 个 Maven 测试通过，PostgreSQL 验证 27 次迁移/100 表；Android 双变体 112 个 JVM 测试、lint 0 error/7 warning 和两 APK 通过。真实 v0.3.8 覆盖升级/双设备冲突因缺目标环境保持 `BLOCKED`，主线进入 Stage 31。
+- 旧 SharedPreferences 迁移必须先写 Room、解密/解码回读和登记凭据，最后才删除旧 state key；任一步失败都保留原数据。连接态服务端继续是 Wallet/Ledger 和学习事实源。
+- 同步协议采用受限 known digest + 单调 cursor + tombstone，而不是 last-write-wins。409 进入持久冲突中心，由家长刷新后显式处理；孩子不承担冲突选择。

@@ -1,4 +1,4 @@
-plugins { id("com.android.application"); id("org.jetbrains.kotlin.android"); id("org.jetbrains.kotlin.plugin.compose") }
+plugins { id("com.android.application"); id("org.jetbrains.kotlin.android"); id("org.jetbrains.kotlin.plugin.compose"); id("com.google.devtools.ksp"); id("androidx.room") }
 
 val githubRepository = providers.gradleProperty("GITHUB_REPOSITORY")
     .orElse(providers.environmentVariable("GITHUB_REPOSITORY"))
@@ -48,6 +48,7 @@ android {
 tasks.register("printVersionName") {
     doLast { println(android.defaultConfig.versionName) }
 }
+room { schemaDirectory("$projectDir/schemas") }
 dependencies {
     implementation(platform("androidx.compose:compose-bom:2025.05.01"))
     implementation("androidx.core:core-ktx:1.16.0")
@@ -59,6 +60,9 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("org.mindrot:jbcrypt:0.4")
+    implementation("androidx.room:room-runtime:2.8.4")
+    implementation("androidx.room:room-ktx:2.8.4")
+    ksp("androidx.room:room-compiler:2.8.4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     testImplementation("junit:junit:4.13.2")
 }

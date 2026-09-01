@@ -254,11 +254,21 @@
 
 解除方式：用户提供两台设备/服务后由 Agent 执行 V29-08 并留真实运行态证据。
 
+### Stage 30：Room、加密迁移与可靠同步
+
+状态：`BLOCKED`　文档：[Stage 30](stages/stage-30-report.md)
+
+已完成：Room/Keystore 加密快照、可恢复旧数据迁移、持久客户端身份/游标/冲突、V27 cursor/digest/tombstone API、H2/PostgreSQL 16.15 与 Android 双变体门禁。
+
+缺少：目标平板从稳定 v0.3.8 同签名覆盖升级后的数据保留、杀进程重启、断网恢复，以及两台设备对同一学习事实制造 409 后的家长处理体验。
+
+解除方式：连接目标 Android 平板、第二台配对设备和可访问且系统信任的 HTTPS 家庭服务，由 Agent 回放 V30-06；不得以 JVM 或 APK 构建替代。
+
 ## 3. 工程未完成
 
 ### Stage 27–32：原始 P-01–P-21 深化
 
-状态：Stage 27–29 可离线工程完成后分别因目标平板 V27-08/V28-08/V29-08 `BLOCKED`；Stage 30 `IN_PROGRESS`；Stage 31–32 `NOT_STARTED`。继续 Stage 30 可靠同步，不因既有设备验收暂停可离线工程。
+状态：Stage 27–30 可离线工程完成后分别因目标环境 `BLOCKED`；Stage 31 `IN_PROGRESS`，Stage 32 `NOT_STARTED`。继续 Stage 31 虚拟经济深化，不因既有设备验收暂停可离线工程。
 
 ## 4. 当前已知限制
 
