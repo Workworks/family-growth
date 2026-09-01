@@ -106,6 +106,18 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     var growthReport by mutableStateOf<RemoteGrowthReport?>(null)
         private set
+    var familyChildren by mutableStateOf<List<RemoteFamilyChild>>(emptyList())
+        private set
+    var familyMembers by mutableStateOf<List<RemoteFamilyMember>>(emptyList())
+        private set
+    var pairedDevices by mutableStateOf<List<RemotePairedDevice>>(emptyList())
+        private set
+    var familyNotifications by mutableStateOf<List<RemoteFamilyNotification>>(emptyList())
+        private set
+    var latestCollaborationCode by mutableStateOf<RemoteOneTimeCode?>(null)
+        private set
+    var isFamilyOwner by mutableStateOf(false)
+        private set
 
     val isChildLocked: Boolean get() = mode == AppMode.CHILD &&
         (remoteUsageAccess?.allowed==false || state.usage.usedMinutes >= state.usage.dailyLimitMinutes || sessionUsedMinutes >= state.usage.sessionLimitMinutes)
@@ -484,6 +496,24 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             if (result is RemoteResult.Ok) { syncEducationResources(); syncProductionState(); reconcileAndFlushLearning(refreshFirst=false) }
         }
     }
+    fun pairParentDevice(baseUrl:String,code:String,deviceName:String){
+        if(connectionState==ConnectionState.Connecting)return
+        connectionState=ConnectionState.Connecting
+        viewModelScope.launch{val result=remote.pairParent(baseUrl,code,deviceName);handleRemote(result,"设备已配对，并已选择第一个孩子");if(result is RemoteResult.Ok){syncEducationResources();syncProductionState();reconcileAndFlushLearning(refreshFirst=false)}}
+    }
+    fun switchFamilyChild(childId:String){
+        if(connectionState !is ConnectionState.Connected)return
+        connectionState=ConnectionState.Connecting
+        viewModelScope.launch{val result=remote.switchChild(childId);handleRemote(result,"已切换孩子，历史记录保持不变");if(result is RemoteResult.Ok){syncEducationResources();syncProductionState();reconcileAndFlushLearning(refreshFirst=false)}}
+    }
+    fun createParentPairing(){viewModelScope.launch{when(val r=production.createParentPairing()){is RemoteResult.Ok->{latestCollaborationCode=r.value;message="家长设备配对码仅显示一次，5 分钟内有效"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun createChildPairing(childId:String){viewModelScope.launch{when(val r=production.createChildPairing(childId)){is RemoteResult.Ok->{latestCollaborationCode=r.value;message="孩子设备配对码仅显示一次，5 分钟内有效"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun inviteGuardian(name:String){if(name.isBlank())return failUnit("请输入家长称呼");viewModelScope.launch{when(val r=production.inviteGuardian(name.trim())){is RemoteResult.Ok->{latestCollaborationCode=r.value;message="邀请代码仅显示一次，10 分钟内有效"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun revokePairedDevice(id:String){viewModelScope.launch{when(val r=production.revokeDevice(id)){is RemoteResult.Ok->{syncCollaboration();message="设备已撤销，对应会话已失效"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun resetFamilyMemberPin(id:String,pin:String){if(pin.length!=6)return failUnit("请输入 6 位新 PIN");viewModelScope.launch{when(val r=production.resetMemberPin(id,pin)){is RemoteResult.Ok->{syncCollaboration();message="成员 PIN 已重置，旧会话已失效"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun revokeFamilyMember(id:String){viewModelScope.launch{when(val r=production.revokeMember(id)){is RemoteResult.Ok->{syncCollaboration();message="家庭成员已撤销，旧会话已失效"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun readFamilyNotification(id:String){viewModelScope.launch{when(val r=production.readNotification(id)){is RemoteResult.Ok->{syncCollaboration()};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun clearCollaborationCode(){latestCollaborationCode=null}
     fun refreshService() {
         if (connectionState !is ConnectionState.Connected) connectionState = ConnectionState.Connecting
         viewModelScope.launch {
@@ -492,7 +522,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
             if (result is RemoteResult.Ok) { syncEducationResources(); syncProductionState(); reconcileAndFlushLearning(refreshFirst=false); flushUsageNow() }
         }
     }
-    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); juniorLearningPlan=null; juniorLearningReport=null; seniorModuleConfiguration=null; seniorGoals=emptyList(); seniorReflections=emptyList(); seniorLearningReport=null;remoteUsageAccess=null;erasurePreview=null;stageTransitionPreview=null; learningSupportByAssignment=emptyMap(); primaryLearningReport=null; teachingCourses = emptyList();growthPlans=emptyList();growthMilestones=emptyList();growthReport=null; connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
+    fun disconnectService() { remote.disconnect(); remoteCompletionByTask = emptyMap(); educationSources = emptyList(); childEducationCatalog = emptyList(); learningAssignments = emptyList(); juniorLearningPlan=null; juniorLearningReport=null; seniorModuleConfiguration=null; seniorGoals=emptyList(); seniorReflections=emptyList(); seniorLearningReport=null;remoteUsageAccess=null;erasurePreview=null;stageTransitionPreview=null; learningSupportByAssignment=emptyMap(); primaryLearningReport=null; teachingCourses = emptyList();growthPlans=emptyList();growthMilestones=emptyList();growthReport=null;familyChildren=emptyList();familyMembers=emptyList();pairedDevices=emptyList();familyNotifications=emptyList();latestCollaborationCode=null;isFamilyOwner=false; connectionState = ConnectionState.Disconnected; message = if(pendingLearningActions.isEmpty()) "已断开；服务端 Token 已从内存清除" else "已断开；Token 已清除，待同步学习记录仍加密保留" }
 
     private fun changeEducationSource(id: String, action: String, success: String) {
         viewModelScope.launch {
@@ -653,7 +683,14 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         when(val r=production.monthlyReport()){is RemoteResult.Ok->monthlyUsageReport=r.value;else->Unit}
         when(val r=production.retentionPolicy()){is RemoteResult.Ok->retentionPolicy=r.value;else->Unit}
         syncGrowthArchive()
+        syncCollaboration()
         store.save(state)
+    }
+    private suspend fun syncCollaboration(){
+        when(val r=remote.children()){is RemoteResult.Ok->familyChildren=r.value;RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
+        when(val r=production.familyMembers()){is RemoteResult.Ok->{familyMembers=r.value;isFamilyOwner=r.value.any{it.id==remote.currentParentId()&&it.role=="OWNER"&&it.status=="ACTIVE"}};else->Unit}
+        if(isFamilyOwner)when(val r=production.pairedDevices()){is RemoteResult.Ok->pairedDevices=r.value;else->Unit}else pairedDevices=emptyList()
+        when(val r=production.familyNotifications()){is RemoteResult.Ok->familyNotifications=r.value;else->Unit}
     }
     private suspend fun syncRewardGovernance(asChild:Boolean){if(!asChild)when(val r=production.rewardBudgetSummary()){is RemoteResult.Ok->rewardBudget=r.value;else->rewardBudget=null};when(val r=production.activeExchangeControl(asChild)){is RemoteResult.Ok->exchangeControl=r.value;else->exchangeControl=null};when(val r=production.exchangeApprovals(asChild)){is RemoteResult.Ok->exchangeApprovals=r.value;else->Unit}}
     private suspend fun syncGrowthArchive(){

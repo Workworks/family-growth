@@ -31,14 +31,17 @@ public class Stage21TeachingService {
     private final Stage20Service experience;
     private final Stage21TeachingStore store;
     private final Stage23LearningStore autonomousLearning;
+    private final Stage29CollaborationStore collaboration;
     private final Clock clock;
 
     public Stage21TeachingService(Stage3Service auth, Stage20Service experience,
-                                  Stage21TeachingStore store, Stage23LearningStore autonomousLearning, Clock clock) {
+                                  Stage21TeachingStore store, Stage23LearningStore autonomousLearning,
+                                  Stage29CollaborationStore collaboration, Clock clock) {
         this.auth = auth;
         this.experience = experience;
         this.store = store;
         this.autonomousLearning = autonomousLearning;
+        this.collaboration = collaboration;
         this.clock = clock;
     }
 
@@ -82,7 +85,9 @@ public class Stage21TeachingService {
         CourseVersion version = version(familyId, versionId);
         if (version.status() != CourseVersionStatus.DRAFT) throw new Stage3Service.ConflictException("Course version is already published");
         com.familygrowth.domain.Stage21TeachingModels.validateForPublish(version);
-        return store.publish(familyId, versionId, actor.actorId(), key, payload, clock.instant());
+        CourseVersion published=store.publish(familyId, versionId, actor.actorId(), key, payload, clock.instant());
+        collaboration.emitToParents(familyId,null,com.familygrowth.domain.Stage29CollaborationModels.NotificationType.CONTENT_UPDATED,"家庭课程已经发布","新内容已进入课程目录，可由家长决定是否布置","COURSE_VERSION",published.versionId(),clock.instant());
+        return published;
     }
 
     public ContentWithdrawal withdraw(Actor actor, UUID familyId, UUID versionId, String reason, String rawKey) {

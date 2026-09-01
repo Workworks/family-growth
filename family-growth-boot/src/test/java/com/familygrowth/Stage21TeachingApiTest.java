@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -30,6 +31,7 @@ import org.springframework.test.web.servlet.MvcResult;
 class Stage21TeachingApiTest {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
+    @Autowired JdbcTemplate jdbc;
 
     @Test
     void immutableVersionNineActivitiesAndReworkEvidenceCloseProductionLoop() throws Exception {
@@ -70,6 +72,7 @@ class Stage21TeachingApiTest {
             .andExpect(status().isOk()).andExpect(jsonPath("$.data.status").value("PUBLISHED"));
         mvc.perform(post(publish).header("Authorization", bearer(parent.token)).header("Idempotency-Key", "publish-1"))
             .andExpect(status().isOk()).andExpect(jsonPath("$.data.versionId").value(versionId.toString()));
+        org.assertj.core.api.Assertions.assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM family_notification WHERE family_id=? AND notification_type='CONTENT_UPDATED' AND source_id=?",Integer.class,parent.family,versionId)).isOne();
         mvc.perform(post(publish).header("Authorization", bearer(parent.token)).header("Idempotency-Key", "publish-again"))
             .andExpect(status().isConflict());
 

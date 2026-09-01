@@ -107,6 +107,15 @@
 | GET/POST | `/families/{familyId}/children/{childId}/exchange-approval-requests` | PARENT/CHILD 本人读；CHILD 本人提交 | 待审批只保存家庭请求且不扣账；孩子端仅展示中性回应状态 |
 | POST | `/families/{familyId}/exchange-approval-requests/{requestId}/review` | PARENT | 批准时在同一事务复验额度并确认兑换，拒绝不产生账本变化 |
 | POST | `/families/{familyId}/reward-orders/{orderId}/fulfill` | PARENT | 将已批准实体奖励一次性标记为 FULFILLED 并保存现实履约备注；不再次改变 Wallet/Ledger |
+| POST | `/auth/parent-invitations/accept` | 公开短码入口 | 十分钟一次性邀请换取 GUARDIAN 会话并设置独立 BCrypt PIN；失败统一 401 |
+| GET/POST | `/families/{familyId}/parent-invitations`、`.../{invitationId}/revoke` | OWNER | 创建只展示一次的邀请码或撤销未接受邀请；幂等重放不再次返回代码 |
+| GET | `/families/{familyId}/members` | PARENT | 查看 OWNER/GUARDIAN 与 ACTIVE/REVOKED 状态 |
+| POST | `/families/{familyId}/members/{parentId}/reset-pin`、`.../revoke` | OWNER | 重置另一成员 PIN 或撤销 GUARDIAN，并立即撤销其全部会话；OWNER 不能撤销自己 |
+| GET | `/families/{familyId}/children` | PARENT | 返回最小孩子选择列表；切换后必须重新签发 child-scoped session |
+| POST | `/families/{familyId}/device-pairings` | PARENT | 创建五分钟、单次使用的 PARENT/CHILD 设备配对码；代码只展示一次 |
+| POST | `/auth/device-pairings/accept` | 公开短码入口 | 在可信 HTTPS 上换取绑定 `device_id` 的角色会话；并发消费仅一台成功 |
+| GET/POST | `/families/{familyId}/devices`、`.../{deviceId}/revoke` | PARENT | 查看设备或撤销设备及其全部绑定会话 |
+| GET/POST | `/families/{familyId}/notifications`、`.../{notificationId}/read` | 当前成员 | 最小应用内待办与已读；不改变 Wallet、Ledger、Completion 或源业务状态 |
 
 批准审核会锁定 Completion 与 Wallet；Coin/Money 流水先追加，再在同一事务更新余额和 Completion。重复提交返回首次结果；重复/冲突审核返回 409，不能重复发奖。XP 的奖励事实保存在 Completion 快照并更新 `child_progress`。
 
@@ -121,6 +130,8 @@
 学段推荐边界为 0–2 岁 `PARENT_ONLY`、3–5 岁 `KINDERGARTEN`、6–11 岁 `PRIMARY`、12–14 岁 `JUNIOR_MIDDLE`、15 岁及以上 `SENIOR_HIGH`。家长覆盖不能选择 `PARENT_ONLY`，且必须说明原因；更新使用 `expectedVersion` 防止并发覆盖并追加审计。纪录片 `OFFICIAL_LINK` 只接受无凭据 HTTPS 地址且始终要求家长操作；原创离线和已授权离线内容分别只接受 `asset://`、`content-package://` 引用。目录仅证明来源已登记和审批，不证明第三方内容已获下载、剪辑或再分发授权。
 
 有效学段变化采用“先预览、后更新”：只归档旧学段中尚未开始的自主 Assignment，并恢复目标学段过去被该机制归档的 Assignment。进行中、待回应、返工、完成、家长手动布置、Attempt、Completion、奖励和 Ledger 均不删除或改写。儿童数据删除是受约束去标识化，不承诺物理备份即时擦除；直接标识、儿童自由文本、愿望标题、非财务使用明细、临时放行和有效儿童会话会被删除或替换，账本、必要审计、幂等及最小学习状态保留。
+
+家庭协作短码仅保存 SHA-256 摘要，邀请十分钟、设备码五分钟后失效且只允许消费一次。Android 正式构建仅接受系统信任的 HTTPS，不提供忽略证书错误。待办只投影任务审核、兑换审核、奖励审核/兑现和课程更新；儿童不接收系统推送、红点倒计时、声音或震动。儿童数据删除会同步去标识化相关待办文案与儿童设备名称，协作审计只保留最小安全事实。
 
 免费教育来源发现不是通用爬虫：服务端不执行 JavaScript、不提交表单、不携带 Cookie/认证，只读取最多 512 KiB HTML，最多跟随 3 次同源重定向并保存 30 个同源导航栏目。URL 创建、DNS 结果和每次重定向均拒绝 loopback、私网、链路本地、组播、保留地址和 IP 字面量。成功刷新会把来源重新置为 `DRAFT`，必须由家长再次批准新快照；失败返回 `FAILED`、保留最近成功快照和既有批准状态。不同站点的栏目结构可能无法自动识别，由家长更换为该站稳定的栏目首页。
 

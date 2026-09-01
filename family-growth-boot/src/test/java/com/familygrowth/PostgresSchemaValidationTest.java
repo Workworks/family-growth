@@ -42,9 +42,10 @@ class PostgresSchemaValidationTest {
                 "'child_data_retention_policy','child_data_retention_run','child_data_retention_policy_action'," +
                 "'growth_plan_action','growth_goal_action','growth_milestone','growth_milestone_action','growth_artifact'," +
                 "'reward_budget_rule','reward_budget_rule_action','reward_budget_override','reward_budget_decision'," +
-                "'exchange_control_rule','exchange_quota_usage','exchange_control_action','exchange_approval_request','reward_order_action')",
+                "'exchange_control_rule','exchange_quota_usage','exchange_control_action','exchange_approval_request','reward_order_action'," +
+                "'family_parent_invitation','paired_device','device_pairing_code','family_notification','family_collaboration_action')",
             Integer.class);
-        assertThat(successfulMigrations).isEqualTo(25);
-        assertThat(productionTables).isEqualTo(94);
+        assertThat(successfulMigrations).isEqualTo(26);
+        assertThat(productionTables).isEqualTo(99);
     }
 }

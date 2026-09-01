@@ -59,6 +59,7 @@
 - [19 密码与密钥](operations/19-password-and-secrets.md)
 - [22 本地部署](operations/22-local-deployment.md)
 - [23 儿童数据保留、导出与恢复边界](operations/23-data-retention-and-recovery.md)
+- [24 家庭成员配对与可信 TLS](operations/24-family-pairing-and-trusted-tls.md)
 
 ## 使用手册 · `manuals/`
 

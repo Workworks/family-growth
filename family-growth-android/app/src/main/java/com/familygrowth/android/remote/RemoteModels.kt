@@ -56,6 +56,12 @@ data class RemoteLearningAssignment(val id:String,val courseTitle:String,val uni
 data class RemoteCourseSummary(val courseId:String,val title:String,val schoolStage:String,val subjectCode:String,val versionId:String,val versionNumber:Int,val status:String,val lessonCount:Int)
 data class RemoteTeachingVersion(val courseId:String,val versionId:String,val title:String,val schoolStage:String,val subjectCode:String,val versionNumber:Int,val status:String,val lessonIds:List<String>)
 data class RemoteSnapshot(val familyId:String,val childId:String,val childName:String,val money:BigDecimal,val coin:Int,val tasks:List<RemoteTask>,val pendingReviews:Int,val approvedToday:Int,val experience:RemoteExperienceProfile?=null)
+data class RemoteFamilyChild(val id:String,val displayName:String,val birthDate:String,val effectiveStage:String)
+data class RemotePairedParent(val familyId:String,val parentId:String,val token:String,val children:List<RemoteFamilyChild>)
+data class RemoteFamilyMember(val id:String,val displayName:String,val role:String,val status:String)
+data class RemotePairedDevice(val id:String,val deviceName:String,val actorRole:String,val childId:String?,val status:String,val lastSeenAt:String)
+data class RemoteFamilyNotification(val id:String,val childId:String?,val type:String,val title:String,val body:String,val status:String,val createdAt:String)
+data class RemoteOneTimeCode(val id:String,val code:String?,val expiresAt:String)
 data class RemoteSession(val baseUrl:String,val familyId:String,val parentId:String,val childId:String,val parentToken:String,val childToken:String)
 sealed interface ConnectionState{data object Disconnected:ConnectionState;data object Connecting:ConnectionState;data class Connected(val snapshot:RemoteSnapshot):ConnectionState;data class Error(val message:String):ConnectionState;data object Expired:ConnectionState}
 enum class RemoteFailureKind { RETRYABLE, CONFLICT, PERMANENT }

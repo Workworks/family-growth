@@ -19,7 +19,7 @@ public interface Stage3Store {
     Optional<PinCredential> findPinCredential(UUID familyId, UUID parentId);
     void recordFailedPin(UUID parentId, int failedAttempts, Instant lockedUntil, Instant now);
     void clearFailedPin(UUID parentId, Instant now);
-    void saveSession(String tokenHash, Actor actor, Instant expiresAt, Instant now);
+    void saveSession(String tokenHash, Actor actor, UUID deviceId, Instant expiresAt, Instant now);
     Optional<StoredSession> findSession(String tokenHash, Instant now);
 
     void ensureChildAccounts(UUID familyId, UUID childId, Instant now);

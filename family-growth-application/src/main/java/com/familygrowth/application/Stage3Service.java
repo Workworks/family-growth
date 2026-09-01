@@ -37,6 +37,7 @@ public class Stage3Service {
     private final FamilyGrowthStore familyStore;
     private final Stage3Store store;
     private final Stage28RewardStore rewardGovernance;
+    private final Stage29CollaborationStore collaboration;
     private final Clock clock;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
@@ -45,12 +46,14 @@ public class Stage3Service {
         FamilyGrowthStore familyStore,
         Stage3Store store,
         Stage28RewardStore rewardGovernance,
+        Stage29CollaborationStore collaboration,
         Clock clock
     ) {
         this.familyService = familyService;
         this.familyStore = familyStore;
         this.store = store;
         this.rewardGovernance = rewardGovernance;
+        this.collaboration = collaboration;
         this.clock = clock;
     }
 
@@ -60,7 +63,7 @@ public class Stage3Service {
         var parent = familyService.addParent(family.id(), parentName);
         var now = clock.instant();
         store.createPinCredential(family.id(), parent.id(), encoder.encode(pin), now);
-        var session = issueSession(new Actor(family.id(), parent.id(), ActorRole.PARENT, null), now);
+        var session = issueSession(new Actor(family.id(), parent.id(), ActorRole.PARENT, null), null, now);
         return new BootstrapResult(family.id(), parent.id(), session);
     }
 
@@ -81,7 +84,7 @@ public class Stage3Service {
             throw new AuthenticationException();
         }
         store.clearFailedPin(parentId, now);
-        return issueSession(new Actor(familyId, parentId, ActorRole.PARENT, null), now);
+        return issueSession(new Actor(familyId, parentId, ActorRole.PARENT, null), null, now);
     }
 
     @Transactional(readOnly = true)
@@ -95,7 +98,7 @@ public class Stage3Service {
     public AuthSession createChildSession(Actor actor, UUID childId) {
         requireParent(actor, actor.familyId());
         var child = child(actor.familyId(), childId);
-        return issueSession(new Actor(actor.familyId(), child.id(), ActorRole.CHILD, child.id()), clock.instant());
+        return issueSession(new Actor(actor.familyId(), child.id(), ActorRole.CHILD, child.id()), null, clock.instant());
     }
 
     @Transactional(noRollbackFor = {AuthenticationException.class, PinLockedException.class})
@@ -150,8 +153,10 @@ public class Stage3Service {
             }
             return existing.get();
         }
-        return store.submitCompletion(
+        TaskCompletion submitted=store.submitCompletion(
             familyId, childId, taskId, actor.actorId(), normalize(evidenceNote), idempotencyKey, clock.instant());
+        collaboration.emitToParents(familyId,childId,com.familygrowth.domain.Stage29CollaborationModels.NotificationType.TASK_REVIEW,"有一项成长任务等待回应","孩子已经提交，家长方便时再看看","TASK_COMPLETION",submitted.id(),clock.instant());
+        return submitted;
     }
 
     public TaskCompletion review(
@@ -209,12 +214,14 @@ public class Stage3Service {
             .orElseThrow(FamilyGrowthService.NotFoundException::new);
     }
 
-    private AuthSession issueSession(Actor actor, Instant now) {
+    public AuthSession issuePairedSession(Actor actor,UUID deviceId){return issueSession(actor,deviceId,clock.instant());}
+
+    private AuthSession issueSession(Actor actor, UUID deviceId, Instant now) {
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
         Instant expiresAt = now.plus(SESSION_LIFETIME);
-        store.saveSession(hash(token), actor, expiresAt, now);
+        store.saveSession(hash(token), actor, deviceId, expiresAt, now);
         return new AuthSession(token, actor, expiresAt);
     }
 

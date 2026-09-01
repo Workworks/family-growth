@@ -292,3 +292,17 @@
 - Android 家长端加入家庭奖励约定、预算剩余、兑换待审批和现实奖励兑现；孩子端仅显示“等待家长回应/已经同意/这次先不换/已经兑现”。孩子提交审批不扣账，FULFILLED 不再次扣 Coin。受约束儿童删除同步脱敏本 Stage 的覆盖原因、审批备注和履约备注。
 - H2 全量 33 个领域、2 个基础设施和 35 个 Boot 测试通过（6 个 PostgreSQL 条件测试按预期跳过）；隔离 PostgreSQL 16.15 以 25 次迁移/94 表运行全部 70 项零失败零跳过；临时容器已停止并自动删除。
 - Android 两变体共 106 个 JVM 测试、Lint 0 error/7 个既有 warning、debug/release 构建通过；OpenAPI 3.1 扩展至 107 paths。V28-08 因缺目标平板和可信 HTTPS 服务保持 `BLOCKED`，后续继续 Stage 29。
+
+## 2026-08-31 · Activity 85 · Stage 29 家庭协作立项
+
+- 按 REQ-051/P-14/15/16 建立 Stage 29 Spec，并直接决策为邀请制家庭成员、五分钟一次性角色配对和服务端最小待办箱；不引入邮件/短信、公开服务发现、推送厂商或儿童强提醒。
+- 首位家长迁移为 OWNER；第二家长使用十分钟一次性高熵邀请设置独立 PIN。OWNER 可重置另一家长 PIN、撤销 GUARDIAN/设备会话，但不能撤销自己或留下无 OWNER 家庭。
+- 配对码只在可信 HTTPS 上换取绑定设备的 PARENT_SELF/CHILD 会话；Android 不提供忽略证书错误。任务/兑换/奖励/课程提醒只作可读待办，不改变源业务、Completion 或 Ledger。
+
+## 2026-09-01 · Activity 86 · Stage 29 可离线闭环
+
+- V26 完成 OWNER/GUARDIAN、十分钟一次性邀请、独立 BCrypt PIN、成员重置/撤销，五分钟 PARENT/CHILD 配对、`device_id` 会话绑定、设备撤销和多孩子最小投影。无认证短码入口只精确放行两个 POST，代码仍以 SHA-256、过期和行锁 fail-closed。
+- 任务、儿童兑换、奖励审核/兑现和课程发布进入去重家长待办；待办不改变源业务或 Ledger。儿童删除同步去标识化待办文案和儿童设备名称；孩子端不请求通知权限，不使用红点倒计时、声音或震动。
+- Android 默认以服务地址、一次性配对码和设备名称连接，保留旧 UUID/PIN 高级兼容；家长可切换孩子、邀请/撤销成员、重置 PIN、生成孩子设备码、撤销设备和处理三条以内中性待办。
+- H2 与隔离 PostgreSQL 16.15 全量各 71 项通过，PostgreSQL 为 26 次迁移/99 表且零跳过。首次 PG 基础设施尝试因各测试上下文默认连接池累计超过连接上限失败；将测试池限制为 2 后同一套完整验证通过，精确命名临时容器已删除。
+- Android debug/release 共 108 个 JVM 测试、Lint 0 error/7 个既有 warning、debug/unsigned release APK 构建通过；OpenAPI 119 paths、96 份 Markdown 和全部 evidence JSON 通过。V29-08 因缺两台目标设备/可信 HTTPS 保持 `BLOCKED`，主线进入 Stage 30。

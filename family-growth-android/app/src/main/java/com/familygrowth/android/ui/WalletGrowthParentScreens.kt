@@ -5,6 +5,7 @@ import android.widget.VideoView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -527,6 +528,7 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
             SectionTitle("家庭家长中心", "可连接自有服务端；Token 仅保留在本次 App 进程内")
         }
         item { ServiceConnectionCard(viewModel) { showConnection = true } }
+        item { if(viewModel.connectionState is ConnectionState.Connected) FamilyCollaborationCard(viewModel) }
         item { ChildExperienceCard(viewModel) { showExperience = true } }
         item { LearningRewardPolicyCard(state.learningRewardPolicy) { showLearningReward = true } }
         item { ParentTeachingStudio(viewModel) }
@@ -633,6 +635,7 @@ private fun ServiceConnectionCard(viewModel: FamilyAppViewModel, configure: () -
                 StatusDot("已同步 · ${snapshot.childName}", GrowthColors.Emerald)
                 Text("服务端任务 ${snapshot.tasks.size} · 待审核 ${snapshot.pendingReviews} · 今日完成 ${snapshot.approvedToday}")
                 Text("Money ¥${snapshot.money} · Coin ${snapshot.coin}", fontFamily = FontFamily.Monospace)
+                if(viewModel.familyChildren.size>1){Text("切换孩子",style=MaterialTheme.typography.labelLarge);Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(8.dp)){viewModel.familyChildren.forEach{kid->FilterChip(selected=kid.id==snapshot.childId,onClick={if(kid.id!=snapshot.childId)viewModel.switchFamilyChild(kid.id)},label={Text(kid.displayName)})}}}
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Button(onClick = viewModel::refreshService) { Text("同步") }; TextButton(onClick = viewModel::disconnectService) { Text("断开并清除 Token") } }
             }
         }
@@ -641,17 +644,29 @@ private fun ServiceConnectionCard(viewModel: FamilyAppViewModel, configure: () -
 
 @Composable
 private fun ServiceConnectionDialog(viewModel: FamilyAppViewModel, dismiss: () -> Unit) {
-    var base by remember { mutableStateOf("") }; var family by remember { mutableStateOf("") }; var parent by remember { mutableStateOf("") }; var child by remember { mutableStateOf("") }; var pin by remember { mutableStateOf("") }
+    var pairingMode by remember{mutableStateOf(true)};var base by remember { mutableStateOf("") };var code by remember{mutableStateOf("")};var device by remember{mutableStateOf("家庭平板")}; var family by remember { mutableStateOf("") }; var parent by remember { mutableStateOf("") }; var child by remember { mutableStateOf("") }; var pin by remember { mutableStateOf("") }
     AlertDialog(onDismissRequest = dismiss, title = { Text("连接家庭服务") }, text = {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("这些标识只用于本次连接；PIN 与 Token 不写入本地文件或日志。", style = MaterialTheme.typography.bodySmall)
+        Column(Modifier.heightIn(max=560.dp).verticalScroll(rememberScrollState()),verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){FilterChip(pairingMode,{pairingMode=true},{Text("配对码")});FilterChip(!pairingMode,{pairingMode=false},{Text("已有账号")})}
+            Text(if(pairingMode)"在已登录的家长端生成一次性配对码；代码 5 分钟有效且只能使用一次。" else "PIN 与 Token 不写入本地文件或日志。", style = MaterialTheme.typography.bodySmall)
             LabeledField(base,{base=it},"服务地址（例如 https://family.example）")
-            LabeledField(family,{family=it.trim()},"Family ID")
-            LabeledField(parent,{parent=it.trim()},"Parent ID")
-            LabeledField(child,{child=it.trim()},"Child ID")
-            LabeledField(pin,{pin=it.filter(Char::isDigit).take(6)},"6 位服务端 PIN")
+            if(pairingMode){LabeledField(code,{code=it.uppercase().filter{c->c.isLetterOrDigit()||c=='-'}.take(40)},"一次性配对码");LabeledField(device,{device=it.take(100)},"设备名称")}else{LabeledField(family,{family=it.trim()},"Family ID");LabeledField(parent,{parent=it.trim()},"Parent ID");LabeledField(child,{child=it.trim()},"Child ID");LabeledField(pin,{pin=it.filter(Char::isDigit).take(6)},"6 位服务端 PIN")}
         }
-    }, confirmButton = { Button(onClick = { viewModel.connectService(base,family,parent,child,pin);dismiss() }, enabled = base.isNotBlank()&&family.isNotBlank()&&parent.isNotBlank()&&child.isNotBlank()&&pin.length==6) { Text("登录并同步") } }, dismissButton = { TextButton(onClick = dismiss) { Text("取消") } })
+    }, confirmButton = { Button(onClick = { if(pairingMode)viewModel.pairParentDevice(base,code,device)else viewModel.connectService(base,family,parent,child,pin);dismiss() }, enabled = base.isNotBlank()&&(if(pairingMode)code.filter(Char::isLetterOrDigit).length>=10&&device.isNotBlank() else family.isNotBlank()&&parent.isNotBlank()&&child.isNotBlank()&&pin.length==6)) { Text(if(pairingMode)"配对并同步" else "登录并同步") } }, dismissButton = { TextButton(onClick = dismiss) { Text("取消") } })
+}
+
+@Composable private fun FamilyCollaborationCard(viewModel:FamilyAppViewModel){
+    var guardianName by remember{mutableStateOf("")}
+    var resetMember by remember{mutableStateOf<com.familygrowth.android.remote.RemoteFamilyMember?>(null)}
+    GrowthCard{
+        SectionTitle("家庭协作","仅家长可见 · 不向孩子推送催促通知")
+        viewModel.latestCollaborationCode?.let{one->Surface(shape=MaterialTheme.shapes.medium,color=MaterialTheme.colorScheme.primaryContainer){Column(Modifier.fillMaxWidth().padding(12.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){Text("一次性代码",style=MaterialTheme.typography.labelLarge);Text(one.code?:"代码已显示过，请重新生成",style=MaterialTheme.typography.titleLarge,fontFamily=FontFamily.Monospace);Text("有效至 ${one.expiresAt}",style=MaterialTheme.typography.bodySmall);TextButton(onClick=viewModel::clearCollaborationCode){Text("我已记下")}}}}
+        Text("家庭成员 ${viewModel.familyMembers.count{it.status=="ACTIVE"}} · 已配对设备 ${viewModel.pairedDevices.count{it.status=="ACTIVE"}} · 待处理 ${viewModel.familyNotifications.count{it.status=="UNREAD"}}")
+        if(viewModel.isFamilyOwner){OutlinedTextField(guardianName,{guardianName=it.take(80)},label={Text("邀请的家长称呼")},singleLine=true,modifier=Modifier.fillMaxWidth());Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){OutlinedButton(onClick={viewModel.inviteGuardian(guardianName)},enabled=guardianName.isNotBlank(),modifier=Modifier.weight(1f)){Text("邀请家长")};OutlinedButton(onClick=viewModel::createParentPairing,modifier=Modifier.weight(1f)){Text("配对家长设备")}};viewModel.familyMembers.filter{it.role=="GUARDIAN"&&it.status=="ACTIVE"}.forEach{member->Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text(member.displayName);Text("共同家长",style=MaterialTheme.typography.bodySmall)};TextButton(onClick={resetMember=member}){Text("重置 PIN")};TextButton(onClick={viewModel.revokeFamilyMember(member.id)}){Text("撤销")}}};viewModel.familyChildren.firstOrNull()?.let{kid->OutlinedButton(onClick={viewModel.createChildPairing(kid.id)},Modifier.fillMaxWidth()){Text("为 ${kid.displayName} 配对孩子设备")}}}else Text("共同家长可以处理家庭待办；成员和设备治理由创建者负责。",style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)
+        viewModel.familyNotifications.take(3).forEach{notice->Surface(shape=MaterialTheme.shapes.medium,color=if(notice.status=="UNREAD")MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceVariant){Row(Modifier.fillMaxWidth().padding(12.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text(notice.title,fontWeight=FontWeight.Bold);Text(notice.body,style=MaterialTheme.typography.bodySmall)};if(notice.status=="UNREAD")TextButton(onClick={viewModel.readFamilyNotification(notice.id)}){Text("知道了")}}}}
+        viewModel.pairedDevices.filter{it.status=="ACTIVE"}.take(3).forEach{device->Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text(device.deviceName);Text(if(device.actorRole=="CHILD")"孩子设备" else "家长设备",style=MaterialTheme.typography.bodySmall)};TextButton(onClick={viewModel.revokePairedDevice(device.id)}){Text("撤销")}}}
+    }
+    resetMember?.let{member->var pin by remember(member.id){mutableStateOf("")};AlertDialog(onDismissRequest={resetMember=null},title={Text("重置 ${member.displayName} 的 PIN")},text={Column(verticalArrangement=Arrangement.spacedBy(8.dp)){Text("保存后，该成员所有旧会话立即失效。请通过家庭内安全方式告知新 PIN。");LabeledField(pin,{pin=it.filter(Char::isDigit).take(6)},"新的 6 位 PIN")}},confirmButton={Button(onClick={viewModel.resetFamilyMemberPin(member.id,pin);resetMember=null},enabled=pin.length==6){Text("重置并撤销旧会话")}},dismissButton={TextButton(onClick={resetMember=null}){Text("取消")}})}
 }
 
 @Composable

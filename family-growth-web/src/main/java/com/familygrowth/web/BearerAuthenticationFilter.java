@@ -29,7 +29,10 @@ class BearerAuthenticationFilter extends OncePerRequestFilter {
         return !path.startsWith("/api/v1/")
             || "OPTIONS".equals(request.getMethod())
             || ("POST".equals(request.getMethod()) && (
-                "/api/v1/auth/bootstrap".equals(path) || "/api/v1/auth/login".equals(path)));
+                "/api/v1/auth/bootstrap".equals(path)
+                    || "/api/v1/auth/login".equals(path)
+                    || "/api/v1/auth/parent-invitations/accept".equals(path)
+                    || "/api/v1/auth/device-pairings/accept".equals(path)));
     }
 
     @Override

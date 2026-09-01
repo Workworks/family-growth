@@ -30,6 +30,14 @@ class RemoteFamilyRepositoryTest {
         assertFalse(repository.hasSession())
     }
 
+    @Test fun oneTimeParentPairingSelectsFirstChildAndExplicitSwitchReissuesChildSession() = runBlocking {
+        val store=MemorySessionStore();val transport=FakeTransport();val repository=RemoteFamilyRepository(transport,store,false)
+        assertTrue(repository.pairParent("https://family.example","ABCDE-12345","客厅平板") is RemoteResult.Ok)
+        assertEquals(CHILD,store.get()?.childId);assertEquals("paired-parent-token",store.get()?.parentToken)
+        assertTrue(repository.switchChild(SECOND_CHILD) is RemoteResult.Ok)
+        assertEquals(SECOND_CHILD,store.get()?.childId);assertEquals(listOf(CHILD,SECOND_CHILD),transport.childSessions)
+    }
+
     @Test fun usageRetryKeepsCallerIdempotencyKey() = runBlocking {
         val transport = FakeTransport()
         val repository = RemoteFamilyRepository(transport, MemorySessionStore(), false)
@@ -101,8 +109,11 @@ class RemoteFamilyRepositoryTest {
         var learningToken = ""
         val teachingCalls = mutableListOf<String>()
         var teachingDraft: RemoteTeachingCourseDraft? = null
+        val childSessions=mutableListOf<String>()
+        override suspend fun acceptParentPairing(base:String,code:String,deviceName:String)=RemoteResult.Ok(RemotePairedParent(FAMILY,PARENT,"paired-parent-token",listOf(RemoteFamilyChild(CHILD,"小树","2018-01-01","PRIMARY"),RemoteFamilyChild(SECOND_CHILD,"小叶","2020-01-01","PRIMARY"))))
+        override suspend fun familyChildren(base:String,parentToken:String,family:String)=RemoteResult.Ok(listOf(RemoteFamilyChild(CHILD,"小树","2018-01-01","PRIMARY"),RemoteFamilyChild(SECOND_CHILD,"小叶","2020-01-01","PRIMARY")))
         override suspend fun login(base:String,family:String,parent:String,pin:String)=RemoteResult.Ok("parent-token")
-        override suspend fun childSession(base:String,parentToken:String,child:String)=RemoteResult.Ok("child-token")
+        override suspend fun childSession(base:String,parentToken:String,child:String):RemoteResult<String>{childSessions+=child;return RemoteResult.Ok(if(parentToken=="paired-parent-token")"child-token-$child" else "child-token")}
         override suspend fun snapshot(base:String,token:String,family:String,child:String):RemoteResult<RemoteSnapshot> = if(expire) RemoteResult.Unauthorized else RemoteResult.Ok(RemoteSnapshot(family,child,"小树",BigDecimal("12.00"),30,emptyList(),0,0))
         override suspend fun experience(base:String,token:String,family:String,child:String):RemoteResult<RemoteExperienceProfile> = if(expire) RemoteResult.Unauthorized else RemoteResult.Ok(RemoteExperienceProfile("2022-08-26","KINDERGARTEN",null,"KINDERGARTEN",overrideReason="",hapticsEnabled=true,version=0))
         override suspend fun updateExperience(base:String,token:String,family:String,child:String,birthDate:LocalDate,stageOverride:SchoolStage?,primaryBandOverride:PrimaryGradeBand?,overrideReason:String,hapticsEnabled:Boolean,expectedVersion:Long):RemoteResult<RemoteExperienceProfile>{updatedStage=stageOverride;updatedHaptics=hapticsEnabled;return RemoteResult.Ok(RemoteExperienceProfile(birthDate.toString(),"PRIMARY",stageOverride?.name,stageOverride?.name?:"PRIMARY",primaryBandOverride=primaryBandOverride?.name,effectivePrimaryBand=primaryBandOverride?.name,overrideReason=overrideReason,hapticsEnabled=hapticsEnabled,version=expectedVersion+1))}
@@ -125,5 +136,6 @@ class RemoteFamilyRepositoryTest {
         const val FAMILY="11111111-1111-1111-1111-111111111111"
         const val PARENT="22222222-2222-2222-2222-222222222222"
         const val CHILD="33333333-3333-3333-3333-333333333333"
+        const val SECOND_CHILD="44444444-4444-4444-4444-444444444444"
     }
 }

@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class Stage6Service {
-    private final Stage3Service authorization; private final Stage6Store store; private final Clock clock;
-    public Stage6Service(Stage3Service authorization,Stage6Store store,Clock clock){this.authorization=authorization;this.store=store;this.clock=clock;}
+    private final Stage3Service authorization; private final Stage6Store store; private final Stage29CollaborationStore collaboration; private final Clock clock;
+    public Stage6Service(Stage3Service authorization,Stage6Store store,Stage29CollaborationStore collaboration,Clock clock){this.authorization=authorization;this.store=store;this.collaboration=collaboration;this.clock=clock;}
 
     public RewardProduct createProduct(Actor actor,UUID familyId,String title,long cost,int stock,boolean active){
         authorization.requireParent(actor,familyId); return store.createProduct(familyId,title.trim(),cost,stock,active,actor.actorId(),clock.instant());
@@ -28,10 +28,10 @@ public class Stage6Service {
             if(!existing.get().childId().equals(childId)||!existing.get().productId().equals(productId)) throw new Stage3Service.ConflictException("Idempotency-Key was used for another order");
             return existing.get();
         }
-        return store.createOrder(familyId,childId,productId,key,actor.actorId(),clock.instant());
+        RewardOrder order=store.createOrder(familyId,childId,productId,key,actor.actorId(),clock.instant());collaboration.emitToParents(familyId,childId,com.familygrowth.domain.Stage29CollaborationModels.NotificationType.REWARD_REVIEW,"有一份奖励申请等待回应","批准后才会扣除 Coin","REWARD_ORDER",order.id(),clock.instant());return order;
     }
     public RewardOrder reviewOrder(Actor actor,UUID familyId,UUID orderId,boolean approve,String key){
-        authorization.requireParent(actor,familyId); requireKey(key); return store.reviewOrder(familyId,orderId,approve,key,actor.actorId(),clock.instant());
+        authorization.requireParent(actor,familyId); requireKey(key); RewardOrder order=store.reviewOrder(familyId,orderId,approve,key,actor.actorId(),clock.instant());if(approve)collaboration.emitToParents(familyId,order.childId(),com.familygrowth.domain.Stage29CollaborationModels.NotificationType.REWARD_FULFILL,"有一份家庭约定等待兑现","现实里做到后再确认兑现，不会再次扣 Coin","REWARD_ORDER",order.id(),clock.instant());return order;
     }
     @Transactional(readOnly=true)
     public List<RewardOrder> orders(Actor actor,UUID familyId,UUID childId){authorization.requireChildOrParent(actor,familyId,childId);return store.orders(familyId,childId);}

@@ -1122,6 +1122,84 @@ paths:
       parameters: [{ $ref: '#/components/parameters/IdempotencyKey' }]
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/RewardFulfillmentRequest' } } } }
       responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /auth/parent-invitations/accept:
+    post:
+      operationId: acceptParentInvitation
+      security: []
+      description: Exchanges a single-use, SHA-256 stored, ten-minute invitation code for a guardian session and sets a six-digit BCrypt PIN.
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [code, pin], properties: { code: { type: string, minLength: 10, maxLength: 40 }, pin: { type: string, pattern: '^\\d{6}$' } } } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' } }
+  /auth/device-pairings/accept:
+    post:
+      operationId: acceptDevicePairing
+      security: []
+      description: Exchanges a single-use five-minute pairing code. Production clients must use trusted HTTPS; certificate errors are never bypassed.
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [code, deviceName], properties: { code: { type: string, minLength: 10, maxLength: 40 }, deviceName: { type: string, minLength: 1, maxLength: 100 } } } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '401': { $ref: '#/components/responses/Unauthorized' } }
+  /families/{familyId}/parent-invitations:
+    post:
+      operationId: createParentInvitation
+      description: OWNER only. The invitation code is returned once and omitted on idempotent replay.
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [invitedName], properties: { invitedName: { type: string, minLength: 1, maxLength: 80 } } } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '403': { $ref: '#/components/responses/Forbidden' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/parent-invitations/{invitationId}/revoke:
+    post:
+      operationId: revokeParentInvitation
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }, { name: invitationId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/members:
+    get:
+      operationId: listFamilyMembers
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /families/{familyId}/members/{parentId}/reset-pin:
+    post:
+      operationId: resetFamilyMemberPin
+      description: OWNER only; revokes every existing session for the member.
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }, { name: parentId, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [pin], properties: { pin: { type: string, pattern: '^\\d{6}$' } } } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/members/{parentId}/revoke:
+    post:
+      operationId: revokeFamilyMember
+      description: OWNER only; the sole owner cannot revoke itself.
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }, { name: parentId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/children:
+    get:
+      operationId: listFamilyChildChoices
+      description: Parent-only minimal list for explicit child switching; a fresh child-scoped session is issued after selection.
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /families/{familyId}/device-pairings:
+    post:
+      operationId: createDevicePairing
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [role], properties: { role: { type: string, enum: [PARENT, CHILD] }, childId: { type: [string, 'null'], format: uuid } } } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '403': { $ref: '#/components/responses/Forbidden' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/devices:
+    get:
+      operationId: listPairedDevices
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      responses: { '200': { $ref: '#/components/responses/Ok' } }
+  /families/{familyId}/devices/{deviceId}/revoke:
+    post:
+      operationId: revokePairedDevice
+      description: Revokes the device and every session bound to it.
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }, { name: deviceId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/notifications:
+    get:
+      operationId: listFamilyNotifications
+      description: Minimal in-app parent inbox. No child push, countdown, streak or urgency pressure is generated.
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      responses: { '200': { $ref: '#/components/responses/Ok' } }
+  /families/{familyId}/notifications/{notificationId}/read:
+    post:
+      operationId: markFamilyNotificationRead
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }, { name: notificationId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '404': { $ref: '#/components/responses/NotFound' } }
 components:
   securitySchemes:
     bearerAuth:

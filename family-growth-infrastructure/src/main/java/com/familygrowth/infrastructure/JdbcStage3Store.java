@@ -43,8 +43,9 @@ class JdbcStage3Store implements Stage3Store {
     @Override
     public Optional<PinCredential> findPinCredential(UUID familyId, UUID parentId) {
         return jdbc.query("""
-            SELECT family_id, parent_id, pin_hash, failed_attempts, locked_until
-            FROM parent_pin_credential WHERE family_id = ? AND parent_id = ?
+            SELECT c.family_id, c.parent_id, c.pin_hash, c.failed_attempts, c.locked_until
+            FROM parent_pin_credential c JOIN parent_profile p ON p.id=c.parent_id AND p.family_id=c.family_id
+            WHERE c.family_id = ? AND c.parent_id = ? AND p.member_status='ACTIVE'
             """, this::pinCredential, familyId, parentId).stream().findFirst();
     }
 
@@ -65,13 +66,13 @@ class JdbcStage3Store implements Stage3Store {
     }
 
     @Override
-    public void saveSession(String tokenHash, Actor actor, Instant expiresAt, Instant now) {
+    public void saveSession(String tokenHash, Actor actor, UUID deviceId, Instant expiresAt, Instant now) {
         jdbc.update("""
             INSERT INTO auth_session
-                (id, token_hash, family_id, actor_id, actor_role, child_id, expires_at, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                (id, token_hash, family_id, actor_id, actor_role, child_id, device_id, expires_at, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, UUID.randomUUID(), tokenHash, actor.familyId(), actor.actorId(), actor.role().name(),
-            actor.childId(), ts(expiresAt), ts(now));
+            actor.childId(), deviceId, ts(expiresAt), ts(now));
     }
 
     @Override

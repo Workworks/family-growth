@@ -1,0 +1,16 @@
+{
+  "stage": 29,
+  "capturedAt": "2026-09-01",
+  "status": "BLOCKED",
+  "scope": "Multi-parent membership, one-time invitations and device pairing, child switching and a minimal non-pressuring family inbox",
+  "results": [
+    {"id":"V29-01/V29-02/V29-03/V29-04/V29-05-H2","status":"PASS","command":".\\mvnw.cmd test","workingDirectory":"C:\\Users\\70649\\Desktop\\aiWork\\studyApp","shellType":"PowerShell","exitCode":0,"passed":true,"result":"71 Maven tests completed without failures/errors; PostgreSQL-only conditions skipped as designed. Flyway applied 26 migrations. Invitation, independent PIN, membership revocation, concurrent one-time pairing, bound-session revocation, child switching, five inbox types, object isolation, zero-ledger side effects and erasure redaction passed."},
+    {"id":"V29-01/V29-02/V29-03/V29-04/V29-05-POSTGRES","status":"PASS","command":"FAMILY_GROWTH_TEST_POSTGRES_*=[REDACTED_TEST_VALUES]; .\\mvnw.cmd clean verify -Dspring.datasource.hikari.maximum-pool-size=2 -Dspring.datasource.hikari.minimum-idle=0","workingDirectory":"C:\\Users\\70649\\Desktop\\aiWork\\studyApp","shellType":"PowerShell","exitCode":0,"passed":true,"result":"Disposable PostgreSQL 16.15 validated 26 migrations and 99 production tables. All 71 tests ran with zero failures, errors or skips. A first infrastructure-only attempt exhausted the database default client limit; the bounded two-connection test pool then passed and the exact-name temporary container was removed."},
+    {"id":"V29-06-ANDROID","status":"PASS_OFFLINE","command":".\\gradlew.bat clean test lint assembleDebug assembleRelease --no-daemon --console=plain","workingDirectory":"C:\\Users\\70649\\Desktop\\aiWork\\studyApp\\family-growth-android","shellType":"PowerShell","exitCode":0,"passed":true,"result":"108 JVM tests passed across debug/release; lint reported zero errors and seven existing warnings; 106-task dual APK build passed. Pair-code connection, explicit child switching, member/device controls and neutral parent inbox use production APIs."},
+    {"id":"V29-07","status":"PASS_OFFLINE","command":"Test-DocumentationLinks.ps1; OpenAPI/evidence JSON parse; git diff --check","workingDirectory":"C:\\Users\\70649\\Desktop\\aiWork\\studyApp","shellType":"PowerShell","exitCode":0,"passed":true,"result":"OpenAPI 3.1 parsed with 119 paths; 96 Markdown files and all evidence JSON parsed; pairing/TLS operations and user/API manuals are synchronized."},
+    {"id":"V29-08","status":"BLOCKED","command":"NOT_RUN: two-device trusted-HTTPS tablet acceptance","workingDirectory":"C:\\Users\\70649\\Desktop\\aiWork\\studyApp","shellType":"PowerShell","exitCode":null,"passed":false,"result":"No two target Android devices or device-accessible trusted HTTPS family service are available. Real pairing, immediate revoke, restart, rotation, TalkBack and large-text behavior remain unverified."}
+  ],
+  "remaining": [
+    "Two-device target-tablet V29-08 runtime acceptance"
+  ]
+}
