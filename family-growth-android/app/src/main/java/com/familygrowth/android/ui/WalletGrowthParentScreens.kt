@@ -42,6 +42,10 @@ private enum class ChildGrowthArea { LESSONS, REWARDS }
 
 @Composable
 fun WalletScreen(viewModel: FamilyAppViewModel) {
+    if (viewModel.mode == AppMode.CHILD && viewModel.state.experience.effectiveStage == SchoolStage.KINDERGARTEN) {
+        KindergartenWalletScreen(viewModel)
+        return
+    }
     var action by remember { mutableStateOf<WalletAction?>(null) }
     var showGovernance by remember { mutableStateOf(false) }
     val state = viewModel.state
@@ -122,6 +126,29 @@ fun WalletScreen(viewModel: FamilyAppViewModel) {
     if(showGovernance) RewardGovernanceDialog(viewModel){showGovernance=false}
     viewModel.pendingWithdrawalQuote?.let { quote ->
         AlertDialog(onDismissRequest=viewModel::cancelWithdrawal,title={Text("确认零钱回收申请")},text={Column(verticalArrangement=Arrangement.spacedBy(6.dp)){Text("账本金额 ¥${quote.moneyAmount}");Text("线下约定金额 ¥${quote.gross}");Text("费用 ¥${quote.fee}");Text("预计线下到账 ¥${quote.net}",fontWeight=FontWeight.Bold);Text(quote.notice,style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant);Text("提交申请不会立即扣款，仍需家长确认。",style=MaterialTheme.typography.bodySmall)}},confirmButton={Button(onClick=viewModel::confirmWithdrawal){Text("提交申请")}},dismissButton={TextButton(onClick=viewModel::cancelWithdrawal){Text("取消")}})
+    }
+}
+
+@Composable
+private fun KindergartenWalletScreen(viewModel: FamilyAppViewModel) {
+    val state = viewModel.state
+    LazyColumn(
+        Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(24.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp),
+    ) {
+        item {
+            GrowthCard {
+                SectionTitle("我的小星星", "做完现实里的小行动，再请家长一起看看")
+                Text("★ ${state.wallet.coin}", style = MaterialTheme.typography.displaySmall, color = GrowthColors.Amber)
+                Text("小星星可以先存起来，也可以和家长一起选择家庭奖励。", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        item {
+            GrowthCard {
+                EmptyInvitation("🌱", "先存起来", "利率、涨跌、兑换和费用都由家长管理。这里没有抽奖，也不会催你马上使用。")
+            }
+        }
     }
 }
 
@@ -229,7 +256,7 @@ fun GrowthScreen(viewModel: FamilyAppViewModel) {
         GrowthDialog.SAVING_DEPOSIT -> AmountDialog("存入储蓄目标", "金额", "Money 将转入目标并形成流水。", dismiss = { dialog = null }) { amount -> selectedSaving?.let { viewModel.saveToGoal(it, amount) }; dialog = null }
         null -> Unit
     }
-    viewModel.pendingFundTrade?.let{preview->AlertDialog(onDismissRequest=viewModel::cancelFundTrade,title={Text(if(preview.side=="BUY")"确认模拟买入" else "确认模拟赎回")},text={Column(verticalArrangement=Arrangement.spacedBy(6.dp)){Text("教学 NAV ${preview.nav}");Text("交易金额 ¥${preview.gross}");Text("费用 ¥${preview.fee}");Text("净额 ¥${preview.net}");Text("模拟份额 ${preview.shares}",fontWeight=FontWeight.Bold);Text(preview.notice,style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}},confirmButton={Button(onClick=viewModel::confirmFundTrade){Text("确认模拟交易")}},dismissButton={TextButton(onClick=viewModel::cancelFundTrade){Text("取消")}})}
+    viewModel.pendingFundTrade?.let{preview->AlertDialog(onDismissRequest=viewModel::cancelFundTrade,title={Text(if(preview.side=="BUY")"确认模拟买入" else "确认模拟赎回")},text={Column(verticalArrangement=Arrangement.spacedBy(6.dp)){Text("教学 NAV ${preview.nav}");Text("交易金额 ¥${preview.gross}");if(preview.side=="SELL"){Text("已持有 ${preview.holdingDays} 天");Text("提前赎回费率 ${preview.earlyFeeRate.multiply(BigDecimal(100))}% · ¥${preview.earlyFee}")};Text("总费用 ¥${preview.fee}");Text("预计到账 ¥${preview.net}");Text("模拟份额 ${preview.shares}",fontWeight=FontWeight.Bold);Text(preview.notice,style=MaterialTheme.typography.bodySmall,color=MaterialTheme.colorScheme.onSurfaceVariant)}},confirmButton={Button(onClick=viewModel::confirmFundTrade){Text("确认模拟交易")}},dismissButton={TextButton(onClick=viewModel::cancelFundTrade){Text("取消")}})}
 }
 
 @Composable private fun GrowthTextPairDialog(title:String,firstLabel:String,secondLabel:String,dismiss:()->Unit,confirm:(String,String)->Unit){var first by remember{mutableStateOf("")};var second by remember{mutableStateOf("")};AlertDialog(onDismissRequest=dismiss,title={Text(title)},text={Column(verticalArrangement=Arrangement.spacedBy(12.dp)){OutlinedTextField(first,{first=it.take(120)},label={Text(firstLabel)},singleLine=true);OutlinedTextField(second,{second=it.take(500)},label={Text(secondLabel)},minLines=3)}},confirmButton={Button(onClick={confirm(first.trim(),second.trim())},enabled=first.isNotBlank()&&second.isNotBlank()){Text("保存")}},dismissButton={TextButton(onClick=dismiss){Text("取消")}})}
@@ -521,6 +548,7 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
     var showEducationSource by remember { mutableStateOf(false) }
     var showPrivacy by remember { mutableStateOf(false) }
     var showAllowance by remember { mutableStateOf(false) }
+    var showEconomyLab by remember { mutableStateOf(false) }
     val state = viewModel.state
     val approved = state.tasks.count { it.status == TaskStatus.APPROVED }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -529,6 +557,7 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
         }
         item { ServiceConnectionCard(viewModel) { showConnection = true } }
         item { if(viewModel.connectionState is ConnectionState.Connected) FamilyCollaborationCard(viewModel) }
+        item { if(viewModel.connectionState is ConnectionState.Connected) EconomyLabCard(viewModel){showEconomyLab=true} }
         item { ChildExperienceCard(viewModel) { showExperience = true } }
         item { LearningRewardPolicyCard(state.learningRewardPolicy) { showLearningReward = true } }
         item { ParentTeachingStudio(viewModel) }
@@ -566,7 +595,12 @@ fun ParentScreen(viewModel: FamilyAppViewModel, updateViewModel: UpdateViewModel
     if (showEducationSource) EducationResourceSourceDialog(viewModel) { showEducationSource = false }
     if(showPrivacy) PrivacyCenterDialog(viewModel){showPrivacy=false}
     if(showAllowance) TemporaryAllowanceDialog({showAllowance=false}){minutes,reason->viewModel.grantTemporaryUsage(minutes,reason);showAllowance=false}
+    if(showEconomyLab) EconomyLabDialog(viewModel){showEconomyLab=false}
 }
+
+@Composable private fun EconomyLabCard(viewModel:FamilyAppViewModel,open:()->Unit){val lab=viewModel.economyLab;GrowthCard{SectionTitle("家庭经济实验室","家长专属 · 透明规则 · 纯模拟"){TextButton(onClick=open){Text("管理")}};Text(lab?.notice?:"把预算、兑换、储蓄奖励、模拟市场、零钱回收和固定价装扮放在同一处理解。",color=MaterialTheme.colorScheme.onSurfaceVariant);Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){DataPill("周期储蓄奖励",lab?.savingRule?.periodicRate?.multiply(BigDecimal(100))?.toPlainString()?.plus("%")?:"未配置",GrowthColors.Emerald,Modifier.weight(1f));DataPill("市场规则",(lab?.marketRuleCount?:0).toString(),Color(0xFF55A6C8),Modifier.weight(1f));DataPill("持有规则",(lab?.holdingRuleCount?:0).toString(),GrowthColors.Amber,Modifier.weight(1f))};Text("幼儿园孩子端不会显示利率、NAV、波动或交易入口；装扮只有固定 Coin 价格，没有抽取与倒计时。",style=MaterialTheme.typography.bodySmall)}}
+
+@Composable private fun EconomyLabDialog(viewModel:FamilyAppViewModel,dismiss:()->Unit){var rate by remember{mutableStateOf("0.010000")};var minimum by remember{mutableStateOf("10.00")};val parsedRate=rate.toBigDecimalOrNull();val parsedMinimum=minimum.toBigDecimalOrNull();AlertDialog(onDismissRequest=dismiss,title={Text("家庭经济实验室")},text={Column(Modifier.verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(10.dp)){Text("储蓄奖励由家长显式结算；同一月份只结算一次，并用同组流水展示‘奖励 → 存入’。");OutlinedTextField(rate,{rate=it.take(8)},label={Text("每期奖励率（0–0.1）")});OutlinedTextField(minimum,{minimum=it.take(12)},label={Text("最低储蓄 Money")});Button(onClick={viewModel.configureEconomyLab(parsedRate!!,parsedMinimum!!)},enabled=parsedRate!=null&&parsedRate>=BigDecimal.ZERO&&parsedRate<=BigDecimal("0.1")&&parsedMinimum!=null&&parsedMinimum>=BigDecimal.ZERO,modifier=Modifier.fillMaxWidth()){Text("保存透明规则")};OutlinedButton(onClick=viewModel::settleSavingReward,Modifier.fillMaxWidth()){Text("结算本月储蓄奖励")};OutlinedButton(onClick=viewModel::advanceSimulatedMarket,Modifier.fillMaxWidth()){Text("模拟市场前进一步")};HorizontalDivider();Text("市场涨跌由家庭固定种子和最大日波动生成；同一天结果可复现，不接真实行情。卖出前会显示持有天数、基础费、提前费、总费和预计到账。",style=MaterialTheme.typography.bodySmall);Text("会同时创建一个固定 12 Coin 的‘星空书桌主题’示例；孩子仍需走奖励申请和家长批准，不自动扣账。",style=MaterialTheme.typography.bodySmall)}},confirmButton={TextButton(onClick=dismiss){Text("完成")}})}
 
 @Composable private fun PrivacyCenterCard(viewModel:FamilyAppViewModel,open:()->Unit){GrowthCard{SectionTitle("儿童隐私中心","家长专属 · 导出不含 PIN、Token、答案或私密说明"){TextButton(onClick=open,enabled=viewModel.connectionState is ConnectionState.Connected){Text("管理")}};Text("可导出机器可读 JSON；删除采用预览、十分钟确认和服务端 PIN 再认证。",color=MaterialTheme.colorScheme.onSurfaceVariant);Text("账本、费用、幂等与最小审计会去标识化保留，以维持守恒和安全追责。",style=MaterialTheme.typography.bodySmall);viewModel.lastExportPath?.let{Text("最近导出：$it",style=MaterialTheme.typography.bodySmall,fontFamily=FontFamily.Monospace)}}}
 

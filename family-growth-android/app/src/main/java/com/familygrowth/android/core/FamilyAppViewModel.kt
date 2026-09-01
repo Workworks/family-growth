@@ -99,6 +99,8 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         private set
     var savingBalance by mutableStateOf<BigDecimal?>(null)
         private set
+    var economyLab by mutableStateOf<RemoteEconomyLab?>(null)
+        private set
     var retentionPolicy by mutableStateOf<RemoteRetentionPolicy?>(null)
         private set
     var growthPlans by mutableStateOf<List<RemoteGrowthPlan>>(emptyList())
@@ -214,6 +216,9 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
     fun updateNav(nav: BigDecimal) {if(!remote.hasSession())return mutate("本机教学 NAV 已更新") { LocalFamilyEngine.updateFundNav(it, nav) };viewModelScope.launch{val fund=ensureFund()?:return@launch;when(val r=production.updateNav(fund.id,nav)){is RemoteResult.Ok->{syncProductionState();message="教学 NAV 已保存到家庭服务"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
     fun confirmFundTrade(){val preview=pendingFundTrade?:return;viewModelScope.launch{when(val r=production.confirmTrade(preview.id)){is RemoteResult.Ok->{pendingFundTrade=null;refreshProduction("纯模拟交易已确认并进入服务端账本")};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
     fun cancelFundTrade(){pendingFundTrade=null;message="已取消模拟交易，没有账本变化"}
+    fun configureEconomyLab(rate:BigDecimal,minimum:BigDecimal){viewModelScope.launch{when(val r=production.configureSavingReward(rate,minimum)){is RemoteResult.Ok->{val fund=ensureFund();if(fund!=null){production.configureMarket(fund.id);production.configureHoldingFee(fund.id)};production.createCosmetic("星空书桌主题",12);refreshProduction("家庭经济实验规则已保存，全部为教育模拟")};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
+    fun settleSavingReward(){productionAction({production.settleSavingReward()},"本期储蓄奖励已透明记账并存入")}
+    fun advanceSimulatedMarket(){viewModelScope.launch{val fund=ensureFund()?:return@launch;productionAction({production.advanceMarket(fund.id)},"模拟市场已按固定规则前进一步")}}
     fun updateRetentionPolicy(days:Int){val policy=retentionPolicy?:return failUnit("请先连接并同步家庭服务");viewModelScope.launch{when(val r=production.updateRetentionPolicy(days,policy.version)){is RemoteResult.Ok->{retentionPolicy=r.value;message="使用明细保留期已保存；账本和最小审计不受影响"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
     fun runRetentionNow(){viewModelScope.launch{when(val r=production.runRetention()){is RemoteResult.Ok->message="保留策略已执行：删除 ${r.value.usageEventsDeleted} 条过期使用明细，脱敏 ${r.value.allowancesRedacted} 条临时原因";RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
     fun addGrowthPlan(title:String,target:String){viewModelScope.launch{when(val r=production.createGrowthPlan(title,"HABITS",target)){is RemoteResult.Ok->{syncGrowthArchive();message="成长计划已保存"};RemoteResult.Unauthorized->handleRemote(RemoteResult.Unauthorized,"");is RemoteResult.Failure->message=r.message}}}
@@ -679,6 +684,7 @@ class FamilyAppViewModel(application: Application) : AndroidViewModel(applicatio
         when(val r=production.rewardOrders()){is RemoteResult.Ok->rewardOrders=r.value;RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
         syncRewardGovernance(mode==AppMode.CHILD)
         when(val r=production.savingBalance()){is RemoteResult.Ok->savingBalance=r.value;RemoteResult.Unauthorized->{handleRemote(RemoteResult.Unauthorized,"");return};is RemoteResult.Failure->Unit}
+        when(val r=production.economyLab()){is RemoteResult.Ok->economyLab=r.value;else->Unit}
         when(val funds=production.funds()){is RemoteResult.Ok->{funds.value.firstOrNull()?.let{f->when(val p=production.fundPosition(f.id)){is RemoteResult.Ok->state=state.copy(fund=LocalFundPosition(p.value.nav,p.value.shares));else->Unit}}};else->Unit}
         when(val r=production.todayReport()){is RemoteResult.Ok->todayUsageReport=r.value;else->Unit}
         when(val r=production.monthlyReport()){is RemoteResult.Ok->monthlyUsageReport=r.value;else->Unit}

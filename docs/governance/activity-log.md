@@ -316,5 +316,13 @@
 - Android 使用 Room 2.8.4、官方 schema 插件与 KSP2；本机快照、随机客户端身份、摘要游标、通用命令和冲突只在版本化表保存，自由文本经 Keystore AES-256-GCM 加密。旧 SharedPreferences 仅在密文回读/解码与迁移凭据成功后删除。
 - V27 新增服务端单调 checkpoint。受权 actor 提交最多 2000 个 known digest，获得孩子、Wallet、Task/Completion、Assignment、使用策略和家长待办的变化与 tombstone；幂等重放、投影变化和跨对象范围均 fail-closed。
 - H2/PostgreSQL 16.15 各 72 个 Maven 测试通过，PostgreSQL 验证 27 次迁移/100 表；Android 双变体 112 个 JVM 测试、lint 0 error/7 warning 和两 APK 通过。真实 v0.3.8 覆盖升级/双设备冲突因缺目标环境保持 `BLOCKED`，主线进入 Stage 31。
-- 旧 SharedPreferences 迁移必须先写 Room、解密/解码回读和登记凭据，最后才删除旧 state key；任一步失败都保留原数据。连接态服务端继续是 Wallet/Ledger 和学习事实源。
-- 同步协议采用受限 known digest + 单调 cursor + tombstone，而不是 last-write-wins。409 进入持久冲突中心，由家长刷新后显式处理；孩子不承担冲突选择。
+
+## 2026-09-01 · Activity 89 · Stage 31 家庭经济实验室立项
+
+- 按 P-06/08/09/10/11 建立统一 Spec。自主选择“家长显式结算 + 确定性模拟 tick + 预览快照费用 + 既有 Reward 审核”的最小可信方向；不接真实金融、外部行情、随机奖励或儿童交易刺激。
+
+## 2026-09-01 · Activity 90 · Stage 31 可离线闭环
+
+- V28 完成版本化储蓄奖励、同周期唯一结算与同组双 Money 流水；确定性市场以家庭固定种子、基金和日期生成受限基点变化；卖出预览和订单固化持有天数、提前费、总费与预计到账。
+- 家长端经济实验室统一规则与操作；固定价装扮复用既有奖励申请/批准/履约。幼儿园孩子钱包改为独立“小星星/存起来”投影，完全隐藏 Money、兑换、提现、NAV、涨跌、交易和费用。
+- H2 73 项通过（6 个 PostgreSQL 条件测试按预期跳过）；隔离 PostgreSQL 16.15 以 28 次迁移/106 表运行 73 项零跳过；Android 两变体 112 项、lint 0 error/7 warning、双 APK 通过。目标平板运行态保持 `BLOCKED`，主线进入 Stage 32。

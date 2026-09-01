@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: Family Growth API
   version: 1.0.0
-  description: Stage 3–9、17、20–21 的生产认证、成长任务、家庭账本、纯模拟基金、冻结式零钱回收、Android 同步、学段体验和课程学习证据 API。
+  description: Stage 3–9、17、20–31 的生产认证、成长任务、家庭账本、纯模拟基金、冻结式零钱回收、可靠同步、学段学习、家庭协作、成长档案与经济实验室 API。
 servers:
   - url: /api/v1
 security:
@@ -1218,6 +1218,51 @@ paths:
         '401': { description: Missing, expired, or revoked session }
         '404': { description: Family or child is outside actor scope }
         '409': { description: Idempotency replay no longer matches request/projection }
+  /families/{familyId}/economy-lab:
+    get:
+      operationId: getEconomyLab
+      description: Parent-only snapshot of transparent family saving and simulated-market rules.
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /families/{familyId}/economy-lab/saving-rule:
+    put:
+      operationId: configureSavingRewardRule
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SavingRewardRuleRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' } }
+  /families/{familyId}/economy-lab/children/{childId}/saving-awards:
+    post:
+      operationId: settleSavingReward
+      description: Settles one transparent reward per child and cycle; the paired Money ledger entries share one group.
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }, { $ref: '#/components/parameters/ChildId' }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SavingRewardAwardRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '403': { $ref: '#/components/responses/Forbidden' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/economy-lab/funds/{fundId}/market-rule:
+    put:
+      operationId: configureSimulatedMarketRule
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }, { name: fundId, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SimulatedMarketRuleRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/economy-lab/funds/{fundId}/ticks:
+    post:
+      operationId: advanceSimulatedMarket
+      description: Creates a deterministic educational NAV for the fund and date; no real market data is used.
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }, { name: fundId, in: path, required: true, schema: { type: string, format: uuid } }, { $ref: '#/components/parameters/IdempotencyKey' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/SimulatedMarketTickRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '404': { $ref: '#/components/responses/NotFound' }, '409': { $ref: '#/components/responses/Conflict' } }
+  /families/{familyId}/economy-lab/funds/{fundId}/holding-fee-rule:
+    put:
+      operationId: configureHoldingFeeRule
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }, { name: fundId, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/HoldingFeeRuleRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/Ok' }, '400': { $ref: '#/components/responses/ValidationError' }, '404': { $ref: '#/components/responses/NotFound' } }
+  /families/{familyId}/economy-lab/cosmetics:
+    post:
+      operationId: createFixedPriceCosmetic
+      description: Creates a fixed-Coin cosmetic that still uses the parent-approved reward order flow; no random reward is involved.
+      parameters: [{ $ref: '#/components/parameters/FamilyId' }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/CosmeticRewardRequest' } } } }
+      responses: { '201': { $ref: '#/components/responses/Created' }, '400': { $ref: '#/components/responses/ValidationError' }, '403': { $ref: '#/components/responses/Forbidden' } }
 components:
   securitySchemes:
     bearerAuth:
@@ -1745,6 +1790,39 @@ components:
       properties:
         side: { type: string, enum: [BUY, SELL] }
         inputAmount: { type: number, minimum: 0.00000001 }
+    SavingRewardRuleRequest:
+      type: object
+      required: [periodicRate, minimumBalance]
+      properties:
+        periodicRate: { type: number, minimum: 0, maximum: 0.1, multipleOf: 0.000001 }
+        minimumBalance: { type: number, minimum: 0, multipleOf: 0.01 }
+    SavingRewardAwardRequest:
+      type: object
+      required: [cycleKey]
+      properties: { cycleKey: { type: string, minLength: 1, maxLength: 40 } }
+    SimulatedMarketRuleRequest:
+      type: object
+      required: [seedLabel, maximumDailyBps]
+      properties:
+        seedLabel: { type: string, minLength: 4, maxLength: 80 }
+        maximumDailyBps: { type: integer, minimum: 0, maximum: 2000 }
+    SimulatedMarketTickRequest:
+      type: object
+      required: [tickDate]
+      properties: { tickDate: { type: string, format: date } }
+    HoldingFeeRuleRequest:
+      type: object
+      required: [minimumHoldingDays, earlyFeeRate]
+      properties:
+        minimumHoldingDays: { type: integer, minimum: 0, maximum: 3650 }
+        earlyFeeRate: { type: number, minimum: 0, maximum: 0.5, multipleOf: 0.000001 }
+    CosmeticRewardRequest:
+      type: object
+      required: [title, coinCost, stockCount]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 120 }
+        coinCost: { type: integer, format: int64, minimum: 1 }
+        stockCount: { type: integer, minimum: 1, maximum: 999 }
     WithdrawalRuleRequest:
       type: object
       required: [payoutRate, feeRate, fixedFee]

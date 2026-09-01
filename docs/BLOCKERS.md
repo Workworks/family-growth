@@ -266,9 +266,17 @@
 
 ## 3. 工程未完成
 
+### Stage 31：家庭经济实验室
+
+状态：`BLOCKED`　文档：[Stage 31](stages/stage-31-report.md)
+
+Agent 可执行范围已完成。缺少目标平板上的幼儿园复杂财商隐藏、家长卖出费用确认、横竖屏、TalkBack、大字体、重启和覆盖升级数据保留回放。
+
+解除方式：连接目标 Android 平板与可信家庭服务，由 Agent 按 Stage 31 设备场景回放；不得以 JVM、数据库或 APK 构建替代。
+
 ### Stage 27–32：原始 P-01–P-21 深化
 
-状态：Stage 27–30 可离线工程完成后分别因目标环境 `BLOCKED`；Stage 31 `IN_PROGRESS`，Stage 32 `NOT_STARTED`。继续 Stage 31 虚拟经济深化，不因既有设备验收暂停可离线工程。
+状态：Stage 27–31 可离线工程完成后分别因目标环境 `BLOCKED`；Stage 32 `IN_PROGRESS`。继续工具链与最终治理，不因既有设备验收暂停可离线工程。
 
 ## 4. 当前已知限制
 

@@ -32,5 +32,5 @@
 - [Stage 28：奖励预算、兑换额度与履约闭环](stage-28-report.md) — `BLOCKED`（可离线工程完成）
 - [Stage 29：家庭成员、设备配对与最小待办](stage-29-report.md) — `BLOCKED`
 - [Stage 30：加密 Room、本机迁移与游标同步](stage-30-report.md) — `BLOCKED`
-- Stage 31：储蓄利息、模拟市场、持有期费用与统一实验室 — `NOT_STARTED`
-- Stage 32：Android 工具链与最终全量治理验收 — `NOT_STARTED`
+- [Stage 31：家庭经济实验室](stage-31-report.md) — `BLOCKED`
+- Stage 32：Android 工具链与最终全量治理验收 — `IN_PROGRESS`

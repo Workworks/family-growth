@@ -17,12 +17,12 @@ public final class Stage7Models {
     public record TradeQuote(BigDecimal inputAmount,BigDecimal grossMoney,BigDecimal feeAmount,BigDecimal netMoney,BigDecimal shares){}
     public record TradePreview(UUID id,UUID familyId,UUID childId,UUID fundId,TradeSide side,BigDecimal inputAmount,
         BigDecimal grossMoney,BigDecimal feeAmount,BigDecimal netMoney,BigDecimal shares,UUID navId,BigDecimal nav,
-        UUID feeRuleId,long feeRuleVersion,PreviewStatus status,Instant expiresAt,UUID orderId,String notice,Instant createdAt){}
+        UUID feeRuleId,long feeRuleVersion,int holdingDays,BigDecimal earlyFeeRate,BigDecimal earlyFeeAmount,PreviewStatus status,Instant expiresAt,UUID orderId,String notice,Instant createdAt){}
     public record FundPosition(UUID familyId,UUID childId,UUID fundId,BigDecimal shares,BigDecimal totalCost,
         BigDecimal averageCost,BigDecimal nav,BigDecimal marketValue,BigDecimal unrealizedPnl,BigDecimal realizedPnl,long version){ }
     public record FundTradeOrder(UUID id,UUID previewId,UUID familyId,UUID childId,UUID fundId,TradeSide side,
         BigDecimal grossMoney,BigDecimal feeAmount,BigDecimal netMoney,BigDecimal shares,BigDecimal nav,
-        BigDecimal realizedPnl,UUID ledgerGroupId,String idempotencyKey,UUID actorId,Instant createdAt){}
+        BigDecimal realizedPnl,int holdingDays,BigDecimal earlyFeeRate,BigDecimal earlyFeeAmount,UUID ledgerGroupId,String idempotencyKey,UUID actorId,Instant createdAt){}
 
     public static TradeQuote quote(TradeSide side,BigDecimal rawInput,BigDecimal rawNav,BigDecimal rawFee){
         Objects.requireNonNull(side);BigDecimal nav=nav(rawNav),rate=fee(rawFee);

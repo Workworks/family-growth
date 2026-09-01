@@ -11,10 +11,10 @@
 | 优先级 | Stage | 状态 | 下一动作 | 推进方 | 完成证据 |
 | --- | ---: | --- | --- | --- | --- |
 | P0 | 全局 | `IN_PROGRESS` | 每轮登记用户新增需求/建议，并同步 AGENTS/codex-skills、Stage、优先级和证据 | Agent | `requirements/requirement-ledger.md` |
-| P2 | 31 | `IN_PROGRESS` | 实施储蓄奖励、可复现模拟市场、持有期成本与统一经济实验室 | Agent | Stage 31 Spec/迁移/API/Android/证据 |
 | P1 | 30 | `BLOCKED` | 目标平板覆盖升级、重启/断网和两设备冲突回放 | 用户提供设备/可信服务；Agent 回放 | Stage 30 V30-06 |
 | P1 | 29 | `BLOCKED` | 两台目标设备与可信 HTTPS 回放配对、撤销、重启和无障碍 | 用户提供设备/服务；Agent 回放 | Stage 29 V29-08 |
-| P2 | 32 | `NOT_STARTED` | 完成 Android 工具链和最终治理验收 | Agent | Stage 32 Spec/测试/证据 |
+| P2 | 31 | `BLOCKED` | 目标平板回放适龄经济投影、费用确认、重启和覆盖升级 | 用户提供目标平板；Agent 回放 | Stage 31 设备证据 |
+| P1 | 32 | `IN_PROGRESS` | 升级 Android 工具链并完成跨 Stage 最终治理、稳定发布与审计 | Agent | Stage 32 Spec/测试/证据/Release |
 | P0 | 22 | `BLOCKED` | WP22-1–5 已完成；连接目标平板回放年龄带/五领域折页、布置、孩子离屏完成、家长一句观察、TalkBack、旋转、Reduced Motion 和触觉关闭 | 用户提供平板；Agent 回放 | Stage 22 报告、`evidence/stage-22/` |
 | P1 | 23 | `BLOCKED` | 可离线工作包已完成；连接目标平板回放小学报告、横竖屏、TalkBack、大字体、Reduced Motion 与数据保留 | 用户提供平板；Agent 回放 | Stage 23 报告、`evidence/stage-23/` |
 | P1 | 24 | `BLOCKED` | 可离线工作包已完成；连接目标平板回放横竖屏、大字体、TalkBack、Reduced Motion、触控排序和断网恢复 | 用户提供平板；Agent 回放 | Stage 24 报告、`evidence/stage-24/` |
@@ -36,7 +36,7 @@
 
 ## 2. 可由 Agent 继续推进
 
-Stage 27–29 的 P-01/02/03/04/05/07/12/14/15/16 可离线工程已完成并转为目标平板阻塞。当前继续 Stage 30–32；真实平板与可信 HTTPS 继续作为独立外部验收，不阻塞后续工程实现。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
+Stage 27–31 的可离线工程已完成并转为目标平板阻塞。当前只剩 Stage 32 的 Agent 可执行工具链、最终治理和发布工作；真实平板与可信 HTTPS 继续作为独立外部验收。完整拆分见 [教学与项目剩余事项清单](requirements/teaching-and-project-backlog.md)。
 
 ## 3. 只能由外部条件解除
 

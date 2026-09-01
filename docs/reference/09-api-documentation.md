@@ -116,6 +116,11 @@
 | POST | `/auth/device-pairings/accept` | 公开短码入口 | 在可信 HTTPS 上换取绑定 `device_id` 的角色会话；并发消费仅一台成功 |
 | GET/POST | `/families/{familyId}/devices`、`.../{deviceId}/revoke` | PARENT | 查看设备或撤销设备及其全部绑定会话 |
 | GET/POST | `/families/{familyId}/notifications`、`.../{notificationId}/read` | 当前成员 | 最小应用内待办与已读；不改变 Wallet、Ledger、Completion 或源业务状态 |
+| GET/PUT | `/families/{familyId}/economy-lab`、`.../saving-rule` | PARENT | 查询家庭经济实验室或创建新版本储蓄奖励规则；孩子不能修改 |
+| POST | `/families/{familyId}/economy-lab/children/{childId}/saving-awards` | PARENT | 按孩子/周期幂等结算一次；奖励与存入两条 Money 流水同组且 Saving 同事务增加 |
+| PUT/POST | `/families/{familyId}/economy-lab/funds/{fundId}/market-rule`、`.../ticks` | PARENT | 配置固定种子/最大日波动并生成确定性教学 NAV；同基金/日期返回同一事实，不接真实行情 |
+| PUT | `/families/{familyId}/economy-lab/funds/{fundId}/holding-fee-rule` | PARENT | 配置最低持有天数与提前费率；卖出预览/订单固化持有天数、提前费、总费和净额 |
+| POST | `/families/{familyId}/economy-lab/cosmetics` | PARENT | 创建固定 Coin 价格装扮，继续走奖励申请/批准/履约；无随机奖励或自动扣账 |
 
 批准审核会锁定 Completion 与 Wallet；Coin/Money 流水先追加，再在同一事务更新余额和 Completion。重复提交返回首次结果；重复/冲突审核返回 409，不能重复发奖。XP 的奖励事实保存在 Completion 快照并更新 `child_progress`。
 

@@ -1,0 +1,13 @@
+package com.familygrowth.application;
+import static com.familygrowth.domain.Stage31EconomyModels.*;import com.familygrowth.domain.Stage3Models.Actor;import java.math.*;import java.time.*;import java.util.UUID;import org.springframework.stereotype.Service;import org.springframework.transaction.annotation.Transactional;
+@Service @Transactional public class Stage31EconomyService{
+ private final Stage3Service auth;private final Stage31EconomyStore store;private final Clock clock;public Stage31EconomyService(Stage3Service a,Stage31EconomyStore s,Clock c){auth=a;store=s;clock=c;}
+ public SavingRewardRule configureSaving(Actor a,UUID f,BigDecimal rate,BigDecimal min){auth.requireParent(a,f);return store.configureSaving(f,rate.setScale(6,RoundingMode.UNNECESSARY),min.setScale(2,RoundingMode.UNNECESSARY),a.actorId(),clock.instant());}
+ public SavingRewardAward settleSaving(Actor a,UUID f,UUID c,String cycle,String key){auth.requireParent(a,f);validKey(key);if(cycle==null||!cycle.matches("[0-9]{4}-(0[1-9]|1[0-2])"))throw new IllegalArgumentException("cycleKey must be YYYY-MM");return store.settleSaving(f,c,cycle,key,a.actorId(),clock.instant());}
+ public SimulatedMarketRule configureMarket(Actor a,UUID f,UUID fund,String label,int bps){auth.requireParent(a,f);String seed=label==null?"":label.trim();if(seed.length()<4||seed.length()>80)throw new IllegalArgumentException("Seed label must contain 4-80 characters");return store.configureMarket(f,fund,seed,bps,a.actorId(),clock.instant());}
+ public SimulatedMarketTick tick(Actor a,UUID f,UUID fund,LocalDate date,String key){auth.requireParent(a,f);validKey(key);if(date.isAfter(LocalDate.now(clock)))throw new IllegalArgumentException("Future market dates are not allowed");return store.tick(f,fund,date,key,a.actorId(),clock.instant());}
+ public HoldingFeeRule configureHolding(Actor a,UUID f,UUID fund,int days,BigDecimal rate){auth.requireParent(a,f);return store.configureHolding(f,fund,days,rate.setScale(6,RoundingMode.UNNECESSARY),a.actorId(),clock.instant());}
+ @Transactional(readOnly=true)public EconomyLabSnapshot snapshot(Actor a,UUID f){auth.requireParent(a,f);return store.snapshot(f);}
+ public UUID createCosmetic(Actor a,UUID f,String title,long cost,int stock){auth.requireParent(a,f);if(title==null||title.isBlank()||title.length()>120||cost<=0||stock<1||stock>999)throw new IllegalArgumentException("Invalid cosmetic");return store.createCosmetic(f,title.trim(),cost,stock,a.actorId(),clock.instant());}
+ private static void validKey(String k){if(k==null||k.isBlank()||k.length()>100)throw new IllegalArgumentException("Valid Idempotency-Key is required");}
+}

@@ -61,6 +61,7 @@
 - [23 儿童数据保留、导出与恢复边界](operations/23-data-retention-and-recovery.md)
 - [24 家庭成员配对与可信 TLS](operations/24-family-pairing-and-trusted-tls.md)
 - [25 Room 迁移与可靠同步](operations/25-room-migration-and-reliable-sync.md)
+- [26 家庭经济实验室](operations/26-family-economy-lab.md)
 
 ## 使用手册 · `manuals/`
 
@@ -104,6 +105,13 @@
 - [Stage 22：幼儿园故事舞台与亲子现实活动](stages/stage-22-report.md)
 - [Stage 23：小学探索手册](stages/stage-23-report.md)
 - [Stage 24：初中学科实验台](stages/stage-24-report.md)
+- [Stage 25：高中自主学习室](stages/stage-25-report.md)
+- [Stage 26：连续性、隐私、防沉迷与发布总验收](stages/stage-26-report.md)
+- [Stage 27：成长计划与成长档案](stages/stage-27-report.md)
+- [Stage 28：奖励预算、兑换额度与履约](stages/stage-28-report.md)
+- [Stage 29：家庭成员与设备配对](stages/stage-29-report.md)
+- [Stage 30：加密 Room 与可靠同步](stages/stage-30-report.md)
+- [Stage 31：家庭经济实验室](stages/stage-31-report.md)
 
 ## 项目计划与 Phase · `program/` `phases/`
 
@@ -149,6 +157,11 @@
 - [Stage 24](evidence/stage-24/acceptance.json)
 - [Stage 25](evidence/stage-25/acceptance.json)
 - [Stage 26](evidence/stage-26/acceptance.json)
+- [Stage 27](evidence/stage-27/acceptance.json)
+- [Stage 28](evidence/stage-28/acceptance.json)
+- [Stage 29](evidence/stage-29/acceptance.json)
+- [Stage 30](evidence/stage-30/acceptance.json)
+- [Stage 31](evidence/stage-31/acceptance.json)
 
 ## 目录约定
 
